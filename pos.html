@@ -10,11 +10,10 @@
     </script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js">
     </script>
-    <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== جميع الأنماط (لم تتغير) ===== */
+        /* الأنماط مختصرة هنا لتوفير المساحة، لكنها كاملة في الكود الأصلي */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -158,6 +157,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            justify-content: center;
         }
         .btn-primary {
             background: linear-gradient(135deg, #f39c12, #e67e22);
@@ -200,10 +200,6 @@
         .small-text {
             font-size: 0.75rem;
             color: #8ab4d6;
-        }
-        hr {
-            border: 0.5px solid #2c3e50;
-            margin: 8px 0;
         }
         .participants {
             display: flex;
@@ -270,8 +266,6 @@
             grid-template-rows: repeat(3, 1fr);
             padding: 22px;
             transform-style: preserve-3d;
-            transition: transform 0.1s;
-            position: relative;
             transition: transform 0.15s ease;
         }
         .dice:hover {
@@ -696,6 +690,24 @@
             border-radius: 20px;
             border: 1px solid #f1c40f33;
         }
+        .mic-test-btn {
+            background: #2c3e50;
+            border: 1px solid #3a5a7a;
+            border-radius: 40px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: #fff;
+            transition: 0.2s;
+        }
+        .mic-test-btn.active {
+            background: #27ae60;
+            border-color: #2ecc71;
+        }
+        .mic-test-btn.error {
+            background: #c0392b;
+            border-color: #e74c3c;
+        }
         @media (max-width: 420px) {
             .tab-item .icon {
                 font-size: 1.3rem;
@@ -736,6 +748,7 @@
 
         <div class="tab-content">
 
+            <!-- غرفة الصوت -->
             <div class="tab-pane active" id="tab-voice">
                 <div class="card">
                     <div class="flex-between"><h3 style="margin:0;">🎧 غرفة "المدينة"</h3><span class="badge" id="roomStatus">🟢 مفتوحة</span></div>
@@ -748,6 +761,10 @@
                         <div class="participant"><span class="status online"></span> أنت</div>
                     </div>
                     <div class="peer-id-box" id="peerIdDisplay">معرفك: جاري التحميل...</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:4px 0;">
+                        <button class="mic-test-btn" id="micTestBtn" onclick="testMicrophone()">🎤 اختبار الميكروفون</button>
+                        <span id="micTestStatus" style="font-size:0.8rem; color:#8ab4d6; align-self:center;">غير مختبر</span>
+                    </div>
                     <div class="room-controls">
                         <button class="btn btn-primary" id="joinRoomBtn" onclick="joinVoiceRoom()">🔊 دخول الغرفة</button>
                         <button class="btn btn-mic" id="muteBtn" onclick="toggleLocalMute()" disabled>🎤 كتم</button>
@@ -758,6 +775,7 @@
                 </div>
             </div>
 
+            <!-- اللعبة -->
             <div class="tab-pane" id="tab-game">
                 <div class="card">
                     <div class="flex-between">
@@ -791,12 +809,14 @@
                 </div>
             </div>
 
+            <!-- الإعدادات -->
             <div class="tab-pane" id="tab-settings">
                 <div class="card"><h3 style="margin:0 0 10px;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div></div>
                 <div class="card"><h3 style="margin:0 0 10px;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
                 <div class="card"><h3 style="margin:0 0 10px;">🔗 رابط الإحالة</h3><div class="referral-link-box"><span class="link-code">🔗 الرابط:</span><button class="copy-btn" onclick="copyReferral()">📋 نسخ</button><div class="link-display" id="referralLinkDisplay">https://app.example.com/ref/abc123</div></div><hr /><div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div></div>
             </div>
 
+            <!-- المحفظة -->
             <div class="tab-pane" id="tab-wallet">
                 <div class="card"><div class="label">💳 عنوان محفظتك الداخلية (Polygon)</div><div class="wallet-address" id="walletAddressDisplay">0x...</div><div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"><button class="btn btn-secondary" onclick="copyWalletAddress()">📋 نسخ العنوان</button><button class="btn btn-primary" onclick="showQR()">📱 عرض QR للاستلام</button></div><div id="qrContainer" style="display:none; margin-top:12px;" class="qr-container"><div id="qrcode"></div></div></div>
                 <div class="card"><div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay">100.00</span></div><div class="small-text" id="walletBalanceUSD">≈ $0.00</div><div class="wallet-actions" style="margin-top:12px;"><button class="btn btn-success" onclick="deposit()" style="flex:1;">➕ إيداع</button><button class="btn btn-danger" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button></div><div id="withdrawFormContainer" style="display:none; margin-top:12px;"><div class="withdraw-form"><div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 100)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="100" step="1" /></div><div class="field-group"><label>📤 عنوان الاستلام (شبكة Polygon)</label><div class="input-with-btn"><input type="text" id="withdrawAddress" placeholder="0x..." /><button class="cam-btn" onclick="openScannerForWithdraw()" title="مسح QR">📷</button></div></div><button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button></div></div><p class="small-text" style="margin-top:6px;">* الإيداع والسحب عبر POL (شبكة Polygon). الحد الأدنى للسحب 100 POL.</p></div>
@@ -804,20 +824,20 @@
         </div>
     </div>
 
+    <!-- شاشة الدخول -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-card"><h2>🎲 مرحباً بك!</h2><div class="sub">سجل الدخول أو أنشئ حساباً جديداً</div><div class="auth-tabs" id="authTabs"><button class="auth-tab active" data-auth="login">تسجيل الدخول</button><button class="auth-tab" data-auth="register">إنشاء حساب</button></div><div class="auth-panel active" id="authLogin"><input type="text" id="loginUsername" placeholder="اسم المستخدم" /><input type="password" id="loginPassword" placeholder="كلمة المرور" /><button class="btn btn-primary btn-block" onclick="loginUser()">🔑 تسجيل الدخول</button></div><div class="auth-panel" id="authRegister"><input type="text" id="registerUsername" placeholder="اسم المستخدم (فريد)" /><input type="password" id="registerPassword" placeholder="كلمة المرور (لتشفير المحفظة)" /><button class="btn btn-success btn-block" onclick="registerUser()">✅ إنشاء الحساب</button><p class="small-text" style="margin-top:6px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً.</p></div></div>
     </div>
 
+    <!-- ماسح QR -->
     <div id="scannerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; align-items:center; justify-content:center;"><div style="background:#0e2238; border-radius:32px; padding:24px; max-width:400px; width:100%; border:1px solid #f1c40f44;"><h3 style="color:#f1c40f; margin-bottom:12px;">📷 امسح QR code</h3><video id="scannerVideo" autoplay playsinline style="width:100%; border-radius:16px; background:#000;"></video><div style="display:flex; gap:10px; margin-top:12px;"><button class="btn btn-secondary" onclick="stopScanner()">إلغاء</button><button class="btn btn-primary" onclick="captureQRForWithdraw()">📸 التقاط</button></div><p class="small-text" style="margin-top:8px;">ضع عنوان المحفظة في منتصف الإطار.</p></div></div>
 
     <script>
         // =============================================================
-        //  1. إعدادات Supabase (مضمنة من بياناتك)
+        //  1. إعدادات Supabase
         // =============================================================
         const SUPABASE_URL = 'https://ozzrdraeirhdrxztmhfr.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
-
-        // تهيئة عميل Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================================
@@ -932,16 +952,16 @@
             loggedIn: false,
             participantCount: 0,
             isRolling: false,
-            // PeerJS
             peer: null,
             myPeerId: null,
             connections: {},
             localStream: null,
             remoteStreams: {},
             roomId: 'city-room',
-            // Supabase
             channel: null,
             myRecordId: null,
+            micTested: false,
+            micWorking: false,
         };
 
         // =============================================================
@@ -971,6 +991,8 @@
         const elPeerIdDisplay = document.getElementById('peerIdDisplay');
         const elParticipantsList = document.getElementById('participantsList');
         const elDbStatus = document.getElementById('dbStatus');
+        const elMicTestStatus = document.getElementById('micTestStatus');
+        const elMicTestBtn = document.getElementById('micTestBtn');
 
         let currentPassword = '';
 
@@ -1204,7 +1226,45 @@
         }
 
         // =============================================================
-        //  11. دوال الغرفة الصوتية (PeerJS + Supabase)
+        //  11. اختبار الميكروفون
+        // =============================================================
+        async function testMicrophone() {
+            elMicTestBtn.textContent = '⏳ جاري...';
+            elMicTestBtn.disabled = true;
+            elMicTestBtn.className = 'mic-test-btn';
+            elMicTestStatus.textContent = 'جاري الاختبار...';
+            elMicTestStatus.style.color = '#f1c40f';
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                // نجح
+                STATE.micTested = true;
+                STATE.micWorking = true;
+                if (STATE.localStream) {
+                    STATE.localStream.getTracks().forEach(t => t.stop());
+                    STATE.localStream = null;
+                }
+                STATE.localStream = stream;
+                elMicTestBtn.textContent = '✅ يعمل';
+                elMicTestBtn.className = 'mic-test-btn active';
+                elMicTestStatus.textContent = '✅ الميكروفون يعمل';
+                elMicTestStatus.style.color = '#2ecc71';
+                console.log('✅ الميكروفون يعمل.');
+            } catch (err) {
+                STATE.micTested = true;
+                STATE.micWorking = false;
+                elMicTestBtn.textContent = '❌ فشل';
+                elMicTestBtn.className = 'mic-test-btn error';
+                elMicTestStatus.textContent = `❌ ${err.message}`;
+                elMicTestStatus.style.color = '#e74c3c';
+                console.error('فشل اختبار الميكروفون:', err);
+            } finally {
+                elMicTestBtn.disabled = false;
+            }
+        }
+
+        // =============================================================
+        //  12. دوال الغرفة الصوتية (PeerJS + Supabase)
         // =============================================================
         let peerInitialized = false;
 
@@ -1260,12 +1320,33 @@
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
             if (STATE.inRoom) { alert('أنت بالفعل في الغرفة.'); return; }
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                STATE.localStream = stream;
-            } catch (e) {
-                alert('⚠️ تعذر الوصول إلى الميكروفون: ' + e.message);
+            // إذا لم يتم اختبار الميكروفون، نطلب الإذن فوراً
+            if (!STATE.micTested) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    STATE.localStream = stream;
+                    STATE.micTested = true;
+                    STATE.micWorking = true;
+                    elMicTestBtn.textContent = '✅ يعمل';
+                    elMicTestBtn.className = 'mic-test-btn active';
+                    elMicTestStatus.textContent = '✅ الميكروفون يعمل';
+                    elMicTestStatus.style.color = '#2ecc71';
+                } catch (e) {
+                    alert('⚠️ تعذر الوصول إلى الميكروفون: ' + e.message);
+                    return;
+                }
+            } else if (!STATE.micWorking) {
+                alert('⚠️ الميكروفون لا يعمل. يرجى اختباره أولاً.');
                 return;
+            } else if (!STATE.localStream) {
+                // إذا كان الميكروفون يعمل ولكن التيار مفقود، نطلبه مجدداً
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                    STATE.localStream = stream;
+                } catch (e) {
+                    alert('⚠️ تعذر الوصول إلى الميكروفون: ' + e.message);
+                    return;
+                }
             }
 
             if (!STATE.peer || !STATE.myPeerId) {
@@ -1287,7 +1368,6 @@
             STATE.lastEntryTime = Date.now();
             updateUI();
 
-            // 1. إدراج سجلنا في جدول Supabase
             const { data, error } = await supabaseClient
                 .from('room_participants')
                 .insert([{
@@ -1310,7 +1390,6 @@
             elDbStatus.textContent = '✅ في الغرفة';
             elDbStatus.style.color = '#2ecc71';
 
-            // 2. الاشتراك في التغييرات (Realtime)
             if (STATE.channel) {
                 STATE.channel.unsubscribe();
             }
@@ -1334,9 +1413,7 @@
                     }
                 });
 
-            // تحديث القائمة فوراً
             await refreshParticipants();
-
             alert('✅ دخلت الغرفة الصوتية. سيتم حساب وقت تواجدك.');
         }
 
@@ -1354,32 +1431,59 @@
             const allPeers = data.filter(row => row.peer_id !== STATE.myPeerId);
             const peerIds = allPeers.map(row => row.peer_id);
 
-            // تحديث قائمة المشاركين
             updatePeerList(peerIds);
             STATE.participantCount = peerIds.length + 1;
             elParticipantCount.textContent = STATE.participantCount;
 
-            // الاتصال بالجدد
             for (const pid of peerIds) {
                 if (!STATE.connections[pid]) {
-                    callPeer(pid);
+                    callPeerWithRetry(pid);
                 }
             }
         }
 
-        function callPeer(peerId) {
+        function callPeerWithRetry(peerId, attempt = 0) {
             if (!STATE.localStream) return;
             if (STATE.connections[peerId]) return;
+
+            console.log(`محاولة الاتصال بـ ${peerId} (محاولة ${attempt + 1})`);
             const call = STATE.peer.call(peerId, STATE.localStream);
+
+            const timeout = setTimeout(() => {
+                if (STATE.connections[peerId]) return;
+                console.warn(`انتهت مهلة الاتصال بـ ${peerId}`);
+                if (attempt < 3) {
+                    setTimeout(() => {
+                        if (!STATE.connections[peerId] && STATE.inRoom) {
+                            callPeerWithRetry(peerId, attempt + 1);
+                        }
+                    }, 3000);
+                }
+            }, 8000);
+
             call.on('stream', (remoteStream) => {
+                clearTimeout(timeout);
                 addRemoteStream(peerId, remoteStream);
             });
+
             call.on('close', () => {
+                clearTimeout(timeout);
                 removeRemoteStream(peerId);
             });
+
+            call.on('error', (err) => {
+                clearTimeout(timeout);
+                console.warn(`فشل الاتصال بـ ${peerId}:`, err.message);
+                if (attempt < 3) {
+                    setTimeout(() => {
+                        if (!STATE.connections[peerId] && STATE.inRoom) {
+                            callPeerWithRetry(peerId, attempt + 1);
+                        }
+                    }, 3000);
+                }
+            });
+
             STATE.connections[peerId] = call;
-            console.log('جارٍ الاتصال بـ:', peerId);
-            updatePeerListFromConnections();
         }
 
         function addRemoteStream(peerId, stream) {
@@ -1442,7 +1546,6 @@
         async function leaveVoiceRoom() {
             if (!STATE.inRoom) return;
 
-            // 1. إزالة سجلنا من Supabase
             if (STATE.myRecordId) {
                 await supabaseClient
                     .from('room_participants')
@@ -1451,13 +1554,11 @@
                 STATE.myRecordId = null;
             }
 
-            // 2. إلغاء الاشتراك من القناة
             if (STATE.channel) {
                 STATE.channel.unsubscribe();
                 STATE.channel = null;
             }
 
-            // 3. إيقاف الاتصالات
             for (const pid in STATE.connections) {
                 STATE.connections[pid].close();
                 delete STATE.connections[pid];
@@ -1471,7 +1572,6 @@
                 STATE.localStream = null;
             }
 
-            // 4. حساب وقت التواجد
             if (STATE.lastEntryTime) {
                 const now = Date.now();
                 const diffSeconds = (now - STATE.lastEntryTime) / 1000;
@@ -1489,7 +1589,7 @@
         }
 
         // =============================================================
-        //  12. نموذج السحب والإيداع
+        //  13. نموذج السحب والإيداع
         // =============================================================
         function toggleWithdrawForm() {
             if (withdrawFormContainer.style.display === 'none') {
@@ -1542,7 +1642,7 @@
         }
 
         // =============================================================
-        //  13. QR Code
+        //  14. QR Code
         // =============================================================
         let qrCodeInstance = null;
 
@@ -1567,7 +1667,7 @@
         }
 
         // =============================================================
-        //  14. QR Scanner
+        //  15. QR Scanner
         // =============================================================
         let scannerStream = null;
 
@@ -1602,7 +1702,7 @@
         }
 
         // =============================================================
-        //  15. اللعبة الأساسية
+        //  16. اللعبة الأساسية
         // =============================================================
         const BET_AMOUNT = 10;
 
@@ -1679,7 +1779,7 @@
         }
 
         // =============================================================
-        //  16. الإحالات
+        //  17. الإحالات
         // =============================================================
         function copyReferral() {
             const link = document.getElementById('referralLinkDisplay').textContent;
@@ -1688,7 +1788,7 @@
         }
 
         // =============================================================
-        //  17. التوزيع الليلي (الساعة 12)
+        //  18. التوزيع الليلي (الساعة 12)
         // =============================================================
         async function distributeDaily() {
             if (STATE.hostMarketingPool <= 0) {
@@ -1760,7 +1860,7 @@
         }, 1000);
 
         // =============================================================
-        //  18. التبويبات والتهيئة
+        //  19. التبويبات والتهيئة
         // =============================================================
         document.querySelectorAll('.tab-item').forEach(tab => {
             tab.addEventListener('click', function() {
@@ -1799,7 +1899,7 @@
             }
         });
 
-        console.log('🚀 منصة النرد جاهزة مع غرفة صوتية Supabase + PeerJS');
+        console.log('🚀 منصة النرد جاهزة مع غرفة صوتية Supabase + PeerJS (مع إعادة المحاولة)');
     </script>
 </body>
 </html>
