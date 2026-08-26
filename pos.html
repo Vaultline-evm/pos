@@ -809,7 +809,7 @@
         </div>
     </div>
 
-    <!-- شاشة الدخول (معدلة لاستخدام البريد الإلكتروني) -->
+    <!-- شاشة الدخول -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-card">
             <h2>🎲 مرحباً بك!</h2>
@@ -827,7 +827,7 @@
                 <input type="text" id="registerUsername" placeholder="اسم المستخدم (فريد)" />
                 <input type="email" id="registerEmail" placeholder="البريد الإلكتروني" />
                 <input type="password" id="registerPassword" placeholder="كلمة المرور (6 أحرف على الأقل)" />
-                <button class="btn btn-success btn-block" onclick="registerUser()">✅ إنشاء الحساب</button>
+                <button class="btn btn-success btn-block" id="registerBtn">✅ إنشاء الحساب</button>
                 <p class="small-text" style="margin-top:6px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً.</p>
             </div>
         </div>
@@ -844,8 +844,10 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        console.log('✅ Supabase initialized');
+
         // =============================================================
-        //  2. إعدادات الشبكة والمحافظ
+        //  2. إعدادات الشبكة والمحافظ (نفسها)
         // =============================================================
         const INFURA_URL = 'https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99';
         const VAULT_ADDRESS = '0xb77577772412d2784a077f7CaC95Fec3e90AB75b';
@@ -994,6 +996,7 @@
         //  8. دوال المصادقة (Supabase Auth) - المُصلحة
         // =============================================================
         function initAuth() {
+            console.log('🔐 تهيئة المصادقة...');
             document.querySelectorAll('.auth-tab').forEach(tab => {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -1004,12 +1007,30 @@
                     else document.getElementById('authRegister').classList.add('active');
                 });
             });
+
+            // ربط زر إنشاء الحساب بالدالة بشكل صريح
+            const registerBtn = document.getElementById('registerBtn');
+            if (registerBtn) {
+                registerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('🖱️ تم الضغط على زر إنشاء الحساب (via addEventListener)');
+                    registerUser();
+                });
+                console.log('✅ تم ربط زر إنشاء الحساب');
+            } else {
+                console.error('❌ لم يتم العثور على زر إنشاء الحساب');
+            }
+
             // التحقق من جلسة موجودة
             supabase.auth.getSession().then(({ data }) => {
                 if (data.session) {
+                    console.log('🔐 جلسة موجودة مسبقاً');
                     loadUserData(data.session.user);
+                } else {
+                    console.log('🔐 لا توجد جلسة');
                 }
             });
+
             // الاستماع لتغييرات المصادقة
             supabase.auth.onAuthStateChange((event, session) => {
                 console.log('🔐 حدث Auth:', event, session ? 'جلسة موجودة' : 'لا جلسة');
@@ -1022,7 +1043,7 @@
         }
 
         // =============================================================
-        //  دالة التسجيل المُصلحة (مع سجلات واضحة)
+        //  دالة التسجيل المُصلحة
         // =============================================================
         async function registerUser() {
             console.log('🚀 بدء عملية التسجيل...');
@@ -1030,6 +1051,8 @@
             const username = document.getElementById('registerUsername').value.trim();
             const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value.trim();
+
+            console.log('📝 البيانات المدخلة:', { username, email, password: '***' });
 
             // تحقق من صحة الحقول
             if (!username) {
@@ -1055,7 +1078,7 @@
                     email,
                     password,
                     options: {
-                        data: { username: username } // نمرر اسم المستخدم في metadata
+                        data: { username: username }
                     }
                 });
 
@@ -1085,7 +1108,6 @@
 
                 if (profileError) {
                     console.error('❌ خطأ في إدراج profiles:', profileError);
-                    // محاولة حذف المستخدم من Auth إذا فشل الإدراج (اختياري)
                     alert('❌ فشل حفظ البيانات الشخصية: ' + profileError.message);
                     return;
                 }
@@ -1378,7 +1400,7 @@
         }
 
         // =============================================================
-        //  12. دوال الغرفة الصوتية (نفسها)
+        //  12. دوال الغرفة الصوتية (نفسها - مختصرة للاختصار)
         // =============================================================
         let peerInitialized = false;
 
@@ -1720,7 +1742,7 @@
         }
 
         // =============================================================
-        //  13. نموذج السحب والإيداع
+        //  13. نموذج السحب والإيداع (نفسها)
         // =============================================================
         function toggleWithdrawForm() {
             if (withdrawFormContainer.style.display === 'none') {
@@ -2024,6 +2046,7 @@
         });
 
         window.onload = function() {
+            console.log('🚀 بدء تشغيل التطبيق...');
             initAuth();
             renderDice(1);
             updateUI();
@@ -2040,6 +2063,28 @@
         });
 
         console.log('🚀 منصة النرد جاهزة مع Supabase Auth + PeerJS');
+
+        // =============================================================
+        //  جعل الدوال عامة بشكل صريح
+        // =============================================================
+        window.registerUser = registerUser;
+        window.loginUser = loginUser;
+        window.logoutUser = logoutUser;
+        window.testMicrophone = testMicrophone;
+        window.joinVoiceRoom = joinVoiceRoom;
+        window.leaveVoiceRoom = leaveVoiceRoom;
+        window.toggleLocalMute = toggleLocalMute;
+        window.onDiceClick = onDiceClick;
+        window.deposit = deposit;
+        window.executeWithdraw = executeWithdraw;
+        window.toggleWithdrawForm = toggleWithdrawForm;
+        window.copyWalletAddress = copyWalletAddress;
+        window.showQR = showQR;
+        window.openScannerForWithdraw = openScannerForWithdraw;
+        window.stopScanner = stopScanner;
+        window.captureQRForWithdraw = captureQRForWithdraw;
+        window.copyReferral = copyReferral;
+        console.log('✅ تم ربط جميع الدوال العامة');
     </script>
 </body>
 </html>
