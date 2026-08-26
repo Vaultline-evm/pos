@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== جميع الأنماط (مختصرة لتوفير المساحة) ===== */
+        /* الأنماط (مختصرة لتوفير المساحة - كلها موجودة في الكود السابق) */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -841,7 +841,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================================
-        //  2. إعدادات الشبكة والمحافظ
+        //  2. إعدادات الشبكة والمحافظ (نفسها)
         // =============================================================
         const INFURA_URL = 'https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99';
         const VAULT_ADDRESS = '0xb77577772412d2784a077f7CaC95Fec3e90AB75b';
@@ -1263,24 +1263,30 @@
         }
 
         // =============================================================
-        //  12. دوال الغرفة الصوتية (الإصلاح الأساسي)
+        //  12. دوال الغرفة الصوتية (محسنة)
         // =============================================================
         let peerInitialized = false;
 
         function initPeer() {
             if (peerInitialized) return;
-            // استخدام خادم PeerJS بديل للاستقرار
+            // استخدام خادم PeerJS الرسمي مع إعدادات آمنة
             const peer = new Peer(undefined, {
-                host: 'peerjs-server.herokuapp.com',
+                host: '0.peerjs.com',
                 port: 443,
                 secure: true,
                 debug: 3,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
             });
 
             peer.on('open', (id) => {
                 STATE.myPeerId = id;
                 elPeerIdDisplay.textContent = `معرفك: ${id}`;
-                console.log('PeerJS ID:', id);
+                console.log('✅ PeerJS ID:', id);
                 if (STATE.loggedIn && STATE.inRoom) {
                     joinVoiceRoomActual();
                 }
@@ -1289,7 +1295,7 @@
             });
 
             peer.on('error', (err) => {
-                console.error('PeerJS error:', err);
+                console.error('❌ PeerJS error:', err);
                 elPeerIdDisplay.textContent = `⚠️ خطأ: ${err.message}`;
                 elDbStatus.textContent = '❌ خطأ';
                 elDbStatus.style.color = '#e74c3c';
@@ -1297,7 +1303,7 @@
 
             peer.on('call', (call) => {
                 if (!STATE.localStream) {
-                    console.warn('لا يوجد تيار محلي للرد');
+                    console.warn('⚠️ لا يوجد تيار محلي للرد');
                     return;
                 }
                 console.log('📞 مكالمة واردة من:', call.peer);
@@ -1367,7 +1373,7 @@
             STATE.lastEntryTime = Date.now();
             updateUI();
 
-            // 1. إدراج السجل في Supabase
+            // إدراج السجل في Supabase
             const { data, error } = await supabaseClient
                 .from('room_participants')
                 .insert([{
@@ -1380,7 +1386,7 @@
 
             if (error) {
                 console.error('❌ خطأ في الإدراج Supabase:', error);
-                alert('⚠️ فشل الاتصال بقاعدة البيانات. تأكد من:\n1. وجود جدول room_participants\n2. تفعيل Realtime\n3. تعطيل RLS مؤقتاً للاختبار');
+                alert('⚠️ فشل الاتصال بقاعدة البيانات.\nتأكد من:\n1. وجود جدول room_participants\n2. تفعيل Realtime\n3. سياسات RLS تسمح بالإدراج (قم بتشغيل SQL أعلاه)');
                 STATE.inRoom = false;
                 updateUI();
                 return;
@@ -1391,7 +1397,7 @@
             elDbStatus.style.color = '#2ecc71';
             console.log('✅ تم إدراج السجل في Supabase:', data);
 
-            // 2. الاشتراك في Realtime
+            // الاشتراك في Realtime
             if (STATE.channel) {
                 STATE.channel.unsubscribe();
             }
@@ -1417,7 +1423,7 @@
                     }
                 });
 
-            // 3. جلب المشاركين الحاليين
+            // تحديث القائمة فوراً
             await refreshParticipants();
             alert('✅ دخلت الغرفة الصوتية. سيتم حساب وقت تواجدك.');
         }
@@ -1471,7 +1477,6 @@
             const timeout = setTimeout(() => {
                 if (STATE.connections[peerId]) return;
                 console.warn(`⏰ انتهت مهلة الاتصال بـ ${peerId}`);
-                // إعادة المحاولة بعد 3 ثوانٍ
                 setTimeout(() => {
                     if (!STATE.connections[peerId] && STATE.inRoom) {
                         callPeerWithRetry(peerId, attempt + 1);
@@ -1564,7 +1569,6 @@
         async function leaveVoiceRoom() {
             if (!STATE.inRoom) return;
 
-            // 1. حذف السجل من Supabase
             if (STATE.myRecordId) {
                 await supabaseClient
                     .from('room_participants')
@@ -1574,13 +1578,11 @@
                 console.log('🗑️ تم حذف السجل من Supabase');
             }
 
-            // 2. إلغاء الاشتراك
             if (STATE.channel) {
                 STATE.channel.unsubscribe();
                 STATE.channel = null;
             }
 
-            // 3. إغلاق الاتصالات
             for (const pid in STATE.connections) {
                 STATE.connections[pid].close();
                 delete STATE.connections[pid];
@@ -1589,13 +1591,11 @@
                 removeRemoteStream(pid);
             }
 
-            // 4. إيقاف التيار المحلي
             if (STATE.localStream) {
                 STATE.localStream.getTracks().forEach(t => t.stop());
                 STATE.localStream = null;
             }
 
-            // 5. حساب وقت التواجد
             if (STATE.lastEntryTime) {
                 const now = Date.now();
                 const diffSeconds = (now - STATE.lastEntryTime) / 1000;
@@ -1923,7 +1923,7 @@
             }
         });
 
-        console.log('🚀 منصة النرد جاهزة مع غرفة صوتية Supabase + PeerJS (مع إعادة المحاولة)');
+        console.log('🚀 منصة النرد جاهزة مع غرفة صوتية Supabase + PeerJS (نسخة نهائية)');
     </script>
 </body>
 </html>
