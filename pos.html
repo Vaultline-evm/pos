@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>🎲 نرد + غرف صوتية (Supabase)</title>
+    <title>🎲 نرد + غرف صوتية (Supabase Auth)</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* الأنماط (مختصرة لتوفير المساحة - كلها موجودة في الكود السابق) */
+        /* ===== جميع الأنماط (كما هي) ===== */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -474,21 +474,6 @@
         #qrcode img {
             display: block;
         }
-        .scanner-container {
-            background: #0a1825;
-            border-radius: 16px;
-            padding: 16px;
-            border: 1px solid #1f3347;
-            margin-top: 8px;
-        }
-        #scannerVideo {
-            width: 100%;
-            max-width: 300px;
-            border-radius: 12px;
-            background: #000;
-            display: block;
-            margin: 0 auto;
-        }
         .withdraw-form {
             display: flex;
             flex-direction: column;
@@ -824,9 +809,28 @@
         </div>
     </div>
 
-    <!-- شاشة الدخول -->
+    <!-- شاشة الدخول (معدلة لاستخدام البريد الإلكتروني) -->
     <div class="auth-overlay" id="authOverlay">
-        <div class="auth-card"><h2>🎲 مرحباً بك!</h2><div class="sub">سجل الدخول أو أنشئ حساباً جديداً</div><div class="auth-tabs" id="authTabs"><button class="auth-tab active" data-auth="login">تسجيل الدخول</button><button class="auth-tab" data-auth="register">إنشاء حساب</button></div><div class="auth-panel active" id="authLogin"><input type="text" id="loginUsername" placeholder="اسم المستخدم" /><input type="password" id="loginPassword" placeholder="كلمة المرور" /><button class="btn btn-primary btn-block" onclick="loginUser()">🔑 تسجيل الدخول</button></div><div class="auth-panel" id="authRegister"><input type="text" id="registerUsername" placeholder="اسم المستخدم (فريد)" /><input type="password" id="registerPassword" placeholder="كلمة المرور (لتشفير المحفظة)" /><button class="btn btn-success btn-block" onclick="registerUser()">✅ إنشاء الحساب</button><p class="small-text" style="margin-top:6px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً.</p></div></div>
+        <div class="auth-card">
+            <h2>🎲 مرحباً بك!</h2>
+            <div class="sub">سجل الدخول أو أنشئ حساباً جديداً</div>
+            <div class="auth-tabs" id="authTabs">
+                <button class="auth-tab active" data-auth="login">تسجيل الدخول</button>
+                <button class="auth-tab" data-auth="register">إنشاء حساب</button>
+            </div>
+            <div class="auth-panel active" id="authLogin">
+                <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" />
+                <input type="password" id="loginPassword" placeholder="كلمة المرور" />
+                <button class="btn btn-primary btn-block" onclick="loginUser()">🔑 تسجيل الدخول</button>
+            </div>
+            <div class="auth-panel" id="authRegister">
+                <input type="text" id="registerUsername" placeholder="اسم المستخدم (فريد)" />
+                <input type="email" id="registerEmail" placeholder="البريد الإلكتروني" />
+                <input type="password" id="registerPassword" placeholder="كلمة المرور (6 أحرف على الأقل)" />
+                <button class="btn btn-success btn-block" onclick="registerUser()">✅ إنشاء الحساب</button>
+                <p class="small-text" style="margin-top:6px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً.</p>
+            </div>
+        </div>
     </div>
 
     <!-- ماسح QR -->
@@ -834,14 +838,14 @@
 
     <script>
         // =============================================================
-        //  1. إعدادات Supabase (مضمنة من بياناتك)
+        //  1. إعدادات Supabase
         // =============================================================
         const SUPABASE_URL = 'https://ozzrdraeirhdrxztmhfr.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // =============================================================
-        //  2. إعدادات الشبكة والمحافظ (نفسها)
+        //  2. إعدادات الشبكة والمحافظ
         // =============================================================
         const INFURA_URL = 'https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99';
         const VAULT_ADDRESS = '0xb77577772412d2784a077f7CaC95Fec3e90AB75b';
@@ -900,17 +904,8 @@
         }
 
         // =============================================================
-        //  5. إدارة المستخدمين
+        //  5. دوال مساعدة (المحفظة والتشفير)
         // =============================================================
-        function getUsers() {
-            const data = localStorage.getItem('dice_users_v2');
-            return data ? JSON.parse(data) : {};
-        }
-
-        function saveUsers(users) {
-            localStorage.setItem('dice_users_v2', JSON.stringify(users));
-        }
-
         function generateWallet24() {
             const entropy = ethers.utils.randomBytes(32);
             const mnemonic = ethers.utils.entropyToMnemonic(entropy);
@@ -950,6 +945,7 @@
             walletAddress: '',
             privateKeyEncrypted: '',
             loggedIn: false,
+            userId: null,
             participantCount: 0,
             isRolling: false,
             peer: null,
@@ -994,10 +990,8 @@
         const elMicTestStatus = document.getElementById('micTestStatus');
         const elMicTestBtn = document.getElementById('micTestBtn');
 
-        let currentPassword = '';
-
         // =============================================================
-        //  8. دوال المصادقة
+        //  8. دوال المصادقة (Supabase Auth)
         // =============================================================
         function initAuth() {
             document.querySelectorAll('.auth-tab').forEach(tab => {
@@ -1010,65 +1004,109 @@
                     else document.getElementById('authRegister').classList.add('active');
                 });
             });
+            // التحقق من جلسة موجودة
+            supabase.auth.getSession().then(({ data }) => {
+                if (data.session) {
+                    loadUserData(data.session.user);
+                }
+            });
+            // الاستماع لتغييرات المصادقة
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    loadUserData(session.user);
+                } else if (event === 'SIGNED_OUT') {
+                    logoutUser();
+                }
+            });
         }
 
-        function registerUser() {
+        async function registerUser() {
             const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value.trim();
+
             if (!username) { alert('يرجى إدخال اسم مستخدم.'); return; }
-            if (!password) { alert('يرجى إدخال كلمة مرور.'); return; }
-            const users = getUsers();
-            if (users[username]) { alert('اسم المستخدم موجود.'); return; }
-            const wallet = generateWallet24();
-            const encryptedPrivateKey = encrypt(wallet.privateKey, password);
-            users[username] = {
-                password: password,
-                address: wallet.address,
-                privateKeyEncrypted: encryptedPrivateKey,
-                balance: 100,
-                wins: 0,
-                losses: 0,
-                history: [],
-                referralEarned: 0,
-                dailyPresenceSeconds: 0,
-            };
-            saveUsers(users);
-            loginAs(username, users[username], password);
-            document.getElementById('authOverlay').style.display = 'none';
-            alert(`✅ مرحباً ${username}! تم إنشاء حسابك.`);
+            if (!email) { alert('يرجى إدخال البريد الإلكتروني.'); return; }
+            if (!password || password.length < 6) { alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل.'); return; }
+
+            try {
+                // 1. إنشاء المستخدم في Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                });
+                if (authError) throw authError;
+
+                // 2. إنشاء محفظة
+                const wallet = generateWallet24();
+                const encryptedKey = encrypt(wallet.privateKey, password);
+
+                // 3. تخزين الملف الشخصي في جدول profiles
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([{
+                        id: authData.user.id,
+                        username: username,
+                        wallet_address: wallet.address,
+                        encrypted_private_key: encryptedKey,
+                    }]);
+                if (profileError) throw profileError;
+
+                alert('✅ تم إنشاء الحساب بنجاح! سيتم تسجيل الدخول تلقائياً.');
+                // تسجيل الدخول تلقائياً
+                await loginUser(email, password);
+            } catch (e) {
+                alert('❌ فشل إنشاء الحساب: ' + e.message);
+                console.error(e);
+            }
         }
 
-        function loginUser() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            if (!username) { alert('يرجى إدخال اسم المستخدم.'); return; }
-            if (!password) { alert('يرجى إدخال كلمة المرور.'); return; }
-            const users = getUsers();
-            if (!users[username]) { alert('اسم المستخدم غير موجود.'); return; }
-            if (users[username].password !== password) { alert('كلمة المرور غير صحيحة.'); return; }
-            loginAs(username, users[username], password);
-            document.getElementById('authOverlay').style.display = 'none';
-            alert(`🔓 مرحباً بعودتك ${username}!`);
+        async function loginUser(email, password) {
+            // إذا تم استدعاؤها من الزر بدون وسيطات، نأخذ القيم من الحقول
+            if (!email) {
+                email = document.getElementById('loginEmail').value.trim();
+                password = document.getElementById('loginPassword').value.trim();
+            }
+            if (!email || !password) {
+                alert('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                // loadUserData ستُستدعى تلقائياً عبر onAuthStateChange
+            } catch (e) {
+                alert('❌ فشل تسجيل الدخول: ' + e.message);
+            }
         }
 
-        function loginAs(username, userData, password) {
+        async function loadUserData(user) {
+            // جلب البيانات من جدول profiles
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (error) {
+                console.error('خطأ في جلب الملف الشخصي:', error);
+                return;
+            }
+
             STATE.loggedIn = true;
-            STATE.username = username;
-            STATE.walletAddress = userData.address;
-            STATE.privateKeyEncrypted = userData.privateKeyEncrypted;
-            currentPassword = password;
-            STATE.userBalance = userData.balance || 100;
-            STATE.winsToday = userData.wins || 0;
-            STATE.lossesToday = userData.losses || 0;
-            STATE.history = userData.history || [];
-            STATE.referralEarned = userData.referralEarned || 0;
-            STATE.dailyPresenceSeconds = userData.dailyPresenceSeconds || 0;
-            STATE.roundPool = 0;
-            STATE.hostMarketingPool = 0;
-            STATE.platformPool = 0;
-            STATE.inRoom = false;
-            STATE.lastEntryTime = null;
-            STATE.selectedNumber = null;
+            STATE.userId = user.id;
+            STATE.username = profile.username;
+            STATE.walletAddress = profile.wallet_address;
+            STATE.privateKeyEncrypted = profile.encrypted_private_key;
+            STATE.userBalance = profile.balance || 100;
+            STATE.winsToday = profile.wins || 0;
+            STATE.lossesToday = profile.losses || 0;
+            STATE.referralEarned = profile.referral_earned || 0;
+            STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
+            STATE.history = []; // سنخزن التاريخ محلياً
+
+            document.getElementById('authOverlay').style.display = 'none';
             updateUI();
             renderDice(1);
             elResult.innerHTML = `<span style="color:#8ab4d6;">🎯 اختر رقمًا ثم اضغط على النرد</span>`;
@@ -1076,11 +1114,41 @@
             document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
             fetchPolPrice();
             initPeer();
+
+            console.log('✅ تم تحميل بيانات المستخدم:', profile.username);
+        }
+
+        function logoutUser() {
+            STATE.loggedIn = false;
+            STATE.userId = null;
+            document.getElementById('authOverlay').style.display = 'flex';
+            // إعادة تعيين الواجهة
+            updateUI();
+            alert('تم تسجيل الخروج.');
+        }
+
+        async function saveProfile() {
+            if (!STATE.loggedIn) return;
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    balance: STATE.userBalance,
+                    wins: STATE.winsToday,
+                    losses: STATE.lossesToday,
+                    referral_earned: STATE.referralEarned,
+                    daily_presence_seconds: STATE.dailyPresenceSeconds,
+                })
+                .eq('id', STATE.userId);
+            if (error) console.error('خطأ في حفظ الملف الشخصي:', error);
         }
 
         function getPrivateKey() {
-            if (!STATE.privateKeyEncrypted || !currentPassword) return null;
-            return decrypt(STATE.privateKeyEncrypted, currentPassword);
+            if (!STATE.privateKeyEncrypted) return null;
+            // نحتاج لكلمة المرور، لكننا لا نخزنها، لذا سنطلبها من المستخدم عند الحاجة
+            // في هذا الإصدار، نستخدم كلمة المرور المخزنة مؤقتاً من جلسة تسجيل الدخول
+            // لكن Supabase Auth لا يوفر كلمة المرور، لذا سنطلبها عند السحب
+            // سنقوم بتعديل دالة السحب لطلب كلمة المرور
+            return null;
         }
 
         // =============================================================
@@ -1172,17 +1240,9 @@
             updateRoomUI();
             updateUSDValues();
 
+            // حفظ التغييرات في قاعدة البيانات
             if (STATE.loggedIn) {
-                const users = getUsers();
-                if (users[STATE.username]) {
-                    users[STATE.username].balance = STATE.userBalance;
-                    users[STATE.username].wins = STATE.winsToday;
-                    users[STATE.username].losses = STATE.lossesToday;
-                    users[STATE.username].history = STATE.history;
-                    users[STATE.username].referralEarned = STATE.referralEarned;
-                    users[STATE.username].dailyPresenceSeconds = STATE.dailyPresenceSeconds;
-                    saveUsers(users);
-                }
+                saveProfile();
             }
         }
 
@@ -1210,7 +1270,7 @@
                 joinBtn.disabled = true;
                 leaveBtn.disabled = false;
                 muteBtn.disabled = false;
-                roomInfo.textContent = '📡 متصل (Supabase + PeerJS)';
+                roomInfo.textContent = '📡 متصل (Supabase Auth + PeerJS)';
                 roomStatus.textContent = '🟢 متصل';
             } else {
                 joinBtn.textContent = '🔊 دخول الغرفة';
@@ -1263,13 +1323,12 @@
         }
 
         // =============================================================
-        //  12. دوال الغرفة الصوتية (محسنة)
+        //  12. دوال الغرفة الصوتية (مع Supabase Auth)
         // =============================================================
         let peerInitialized = false;
 
         function initPeer() {
             if (peerInitialized) return;
-            // استخدام خادم PeerJS الرسمي مع إعدادات آمنة
             const peer = new Peer(undefined, {
                 host: '0.peerjs.com',
                 port: 443,
@@ -1373,12 +1432,13 @@
             STATE.lastEntryTime = Date.now();
             updateUI();
 
-            // إدراج السجل في Supabase
-            const { data, error } = await supabaseClient
+            // إدراج السجل في Supabase باستخدام user_id
+            const { data, error } = await supabase
                 .from('room_participants')
                 .insert([{
                     room_id: STATE.roomId,
                     peer_id: STATE.myPeerId,
+                    user_id: STATE.userId,
                     username: STATE.username,
                 }])
                 .select('id')
@@ -1386,7 +1446,7 @@
 
             if (error) {
                 console.error('❌ خطأ في الإدراج Supabase:', error);
-                alert('⚠️ فشل الاتصال بقاعدة البيانات.\nتأكد من:\n1. وجود جدول room_participants\n2. تفعيل Realtime\n3. سياسات RLS تسمح بالإدراج (قم بتشغيل SQL أعلاه)');
+                alert('⚠️ فشل الاتصال بقاعدة البيانات.\nتأكد من:\n1. وجود جدول room_participants\n2. تفعيل Realtime\n3. سياسات RLS تسمح للمستخدمين المسجلين بالإدراج');
                 STATE.inRoom = false;
                 updateUI();
                 return;
@@ -1402,19 +1462,16 @@
                 STATE.channel.unsubscribe();
             }
 
-            STATE.channel = supabaseClient.channel(`room:${STATE.roomId}`)
-                .on(
-                    'postgres_changes', {
-                        event: '*',
-                        schema: 'public',
-                        table: 'room_participants',
-                        filter: `room_id=eq.${STATE.roomId}`,
-                    },
-                    (payload) => {
-                        console.log('🔄 تغيير في الجدول:', payload);
-                        refreshParticipants();
-                    }
-                )
+            STATE.channel = supabase.channel(`room:${STATE.roomId}`)
+                .on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'room_participants',
+                    filter: `room_id=eq.${STATE.roomId}`,
+                }, (payload) => {
+                    console.log('🔄 تغيير في الجدول:', payload);
+                    refreshParticipants();
+                })
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
                         console.log('✅ مشترك في Realtime');
@@ -1423,13 +1480,12 @@
                     }
                 });
 
-            // تحديث القائمة فوراً
             await refreshParticipants();
             alert('✅ دخلت الغرفة الصوتية. سيتم حساب وقت تواجدك.');
         }
 
         async function refreshParticipants() {
-            const { data, error } = await supabaseClient
+            const { data, error } = await supabase
                 .from('room_participants')
                 .select('*')
                 .eq('room_id', STATE.roomId);
@@ -1448,7 +1504,6 @@
             STATE.participantCount = peerIds.length + 1;
             elParticipantCount.textContent = STATE.participantCount;
 
-            // الاتصال بكل من ليس متصلاً بهم
             for (const pid of peerIds) {
                 if (!STATE.connections[pid]) {
                     console.log(`📞 محاولة الاتصال بـ ${pid}`);
@@ -1570,7 +1625,7 @@
             if (!STATE.inRoom) return;
 
             if (STATE.myRecordId) {
-                await supabaseClient
+                await supabase
                     .from('room_participants')
                     .delete()
                     .eq('id', STATE.myRecordId);
@@ -1613,7 +1668,7 @@
         }
 
         // =============================================================
-        //  13. نموذج السحب والإيداع (نفسها)
+        //  13. نموذج السحب والإيداع
         // =============================================================
         function toggleWithdrawForm() {
             if (withdrawFormContainer.style.display === 'none') {
@@ -1639,14 +1694,25 @@
             if (amount > STATE.userBalance) { alert('رصيد غير كافٍ'); return; }
             if (!address || !address.startsWith('0x')) { alert('يرجى إدخال عنوان استلام صحيح (يبدأ بـ 0x).'); return; }
 
-            const vaultBalance = await getBalance(VAULT_ADDRESS);
-            if (vaultBalance < amount) {
-                alert(`❌ رصيد الصندوق غير كافٍ (الرصيد: ${vaultBalance.toFixed(2)} POL).`);
+            // طلب كلمة المرور لفك تشفير المفتاح الخاص
+            const password = prompt('أدخل كلمة المرور لتأكيد السحب:');
+            if (!password) return;
+
+            const privateKey = decrypt(STATE.privateKeyEncrypted, password);
+            if (!privateKey) {
+                alert('❌ كلمة المرور غير صحيحة.');
+                return;
+            }
+
+            const userWallet = new ethers.Wallet(privateKey, provider);
+            const balance = await getBalance(userWallet.address);
+            if (balance < amount) {
+                alert(`❌ رصيد محفظتك غير كافٍ (الرصيد: ${balance.toFixed(2)} POL).`);
                 return;
             }
 
             try {
-                const txHash = await sendPOL(vaultWallet, address, amount);
+                const txHash = await sendPOL(userWallet, address, amount);
                 STATE.userBalance -= amount;
                 addHistory('info', `سحب ${amount} POL إلى ${address.substring(0,10)}... (التجزئة: ${txHash.substring(0,10)})`);
                 updateUI();
@@ -1776,7 +1842,7 @@
                 STATE.platformPool += platformAmount;
 
                 detail =
-                `فوز! النرد ${diceValue}، رقمك ${STATE.selectedNumber}. ربحت ${winAmount.toFixed(2)} POL.`;
+                    `فوز! النرد ${diceValue}، رقمك ${STATE.selectedNumber}. ربحت ${winAmount.toFixed(2)} POL.`;
                 resultMsg = `🎉 فوز! ربحت ${winAmount.toFixed(2)} POL`;
 
                 STATE.roundPool = 0;
@@ -1785,7 +1851,7 @@
                 STATE.lossesToday += 1;
                 const currentPool = STATE.roundPool;
                 detail =
-                `خسارة! النرد ${diceValue}، رقمك ${STATE.selectedNumber}.`;
+                    `خسارة! النرد ${diceValue}، رقمك ${STATE.selectedNumber}.`;
                 resultMsg = `💀 خسارة! النرد أظهر ${diceValue}`;
             }
 
@@ -1812,7 +1878,7 @@
         }
 
         // =============================================================
-        //  18. التوزيع الليلي (الساعة 12)
+        //  18. التوزيع الليلي
         // =============================================================
         async function distributeDaily() {
             if (STATE.hostMarketingPool <= 0) {
@@ -1820,15 +1886,21 @@
                 return;
             }
 
-            const users = getUsers();
-            const usernames = Object.keys(users);
-            if (usernames.length === 0) return;
+            // جلب جميع المستخدمين من جدول profiles
+            const { data: users, error } = await supabase
+                .from('profiles')
+                .select('id, username, wallet_address, daily_presence_seconds');
+
+            if (error) {
+                console.error('خطأ في جلب المستخدمين:', error);
+                return;
+            }
 
             let totalPresence = 0;
             const presenceData = {};
-            for (const u of usernames) {
-                const seconds = users[u].dailyPresenceSeconds || 0;
-                presenceData[u] = seconds;
+            for (const u of users) {
+                const seconds = u.daily_presence_seconds || 0;
+                presenceData[u.id] = { ...u, seconds };
                 totalPresence += seconds;
             }
 
@@ -1839,38 +1911,42 @@
 
             const poolToDistribute = STATE.hostMarketingPool;
 
-            for (const u of usernames) {
-                const ratio = presenceData[u] / totalPresence;
+            for (const uid in presenceData) {
+                const u = presenceData[uid];
+                const ratio = u.seconds / totalPresence;
                 const amount = poolToDistribute * ratio;
                 if (amount < 0.01) continue;
 
-                const userAddress = users[u].address;
+                const userAddress = u.wallet_address;
                 if (!userAddress || !userAddress.startsWith('0x')) continue;
 
                 try {
                     const txHash = await sendPOL(vaultWallet, userAddress, amount);
                     addHistory('dist',
-                        `تم إرسال ${amount.toFixed(2)} POL إلى ${u} (${userAddress.substring(0,10)}...) - التجزئة: ${txHash.substring(0,10)}`
-                        );
+                        `تم إرسال ${amount.toFixed(2)} POL إلى ${u.username} (${userAddress.substring(0,10)}...) - التجزئة: ${txHash.substring(0,10)}`
+                    );
                 } catch (e) {
-                    console.error(`فشل إرسال الأموال إلى ${u}:`, e);
-                    addHistory('info', `❌ فشل إرسال ${amount.toFixed(2)} POL إلى ${u}`);
+                    console.error(`فشل إرسال الأموال إلى ${u.username}:`, e);
+                    addHistory('info', `❌ فشل إرسال ${amount.toFixed(2)} POL إلى ${u.username}`);
                 }
             }
 
             addHistory('dist',
-                `🎉 تم توزيع ${poolToDistribute.toFixed(2)} POL بنجاح على ${usernames.length} مستخدم بناءً على وقت التواجد.`
-                );
+                `🎉 تم توزيع ${poolToDistribute.toFixed(2)} POL بنجاح على ${users.length} مستخدم بناءً على وقت التواجد.`
+            );
 
             STATE.hostMarketingPool = 0;
-            for (const u of usernames) {
-                users[u].dailyPresenceSeconds = 0;
+
+            // إعادة تعيين أوقات التواجد
+            for (const u of users) {
+                await supabase
+                    .from('profiles')
+                    .update({ daily_presence_seconds: 0 })
+                    .eq('id', u.id);
             }
-            if (STATE.loggedIn && users[STATE.username]) {
-                users[STATE.username].dailyPresenceSeconds = 0;
+            if (STATE.loggedIn) {
                 STATE.dailyPresenceSeconds = 0;
             }
-            saveUsers(users);
             updateUI();
             alert(`🎁 تم توزيع ${poolToDistribute.toFixed(2)} POL من صندوق المضيفين على الحاضرين في الغرفة.`);
         }
@@ -1900,19 +1976,10 @@
 
         window.onload = function() {
             initAuth();
-            const users = getUsers();
-            const keys = Object.keys(users);
-            if (keys.length > 0) {
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.getElementById('loginUsername').value = keys[0];
-            } else {
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.querySelector('.auth-tab[data-auth="register"]').click();
-            }
             renderDice(1);
             updateUI();
             fetchPolPrice();
-            console.log('✅ التطبيق جاهز مع Supabase');
+            console.log('✅ التطبيق جاهز مع Supabase Auth');
         };
 
         document.addEventListener('keypress', (e) => {
@@ -1923,7 +1990,7 @@
             }
         });
 
-        console.log('🚀 منصة النرد جاهزة مع غرفة صوتية Supabase + PeerJS (نسخة نهائية)');
+        console.log('🚀 منصة النرد جاهزة مع Supabase Auth + PeerJS');
     </script>
 </body>
 </html>
