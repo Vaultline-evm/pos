@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>🎲 نرد + غرف صوتية (PeerJS)</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js">
+    </script>
+    <style>
+        /* ===== جميع الأنماط كما هي ===== */
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #0b1a2e;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0;
+            margin: 0;
+        }
+        .app-container {
+            max-width: 480px;
+            width: 100%;
+            background: linear-gradient(145deg, #0e2238, #0b1a2e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+        }
+        .tab-bar {
+            display: flex;
+            background: #0f1f30;
+            border-bottom: 2px solid #1f3347;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+        .tab-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-item .icon {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+        .tab-item.active {
+            color: #f1c40f;
+            border-bottom-color: #f1c40f;
+            background: rgba(241, 196, 15, 0.05);
+        }
+        .tab-item:active {
+            opacity: 0.6;
+        }
+        .tab-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .tab-pane {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeIn 0.25s ease;
+        }
+        .tab-pane.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0.4;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 18px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .card .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8ab4d6;
+        }
+        .card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 4px;
+            color: #fff;
+        }
+        .card .value.gold {
+            color: #f1c40f;
+        }
+        .card .value.green {
+            color: #2ecc71;
+        }
+        .card .value.red {
+            color: #e74c3c;
+        }
+        .card .value.purple {
+            color: #9b59b6;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #2c3e50;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+        }
+        .btn-secondary {
+            background: #34495e;
+        }
+        .btn-mic {
+            background: #2c3e50;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+        }
+        .btn-mic.active {
+            background: #e67e22;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+        .badge {
+            background: rgba(241, 196, 15, 0.2);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            border: 1px solid #f1c40f44;
+            color: #f1c40f;
+        }
+        .small-text {
+            font-size: 0.75rem;
+            color: #8ab4d6;
+        }
+        hr {
+            border: 0.5px solid #2c3e50;
+            margin: 8px 0;
+        }
+        .participants {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .participant {
+            background: #1c2f44;
+            padding: 6px 14px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #3a5a7a;
+            font-size: 0.8rem;
+        }
+        .participant .status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status.online {
+            background: #2ecc71;
+        }
+        .status.muted {
+            background: #e67e22;
+        }
+        .status.offline {
+            background: #7f8c8d;
+        }
+        .room-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .room-info {
+            background: #0a1825;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #8ab4d6;
+        }
+        .dice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px 0;
+            perspective: 600px;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .dice {
+            width: 130px;
+            height: 130px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 -4px 8px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 22px;
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+            position: relative;
+            transition: transform 0.15s ease;
+        }
+        .dice:hover {
+            transform: scale(1.02);
+        }
+        .dice:active {
+            transform: scale(0.95);
+        }
+        .dice.rolling {
+            animation: diceRoll3D 2.5s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+            pointer-events: none;
+        }
+        @keyframes diceRoll3D {
+            0% {
+                transform: rotateX(0deg) rotateY(0deg) translateZ(0) scale(1);
+            }
+            15% {
+                transform: rotateX(120deg) rotateY(40deg) translateZ(40px) scale(1.05);
+            }
+            30% {
+                transform: rotateX(240deg) rotateY(80deg) translateZ(-20px) scale(0.95);
+            }
+            45% {
+                transform: rotateX(360deg) rotateY(120deg) translateZ(30px) scale(1.02);
+            }
+            60% {
+                transform: rotateX(480deg) rotateY(160deg) translateZ(-10px) scale(0.98);
+            }
+            75% {
+                transform: rotateX(600deg) rotateY(200deg) translateZ(20px) scale(1.01);
+            }
+            90% {
+                transform: rotateX(720deg) rotateY(240deg) translateZ(-5px) scale(0.99);
+            }
+            100% {
+                transform: rotateX(810deg) rotateY(270deg) translateZ(0) scale(1);
+            }
+        }
+        .dice.bounce {
+            animation: diceBounce 0.8s ease-in-out 3;
+        }
+        @keyframes diceBounce {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            30% {
+                transform: translateY(-60px) rotate(15deg);
+            }
+            50% {
+                transform: translateY(0) rotate(-10deg);
+            }
+            70% {
+                transform: translateY(-30px) rotate(5deg);
+            }
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+        }
+        .dot {
+            width: 26px;
+            height: 26px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            align-self: center;
+            justify-self: center;
+            box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+        .dot.empty {
+            background: transparent;
+            box-shadow: none;
+        }
+        .number-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 6px 0;
+        }
+        .num-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #3a5a7a;
+            background: #1c2f44;
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .num-btn.selected {
+            border-color: #f1c40f;
+            background: #f1c40f22;
+            box-shadow: 0 0 12px rgba(241, 196, 15, 0.3);
+        }
+        .num-btn:active {
+            transform: scale(0.9);
+        }
+        .result-box {
+            background: #0f1f30;
+            border-radius: 20px;
+            padding: 16px;
+            min-height: 60px;
+            border-right: 6px solid #f1c40f;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .history {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            background: #0a1825;
+            padding: 8px 12px;
+            border-radius: 16px;
+            border: 1px solid #1f3347;
+        }
+        .history p {
+            margin: 4px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #1a2a3a;
+        }
+        .history .win {
+            color: #2ecc71;
+        }
+        .history .lose {
+            color: #e74c3c;
+        }
+        .history .info {
+            color: #f1c40f;
+        }
+        .history .dist {
+            color: #9b59b6;
+        }
+        .wallet-address {
+            background: #0a1825;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            direction: ltr;
+            word-break: break-all;
+            border: 1px solid #1f3347;
+            color: #8ab4d6;
+        }
+        .wallet-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .referral-link-box {
+            background: #0a1825;
+            padding: 10px 14px;
+            border-radius: 20px;
+            direction: ltr;
+            font-size: 0.8rem;
+            color: #f1c40f;
+            word-break: break-all;
+            border: 1px solid #1f3347;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .referral-link-box .link-code {
+            flex: 1;
+            min-width: 150px;
+        }
+        .referral-link-box .copy-btn {
+            background: transparent;
+            border: none;
+            color: #8ab4d6;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+            border-radius: 30px;
+            transition: 0.2s;
+        }
+        .referral-link-box .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f1c40f;
+        }
+        .referral-link-box .link-display {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #f1c40f;
+            word-break: break-all;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 10px 0;
+        }
+        #qrcode {
+            background: #fff;
+            padding: 10px;
+            border-radius: 16px;
+            display: inline-block;
+        }
+        #qrcode img {
+            display: block;
+        }
+        .scanner-container {
+            background: #0a1825;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid #1f3347;
+            margin-top: 8px;
+        }
+        #scannerVideo {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 12px;
+            background: #000;
+            display: block;
+            margin: 0 auto;
+        }
+        .withdraw-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .withdraw-form .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .withdraw-form .field-group label {
+            font-size: 0.8rem;
+            color: #8ab4d6;
+        }
+        .withdraw-form .field-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 40px;
+            border: none;
+            background: #1c2f44;
+            color: #fff;
+            font-size: 1rem;
+            outline: 1px solid #3a5a7a;
+        }
+        .withdraw-form .field-group input:focus {
+            outline: 2px solid #f1c40f;
+        }
+        .withdraw-form .input-with-btn {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .withdraw-form .input-with-btn input {
+            flex: 1;
+        }
+        .withdraw-form .input-with-btn .cam-btn {
+            background: #2c3e50;
+            border: none;
+            color: #fff;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .withdraw-form .input-with-btn .cam-btn:hover {
+            background: #f1c40f;
+            color: #0b1a2e;
+        }
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-card {
+            background: #0e2238;
+            border-radius: 32px;
+            padding: 30px 24px;
+            max-width: 420px;
+            width: 100%;
+            border: 1px solid #f1c40f44;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+        .auth-card h2 {
+            color: #f1c40f;
+            margin-bottom: 6px;
+        }
+        .auth-card .sub {
+            color: #8ab4d6;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #1f3347;
+            padding-bottom: 10px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            font-weight: 600;
+            color: #7f8c8d;
+            background: transparent;
+        }
+        .auth-tab.active {
+            border-color: #f1c40f;
+            color: #f1c40f;
+            background: rgba(241, 196, 15, 0.1);
+        }
+        .auth-panel {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .auth-panel.active {
+            display: flex;
+        }
+        .auth-panel input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 40px;
+            border: none;
+            background: #1c2f44;
+            color: #fff;
+            font-size: 1rem;
+            outline: 1px solid #3a5a7a;
+        }
+        .auth-panel input:focus {
+            outline: 2px solid #f1c40f;
+        }
+        .price-tag {
+            background: rgba(241, 196, 15, 0.12);
+            border: 1px solid #f1c40f44;
+            border-radius: 30px;
+            padding: 4px 16px;
+            font-size: 0.9rem;
+            color: #f1c40f;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            direction: ltr;
+        }
+        .price-tag .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2ecc71;
+            display: inline-block;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+        }
+        .dice-hint {
+            color: #8ab4d6;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            text-align: center;
+        }
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .stats-row .card {
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+        .stats-row .card .value {
+            font-size: 1.5rem;
+        }
+        .peer-id-box {
+            background: #0a1825;
+            border-radius: 16px;
+            padding: 8px 14px;
+            font-family: monospace;
+            font-size: 0.7rem;
+            color: #8ab4d6;
+            direction: ltr;
+            word-break: break-all;
+            border: 1px solid #1f3347;
+            margin: 4px 0;
+        }
+        @media (max-width: 420px) {
+            .tab-item .icon {
+                font-size: 1.3rem;
+            }
+            .tab-item {
+                font-size: 0.7rem;
+                padding: 10px 0 6px;
+            }
+            .card .value {
+                font-size: 1.5rem;
+            }
+            .dice {
+                width: 110px;
+                height: 110px;
+                padding: 18px;
+            }
+            .dot {
+                width: 22px;
+                height: 22px;
+            }
+            .num-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- شريط التبويبات -->
+        <div class="tab-bar">
+            <button class="tab-item active" data-tab="tab-voice"><span class="icon">🎧</span><span>غرف صوتية</span></button>
+            <button class="tab-item" data-tab="tab-game"><span class="icon">🎲</span><span>النرد</span></button>
+            <button class="tab-item" data-tab="tab-settings"><span class="icon">⚙️</span><span>إعدادات</span></button>
+            <button class="tab-item" data-tab="tab-wallet"><span class="icon">💳</span><span>المحفظة</span></button>
+        </div>
+
+        <div class="tab-content">
+
+            <!-- ===== غرفة الصوت ===== -->
+            <div class="tab-pane active" id="tab-voice">
+                <div class="card">
+                    <div class="flex-between"><h3 style="margin:0;">🎧 غرفة "المدينة"</h3><span class="badge" id="roomStatus">🟢 مفتوحة</span></div>
+                    <div class="flex-between" style="margin:6px 0 10px;"><span class="label">👥 المشاركون الفعليون</span><span id="participantCount" style="color:#f1c40f; font-weight:bold;">0</span></div>
+                    <!-- قائمة المشاركين الفعلية ستحدث ديناميكياً -->
+                    <div class="participants" id="participantsList">
+                        <div class="participant"><span class="status online"></span> أنت</div>
+                    </div>
+                    <div class="peer-id-box" id="peerIdDisplay">معرفك: جاري التحميل...</div>
+                    <div class="room-controls">
+                        <button class="btn btn-primary" id="joinRoomBtn" onclick="joinVoiceRoom()">🔊 دخول الغرفة</button>
+                        <button class="btn btn-mic" id="muteBtn" onclick="toggleLocalMute()" disabled>🎤 كتم</button>
+                        <button class="btn btn-danger" onclick="leaveVoiceRoom()" id="leaveBtn" disabled>🚪 مغادرة</button>
+                    </div>
+                    <div class="room-info" id="roomInfo">📡 غير متصل</div>
+                    <p class="small-text" style="margin-top:6px;">* يتم حساب وقت تواجدك في الغرفة لتوزيع أرباح المضيفين يومياً.</p>
+                </div>
+            </div>
+
+            <!-- ===== اللعبة ===== -->
+            <div class="tab-pane" id="tab-game">
+                <div class="card">
+                    <div class="flex-between">
+                        <span class="label">💰 رصيدك</span>
+                        <span class="price-tag" id="polPriceDisplay"><span class="live-dot"></span> $0.0000</span>
+                    </div>
+                    <div class="value gold" id="userBalance">100.00</div>
+                    <div class="small-text" id="balanceUSD">≈ $0.00</div>
+                </div>
+
+                <div class="dice-container" onclick="onDiceClick()" title="اضغط للرمي">
+                    <div class="dice" id="diceElement"></div>
+                    <div style="font-size:1.2rem; font-weight:bold; color:#f1c40f; margin-top:6px;" id="diceResult">اختر رقمك</div>
+                    <div class="dice-hint">👆 اضغط على النرد للرمي</div>
+                </div>
+
+                <div class="number-selector">
+                    <button class="num-btn" data-num="1">1</button>
+                    <button class="num-btn" data-num="2">2</button>
+                    <button class="num-btn" data-num="3">3</button>
+                    <button class="num-btn" data-num="4">4</button>
+                    <button class="num-btn" data-num="5">5</button>
+                    <button class="num-btn" data-num="6">6</button>
+                </div>
+
+                <div class="result-box" id="resultBox">
+                    <span style="color:#8ab4d6;">🎯 اختر رقمًا ثم اضغط على النرد</span>
+                </div>
+
+                <div class="stats-row">
+                    <div class="card">
+                        <div class="label">🏆 فوز اليوم</div>
+                        <div class="value green" id="winsToday">0</div>
+                    </div>
+                    <div class="card">
+                        <div class="label">💀 خسارة اليوم</div>
+                        <div class="value red" id="lossesToday">0</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex-between"><span><strong>📜 آخر الجولات</strong></span><span class="small-text">آخر 10</span></div>
+                    <div class="history" id="historyLog"><p style="color:#6a8aa8;">لا توجد جولات</p></div>
+                </div>
+            </div>
+
+            <!-- ===== الإعدادات ===== -->
+            <div class="tab-pane" id="tab-settings">
+                <div class="card"><h3 style="margin:0 0 10px;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div></div>
+                <div class="card">
+                    <h3 style="margin:0 0 10px;">⏳ وقت التواجد اليومي</h3>
+                    <div class="flex-between">
+                        <span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span>
+                        <span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="margin:0 0 10px;">🔗 رابط الإحالة</h3>
+                    <div class="referral-link-box"><span class="link-code">🔗 الرابط:</span><button class="copy-btn" onclick="copyReferral()">📋 نسخ</button><div class="link-display" id="referralLinkDisplay">https://app.example.com/ref/abc123</div></div>
+                    <hr />
+                    <div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div>
+                </div>
+            </div>
+
+            <!-- ===== المحفظة ===== -->
+            <div class="tab-pane" id="tab-wallet">
+                <div class="card">
+                    <div class="label">💳 عنوان محفظتك الداخلية (Polygon)</div>
+                    <div class="wallet-address" id="walletAddressDisplay">0x...</div>
+                    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+                        <button class="btn btn-secondary" onclick="copyWalletAddress()">📋 نسخ العنوان</button>
+                        <button class="btn btn-primary" onclick="showQR()">📱 عرض QR للاستلام</button>
+                    </div>
+                    <div id="qrContainer" style="display:none; margin-top:12px;" class="qr-container"><div id="qrcode"></div></div>
+                </div>
+
+                <div class="card">
+                    <div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay">100.00</span></div>
+                    <div class="small-text" id="walletBalanceUSD">≈ $0.00</div>
+                    <div class="wallet-actions" style="margin-top:12px;">
+                        <button class="btn btn-success" onclick="deposit()" style="flex:1;">➕ إيداع</button>
+                        <button class="btn btn-danger" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button>
+                    </div>
+                    <div id="withdrawFormContainer" style="display:none; margin-top:12px;">
+                        <div class="withdraw-form">
+                            <div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 100)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="100" step="1" /></div>
+                            <div class="field-group"><label>📤 عنوان الاستلام (شبكة Polygon)</label><div class="input-with-btn"><input type="text" id="withdrawAddress" placeholder="0x..." /><button class="cam-btn" onclick="openScannerForWithdraw()" title="مسح QR">📷</button></div></div>
+                            <button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button>
+                        </div>
+                    </div>
+                    <p class="small-text" style="margin-top:6px;">* الإيداع والسحب عبر POL (شبكة Polygon). الحد الأدنى للسحب 100 POL.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- شاشة الدخول -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <h2>🎲 مرحباً بك!</h2>
+            <div class="sub">سجل الدخول أو أنشئ حساباً جديداً</div>
+            <div class="auth-tabs" id="authTabs">
+                <button class="auth-tab active" data-auth="login">تسجيل الدخول</button>
+                <button class="auth-tab" data-auth="register">إنشاء حساب</button>
+            </div>
+            <div class="auth-panel active" id="authLogin">
+                <input type="text" id="loginUsername" placeholder="اسم المستخدم" />
+                <input type="password" id="loginPassword" placeholder="كلمة المرور" />
+                <button class="btn btn-primary btn-block" onclick="loginUser()">🔑 تسجيل الدخول</button>
+            </div>
+            <div class="auth-panel" id="authRegister">
+                <input type="text" id="registerUsername" placeholder="اسم المستخدم (فريد)" />
+                <input type="password" id="registerPassword" placeholder="كلمة المرور (لتشفير المحفظة)" />
+                <button class="btn btn-success btn-block" onclick="registerUser()">✅ إنشاء الحساب</button>
+                <p class="small-text" style="margin-top:6px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ماسح QR -->
+    <div id="scannerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; align-items:center; justify-content:center;">
+        <div style="background:#0e2238; border-radius:32px; padding:24px; max-width:400px; width:100%; border:1px solid #f1c40f44;">
+            <h3 style="color:#f1c40f; margin-bottom:12px;">📷 امسح QR code</h3>
+            <video id="scannerVideo" autoplay playsinline style="width:100%; border-radius:16px; background:#000;"></video>
+            <div style="display:flex; gap:10px; margin-top:12px;">
+                <button class="btn btn-secondary" onclick="stopScanner()">إلغاء</button>
+                <button class="btn btn-primary" onclick="captureQRForWithdraw()">📸 التقاط</button>
+            </div>
+            <p class="small-text" style="margin-top:8px;">ضع عنوان المحفظة في منتصف الإطار.</p>
+        </div>
+    </div>
+
+    <script>
+        // =============================================================
+        //  إعدادات الشبكة والمحافظ (تبقى كما هي)
+        // =============================================================
+        const INFURA_URL = 'https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99';
+        const VAULT_ADDRESS = '0xb77577772412d2784a077f7CaC95Fec3e90AB75b';
+        const VAULT_PRIVATE_KEY = '0x48b535e9e7b8893d2757dceec8054564d404ba2a161f24e92243b652966dff9e';
+        const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
+        const vaultWallet = new ethers.Wallet(VAULT_PRIVATE_KEY, provider);
+
+        // =============================================================
+        //  جلب سعر POL
+        // =============================================================
+        let polPriceUSD = 0.5;
+
+        async function fetchPolPrice() {
+            try {
+                const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
+                const data = await resp.json();
+                if (data && data['matic-network'] && data['matic-network'].usd) {
+                    polPriceUSD = data['matic-network'].usd;
+                }
+            } catch (e) { console.warn('تعذر جلب السعر:', e); }
+            updatePriceDisplay();
+        }
+
+        function updatePriceDisplay() {
+            const el = document.getElementById('polPriceDisplay');
+            if (el) el.innerHTML = `<span class="live-dot"></span> $${polPriceUSD.toFixed(4)}`;
+            updateUSDValues();
+        }
+
+        function updateUSDValues() {
+            const balance = STATE.userBalance || 0;
+            const usd = balance * polPriceUSD;
+            const el1 = document.getElementById('balanceUSD');
+            const el2 = document.getElementById('walletBalanceUSD');
+            if (el1) el1.textContent = `≈ $${usd.toFixed(2)}`;
+            if (el2) el2.textContent = `≈ $${usd.toFixed(2)}`;
+        }
+        setInterval(fetchPolPrice, 30000);
+
+        // =============================================================
+        //  دوال blockchain
+        // =============================================================
+        async function getBalance(address) {
+            try {
+                const balance = await provider.getBalance(address);
+                return parseFloat(ethers.utils.formatEther(balance));
+            } catch (e) { return 0; }
+        }
+
+        async function sendPOL(fromWallet, toAddress, amountPOL) {
+            if (amountPOL <= 0) return null;
+            const tx = { to: toAddress, value: ethers.utils.parseEther(amountPOL.toString()) };
+            const response = await fromWallet.sendTransaction(tx);
+            await response.wait();
+            return response.hash;
+        }
+
+        // =============================================================
+        //  إدارة المستخدمين (نفسها)
+        // =============================================================
+        function getUsers() {
+            const data = localStorage.getItem('dice_users_v2');
+            return data ? JSON.parse(data) : {};
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('dice_users_v2', JSON.stringify(users));
+        }
+
+        function generateWallet24() {
+            const entropy = ethers.utils.randomBytes(32);
+            const mnemonic = ethers.utils.entropyToMnemonic(entropy);
+            const wallet = ethers.Wallet.fromMnemonic(mnemonic);
+            return { address: wallet.address, mnemonic, privateKey: wallet.privateKey };
+        }
+
+        function encrypt(text, password) { return btoa(password + '|' + text); }
+
+        function decrypt(encrypted, password) {
+            try {
+                const decoded = atob(encrypted);
+                const parts = decoded.split('|');
+                if (parts[0] === password) return parts.slice(1).join('|');
+                return null;
+            } catch { return null; }
+        }
+
+        // =============================================================
+        //  حالة التطبيق (مضافة متغيرات PeerJS)
+        // =============================================================
+        const STATE = {
+            userBalance: 100,
+            winsToday: 0,
+            lossesToday: 0,
+            history: [],
+            referralEarned: 0,
+            roundPool: 0,
+            hostMarketingPool: 0,
+            platformPool: 0,
+            inRoom: false,
+            muted: false,
+            lastEntryTime: null,
+            dailyPresenceSeconds: 0,
+            selectedNumber: null,
+            username: '',
+            walletAddress: '',
+            privateKeyEncrypted: '',
+            loggedIn: false,
+            participantCount: 0,
+            isRolling: false,
+            // PeerJS
+            peer: null,
+            myPeerId: null,
+            connections: {}, // peerId -> MediaConnection
+            localStream: null,
+            remoteStreams: {}, // peerId -> MediaStream
+            roomId: 'city-room', // غرفة ثابتة
+        };
+
+        // =============================================================
+        //  عناصر DOM
+        // =============================================================
+        const elBalance = document.getElementById('userBalance');
+        const elWins = document.getElementById('winsToday');
+        const elLosses = document.getElementById('lossesToday');
+        const elResult = document.getElementById('resultBox');
+        const elDice = document.getElementById('diceElement');
+        const elDiceResult = document.getElementById('diceResult');
+        const elHistory = document.getElementById('historyLog');
+        const elReferralEarned = document.getElementById('referralEarned');
+        const elWalletBalance = document.getElementById('walletBalanceDisplay');
+        const elWalletAddress = document.getElementById('walletAddressDisplay');
+        const elDisplayUsername = document.getElementById('displayUsername');
+        const elParticipantCount = document.getElementById('participantCount');
+        const joinBtn = document.getElementById('joinRoomBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const leaveBtn = document.getElementById('leaveBtn');
+        const roomInfo = document.getElementById('roomInfo');
+        const roomStatus = document.getElementById('roomStatus');
+        const withdrawFormContainer = document.getElementById('withdrawFormContainer');
+        const withdrawAmount = document.getElementById('withdrawAmount');
+        const withdrawAddress = document.getElementById('withdrawAddress');
+        const elDailyPresence = document.getElementById('dailyPresenceDisplay');
+        const elPeerIdDisplay = document.getElementById('peerIdDisplay');
+        const elParticipantsList = document.getElementById('participantsList');
+
+        let currentPassword = '';
+
+        // =============================================================
+        //  دوال المصادقة (نفسها)
+        // =============================================================
+        function initAuth() {
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const target = this.dataset.auth;
+                    document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+                    if (target === 'login') document.getElementById('authLogin').classList.add('active');
+                    else document.getElementById('authRegister').classList.add('active');
+                });
+            });
+        }
+
+        function registerUser() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            if (!username) { alert('يرجى إدخال اسم مستخدم.'); return; }
+            if (!password) { alert('يرجى إدخال كلمة مرور.'); return; }
+            const users = getUsers();
+            if (users[username]) { alert('اسم المستخدم موجود.'); return; }
+            const wallet = generateWallet24();
+            const encryptedPrivateKey = encrypt(wallet.privateKey, password);
+            users[username] = {
+                password: password,
+                address: wallet.address,
+                privateKeyEncrypted: encryptedPrivateKey,
+                balance: 100,
+                wins: 0,
+                losses: 0,
+                history: [],
+                referralEarned: 0,
+                dailyPresenceSeconds: 0,
+            };
+            saveUsers(users);
+            loginAs(username, users[username], password);
+            document.getElementById('authOverlay').style.display = 'none';
+            alert(`✅ مرحباً ${username}! تم إنشاء حسابك.`);
+        }
+
+        function loginUser() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            if (!username) { alert('يرجى إدخال اسم المستخدم.'); return; }
+            if (!password) { alert('يرجى إدخال كلمة المرور.'); return; }
+            const users = getUsers();
+            if (!users[username]) { alert('اسم المستخدم غير موجود.'); return; }
+            if (users[username].password !== password) { alert('كلمة المرور غير صحيحة.'); return; }
+            loginAs(username, users[username], password);
+            document.getElementById('authOverlay').style.display = 'none';
+            alert(`🔓 مرحباً بعودتك ${username}!`);
+        }
+
+        function loginAs(username, userData, password) {
+            STATE.loggedIn = true;
+            STATE.username = username;
+            STATE.walletAddress = userData.address;
+            STATE.privateKeyEncrypted = userData.privateKeyEncrypted;
+            currentPassword = password;
+            STATE.userBalance = userData.balance || 100;
+            STATE.winsToday = userData.wins || 0;
+            STATE.lossesToday = userData.losses || 0;
+            STATE.history = userData.history || [];
+            STATE.referralEarned = userData.referralEarned || 0;
+            STATE.dailyPresenceSeconds = userData.dailyPresenceSeconds || 0;
+            STATE.roundPool = 0;
+            STATE.hostMarketingPool = 0;
+            STATE.platformPool = 0;
+            STATE.inRoom = false;
+            STATE.lastEntryTime = null;
+            STATE.selectedNumber = null;
+            updateUI();
+            renderDice(1);
+            elResult.innerHTML = `<span style="color:#8ab4d6;">🎯 اختر رقمًا ثم اضغط على النرد</span>`;
+            elDiceResult.textContent = 'اختر رقمك';
+            document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
+            fetchPolPrice();
+            // تهيئة PeerJS
+            initPeer();
+        }
+
+        function getPrivateKey() {
+            if (!STATE.privateKeyEncrypted || !currentPassword) return null;
+            return decrypt(STATE.privateKeyEncrypted, currentPassword);
+        }
+
+        // =============================================================
+        //  النرد
+        // =============================================================
+        function renderDice(value) {
+            const dotsMap = {
+                1: [
+                    [0, 1]
+                ],
+                2: [
+                    [0, 0],
+                    [2, 2]
+                ],
+                3: [
+                    [0, 0],
+                    [1, 1],
+                    [2, 2]
+                ],
+                4: [
+                    [0, 0],
+                    [0, 2],
+                    [2, 0],
+                    [2, 2]
+                ],
+                5: [
+                    [0, 0],
+                    [0, 2],
+                    [1, 1],
+                    [2, 0],
+                    [2, 2]
+                ],
+                6: [
+                    [0, 0],
+                    [0, 2],
+                    [1, 0],
+                    [1, 2],
+                    [2, 0],
+                    [2, 2]
+                ]
+            };
+            const positions = dotsMap[value] || [];
+            let html = '';
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 3; c++) {
+                    const isDot = positions.some(([rr, cc]) => rr === r && cc === c);
+                    html += `<div class="dot ${isDot ? '' : 'empty'}"></div>`;
+                }
+            }
+            elDice.innerHTML = html;
+        }
+
+        document.querySelectorAll('.num-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (STATE.isRolling) return;
+                document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                STATE.selectedNumber = parseInt(this.dataset.num);
+                elDiceResult.textContent = `🔢 رقمك: ${STATE.selectedNumber}`;
+                elResult.innerHTML = `<span style="color:#8ab4d6;">🎯 رهان على رقم ${STATE.selectedNumber} — اضغط النرد</span>`;
+            });
+        });
+
+        function onDiceClick() {
+            if (STATE.isRolling) return;
+            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
+            if (STATE.selectedNumber === null) { alert('⚠️ يرجى اختيار رقم من 1 إلى 6 أولاً.'); return; }
+            rollDice();
+        }
+
+        // =============================================================
+        //  تحديث الواجهة
+        // =============================================================
+        function updateUI() {
+            elBalance.textContent = STATE.userBalance.toFixed(2);
+            elWins.textContent = STATE.winsToday;
+            elLosses.textContent = STATE.lossesToday;
+            elReferralEarned.textContent = STATE.referralEarned.toFixed(2);
+            elWalletBalance.textContent = STATE.userBalance.toFixed(2);
+            elWalletAddress.textContent = STATE.walletAddress || '0x...';
+            elDisplayUsername.textContent = STATE.username || '-';
+            elParticipantCount.textContent = STATE.participantCount;
+
+            const minutes = Math.floor(STATE.dailyPresenceSeconds / 60);
+            const seconds = Math.floor(STATE.dailyPresenceSeconds % 60);
+            elDailyPresence.textContent = `${minutes} دقيقة و ${seconds} ثانية`;
+
+            updateHistory();
+            updateRoomUI();
+            updateUSDValues();
+
+            if (STATE.loggedIn) {
+                const users = getUsers();
+                if (users[STATE.username]) {
+                    users[STATE.username].balance = STATE.userBalance;
+                    users[STATE.username].wins = STATE.winsToday;
+                    users[STATE.username].losses = STATE.lossesToday;
+                    users[STATE.username].history = STATE.history;
+                    users[STATE.username].referralEarned = STATE.referralEarned;
+                    users[STATE.username].dailyPresenceSeconds = STATE.dailyPresenceSeconds;
+                    saveUsers(users);
+                }
+            }
+        }
+
+        function updateHistory() {
+            if (STATE.history.length === 0) {
+                elHistory.innerHTML = `<p style="color:#6a8aa8;">لا توجد جولات</p>`;
+                return;
+            }
+            const items = STATE.history.slice(-10).reverse();
+            elHistory.innerHTML = items.map(h => {
+                let cls = '',
+                    label = '';
+                if (h.type === 'win') { cls = 'win';
+                    label = '🏆 ربح'; } else if (h.type === 'lose') { cls = 'lose';
+                    label = '💀 خسارة'; } else if (h.type === 'info') { cls = 'info';
+                    label = 'ℹ️'; } else if (h.type === 'dist') { cls = 'dist';
+                    label = '🎁 توزيع'; }
+                return `<p class="${cls}"><strong>${label}</strong> ${h.detail}</p>`;
+            }).join('');
+        }
+
+        function updateRoomUI() {
+            if (STATE.inRoom) {
+                joinBtn.textContent = '🔊 في الغرفة';
+                joinBtn.disabled = true;
+                leaveBtn.disabled = false;
+                muteBtn.disabled = false;
+                roomInfo.textContent = '📡 متصل (PeerJS)';
+                roomStatus.textContent = '🟢 متصل';
+            } else {
+                joinBtn.textContent = '🔊 دخول الغرفة';
+                joinBtn.disabled = false;
+                leaveBtn.disabled = true;
+                muteBtn.disabled = true;
+                roomInfo.textContent = '📡 غير متصل';
+                roomStatus.textContent = '🟢 مفتوحة';
+                STATE.muted = false;
+                muteBtn.textContent = '🎤 كتم';
+                muteBtn.classList.remove('active');
+            }
+        }
+
+        // =============================================================
+        //  دوال الغرفة الصوتية (PeerJS)
+        // =============================================================
+        let peerInitialized = false;
+
+        function initPeer() {
+            if (peerInitialized) return;
+            const peer = new Peer(undefined, {
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true,
+                debug: 2,
+            });
+
+            peer.on('open', (id) => {
+                STATE.myPeerId = id;
+                elPeerIdDisplay.textContent = `معرفك: ${id}`;
+                console.log('PeerJS ID:', id);
+                // بعد فتح الـ peer، ننضم للغرفة إن كنا مسجلين
+                if (STATE.loggedIn && STATE.inRoom) {
+                    joinVoiceRoomActual();
+                }
+            });
+
+            peer.on('error', (err) => {
+                console.error('PeerJS error:', err);
+                elPeerIdDisplay.textContent = `⚠️ خطأ: ${err.message}`;
+            });
+
+            // استقبال مكالمة واردة
+            peer.on('call', (call) => {
+                if (!STATE.localStream) {
+                    console.warn('لا يوجد تيار محلي للرد على المكالمة');
+                    return;
+                }
+                console.log('مكالمة واردة من:', call.peer);
+                call.answer(STATE.localStream);
+                call.on('stream', (remoteStream) => {
+                    addRemoteStream(call.peer, remoteStream);
+                });
+                call.on('close', () => {
+                    removeRemoteStream(call.peer);
+                });
+                STATE.connections[call.peer] = call;
+            });
+
+            STATE.peer = peer;
+            peerInitialized = true;
+        }
+
+        async function joinVoiceRoom() {
+            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
+            if (STATE.inRoom) { alert('أنت بالفعل في الغرفة.'); return; }
+
+            // طلب الميكروفون
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                STATE.localStream = stream;
+            } catch (e) {
+                alert('⚠️ تعذر الوصول إلى الميكروفون: ' + e.message);
+                return;
+            }
+
+            // إذا لم يكن الـ peer جاهزاً، ننتظر
+            if (!STATE.peer || !STATE.myPeerId) {
+                // ننتظر حتى يتم فتح الـ peer
+                await new Promise((resolve) => {
+                    const check = () => {
+                        if (STATE.peer && STATE.myPeerId) resolve();
+                        else setTimeout(check, 300);
+                    };
+                    check();
+                });
+            }
+
+            // ننضم فعلياً
+            joinVoiceRoomActual();
+        }
+
+        async function joinVoiceRoomActual() {
+            if (STATE.inRoom) return;
+            STATE.inRoom = true;
+            STATE.lastEntryTime = Date.now();
+            updateUI();
+
+            // نبحث عن مستخدمين آخرين في الغرفة (نظام بسيط: نستخدم معرف الغرفة الثابتة)
+            // لكن PeerJS لا يوفر قائمة بالغرف. سنفترض أن كل من يدخل يبدأ بالاتصال بجميع الأطراف المعروفة.
+            // لكن نحتاج إلى وسيلة لمشاركة المعرفات. سنستخدم localStorage للمشاركة البسيطة.
+            // في هذا الإصدار، سنفترض أن المستخدمين يشاركون المعرفات يدوياً (قابل للتوسيع).
+            // لكن سنقوم بعمل بسيط: نضيف معرفنا إلى قائمة المتصلين في localStorage، ونستمع للتغييرات.
+            // وكل مستخدم يتصل بالآخرين تلقائياً.
+
+            // تسجيل الدخول إلى الغرفة في localStorage
+            const roomKey = `room_${STATE.roomId}_peers`;
+            let peers = JSON.parse(localStorage.getItem(roomKey) || '[]');
+            if (!peers.includes(STATE.myPeerId)) {
+                peers.push(STATE.myPeerId);
+                localStorage.setItem(roomKey, JSON.stringify(peers));
+            }
+
+            // الاتصال بكل الأطراف الأخرى
+            for (const pid of peers) {
+                if (pid !== STATE.myPeerId && !STATE.connections[pid]) {
+                    callPeer(pid);
+                }
+            }
+
+            // الاستماع للتغييرات في قائمة الأقران (باستخدام حدث storage)
+            window.addEventListener('storage', handleStorageChange);
+
+            // تحديث قائمة المشاركين
+            updatePeerList(peers);
+
+            // إعلام المستخدم
+            alert('✅ دخلت الغرفة الصوتية. سيتم حساب وقت تواجدك.');
+        }
+
+        function callPeer(peerId) {
+            if (!STATE.localStream) return;
+            if (STATE.connections[peerId]) return;
+            const call = STATE.peer.call(peerId, STATE.localStream);
+            call.on('stream', (remoteStream) => {
+                addRemoteStream(peerId, remoteStream);
+            });
+            call.on('close', () => {
+                removeRemoteStream(peerId);
+            });
+            STATE.connections[peerId] = call;
+            console.log('جارٍ الاتصال بـ:', peerId);
+        }
+
+        function addRemoteStream(peerId, stream) {
+            STATE.remoteStreams[peerId] = stream;
+            // تشغيل الصوت
+            const audio = new Audio();
+            audio.srcObject = stream;
+            audio.autoplay = true;
+            // تخزين مرجع للإغلاق لاحقاً
+            audio.dataset.peerId = peerId;
+            document.body.appendChild(audio);
+            // تحديث قائمة المشاركين
+            updatePeerListFromConnections();
+        }
+
+        function removeRemoteStream(peerId) {
+            delete STATE.remoteStreams[peerId];
+            delete STATE.connections[peerId];
+            // إزالة عناصر الصوت
+            document.querySelectorAll(`audio[data-peer-id="${peerId}"]`).forEach(el => el.remove());
+            updatePeerListFromConnections();
+        }
+
+        function updatePeerListFromConnections() {
+            const peers = Object.keys(STATE.connections);
+            const allPeers = [STATE.myPeerId, ...peers];
+            updatePeerList(allPeers);
+            STATE.participantCount = allPeers.length;
+            elParticipantCount.textContent = STATE.participantCount;
+        }
+
+        function updatePeerList(peers) {
+            const list = document.getElementById('participantsList');
+            list.innerHTML = '';
+            for (const pid of peers) {
+                const isMe = pid === STATE.myPeerId;
+                const isConnected = STATE.connections[pid] || isMe;
+                const statusClass = isConnected ? 'online' : 'offline';
+                const label = isMe ? 'أنت (المضيف)' : pid.substring(0, 8);
+                const div = document.createElement('div');
+                div.className = 'participant';
+                div.innerHTML = `<span class="status ${statusClass}"></span> ${label}`;
+                list.appendChild(div);
+            }
+        }
+
+        function handleStorageChange(e) {
+            if (e.key === `room_${STATE.roomId}_peers`) {
+                const peers = JSON.parse(e.newValue || '[]');
+                // تحديث القائمة وإجراء اتصالات جديدة
+                for (const pid of peers) {
+                    if (pid !== STATE.myPeerId && !STATE.connections[pid]) {
+                        callPeer(pid);
+                    }
+                }
+                updatePeerList(peers);
+                STATE.participantCount = peers.length;
+                elParticipantCount.textContent = STATE.participantCount;
+            }
+        }
+
+        function toggleLocalMute() {
+            if (!STATE.inRoom) return;
+            STATE.muted = !STATE.muted;
+            if (STATE.localStream) {
+                STATE.localStream.getAudioTracks().forEach(track => track.enabled = !STATE.muted);
+            }
+            if (STATE.muted) {
+                muteBtn.textContent = '🔇 مكتوم';
+                muteBtn.classList.add('active');
+            } else {
+                muteBtn.textContent = '🎤 كتم';
+                muteBtn.classList.remove('active');
+            }
+        }
+
+        function leaveVoiceRoom() {
+            if (!STATE.inRoom) return;
+            // إيقاف جميع الاتصالات
+            for (const pid in STATE.connections) {
+                STATE.connections[pid].close();
+                delete STATE.connections[pid];
+            }
+            // إزالة تيارات الصوت البعيدة
+            for (const pid in STATE.remoteStreams) {
+                removeRemoteStream(pid);
+            }
+            // إزالة أنفسنا من قائمة الغرفة
+            const roomKey = `room_${STATE.roomId}_peers`;
+            let peers = JSON.parse(localStorage.getItem(roomKey) || '[]');
+            peers = peers.filter(p => p !== STATE.myPeerId);
+            localStorage.setItem(roomKey, JSON.stringify(peers));
+            window.removeEventListener('storage', handleStorageChange);
+
+            // إيقاف التيار المحلي
+            if (STATE.localStream) {
+                STATE.localStream.getTracks().forEach(t => t.stop());
+                STATE.localStream = null;
+            }
+
+            // حساب وقت التواجد
+            if (STATE.lastEntryTime) {
+                const now = Date.now();
+                const diffSeconds = (now - STATE.lastEntryTime) / 1000;
+                STATE.dailyPresenceSeconds += diffSeconds;
+                STATE.lastEntryTime = null;
+            }
+            STATE.inRoom = false;
+            STATE.muted = false;
+            updateUI();
+            elPeerIdDisplay.textContent = `معرفك: ${STATE.myPeerId || 'غير جاهز'}`;
+            alert('🚪 غادرت الغرفة. تم تسجيل وقت تواجدك.');
+        }
+
+        // =============================================================
+        //  نموذج السحب والإيداع
+        // =============================================================
+        function toggleWithdrawForm() {
+            if (withdrawFormContainer.style.display === 'none') {
+                withdrawFormContainer.style.display = 'block';
+            } else {
+                withdrawFormContainer.style.display = 'none';
+            }
+        }
+
+        function deposit() {
+            const amount = 20;
+            STATE.userBalance += amount;
+            addHistory('info', `إيداع ${amount} POL`);
+            updateUI();
+            alert(`✅ تم إيداع ${amount} POL بنجاح.`);
+        }
+
+        async function executeWithdraw() {
+            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
+            const amount = parseFloat(withdrawAmount.value);
+            const address = withdrawAddress.value.trim();
+            if (isNaN(amount) || amount < 100) { alert('الحد الأدنى للسحب 100 POL'); return; }
+            if (amount > STATE.userBalance) { alert('رصيد غير كافٍ'); return; }
+            if (!address || !address.startsWith('0x')) { alert('يرجى إدخال عنوان استلام صحيح (يبدأ بـ 0x).'); return; }
+
+            const vaultBalance = await getBalance(VAULT_ADDRESS);
+            if (vaultBalance < amount) {
+                alert(`❌ رصيد الصندوق غير كافٍ (الرصيد: ${vaultBalance.toFixed(2)} POL).`);
+                return;
+            }
+
+            try {
+                const txHash = await sendPOL(vaultWallet, address, amount);
+                STATE.userBalance -= amount;
+                addHistory('info', `سحب ${amount} POL إلى ${address.substring(0,10)}... (التجزئة: ${txHash.substring(0,10)})`);
+                updateUI();
+                alert(`✅ تم سحب ${amount} POL بنجاح إلى العنوان: ${address}\nتجزئة المعاملة: ${txHash}`);
+                withdrawFormContainer.style.display = 'none';
+                withdrawAmount.value = '';
+                withdrawAddress.value = '';
+            } catch (e) {
+                alert('❌ فشل السحب: ' + e.message);
+            }
+        }
+
+        function copyWalletAddress() {
+            const addr = elWalletAddress.textContent;
+            navigator.clipboard.writeText(addr).then(() => alert('📋 تم نسخ العنوان!'))
+                .catch(() => alert('⚠️ العنوان: ' + addr));
+        }
+
+        // =============================================================
+        //  QR Code
+        // =============================================================
+        let qrCodeInstance = null;
+
+        function showQR() {
+            const container = document.getElementById('qrContainer');
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            const address = STATE.walletAddress || '0x...';
+            const qrDiv = document.getElementById('qrcode');
+            qrDiv.innerHTML = '';
+            qrCodeInstance = new QRCode(qrDiv, {
+                text: address,
+                width: 180,
+                height: 180,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        // =============================================================
+        //  QR Scanner
+        // =============================================================
+        let scannerStream = null;
+
+        function openScannerForWithdraw() {
+            const modal = document.getElementById('scannerModal');
+            modal.style.display = 'flex';
+            const video = document.getElementById('scannerVideo');
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    scannerStream = stream;
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(err => {
+                    alert('⚠️ تعذر الوصول إلى الكاميرا: ' + err.message);
+                    modal.style.display = 'none';
+                });
+        }
+
+        function stopScanner() {
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(t => t.stop());
+                scannerStream = null;
+            }
+            document.getElementById('scannerModal').style.display = 'none';
+        }
+
+        function captureQRForWithdraw() {
+            alert('📷 تم التقاط الصورة. الرجاء إدخال العنوان يدوياً.');
+            stopScanner();
+            document.getElementById('withdrawAddress').focus();
+        }
+
+        // =============================================================
+        //  اللعبة الأساسية
+        // =============================================================
+        const BET_AMOUNT = 10;
+
+        async function rollDice() {
+            if (STATE.isRolling) return;
+            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
+            if (STATE.selectedNumber === null) { alert('⚠️ يرجى اختيار رقم من 1 إلى 6 أولاً.'); return; }
+            if (STATE.userBalance < BET_AMOUNT) { alert('❌ رصيدك غير كافٍ. الحد الأدنى 10 POL.'); return; }
+
+            STATE.isRolling = true;
+            elDice.style.pointerEvents = 'none';
+
+            STATE.userBalance -= BET_AMOUNT;
+            STATE.roundPool += BET_AMOUNT;
+
+            elDice.classList.add('rolling');
+            elDice.classList.add('bounce');
+
+            let interval = setInterval(() => {
+                const randVal = Math.floor(Math.random() * 6) + 1;
+                renderDice(randVal);
+            }, 200);
+
+            await new Promise(resolve => setTimeout(resolve, 2500));
+            clearInterval(interval);
+            elDice.classList.remove('rolling');
+            elDice.classList.remove('bounce');
+
+            const diceValue = Math.floor(Math.random() * 6) + 1;
+            renderDice(diceValue);
+            elDiceResult.textContent = `🎲 النتيجة: ${diceValue}`;
+
+            let resultMsg = '';
+            let detail = '';
+            let isWin = false;
+
+            if (STATE.selectedNumber === diceValue) {
+                const winAmount = STATE.roundPool * 0.7;
+                const hostAmount = STATE.roundPool * 0.24;
+                const platformAmount = STATE.roundPool * 0.06;
+
+                STATE.userBalance += winAmount;
+                STATE.winsToday += 1;
+                isWin = true;
+
+                STATE.hostMarketingPool += hostAmount;
+                STATE.platformPool += platformAmount;
+
+                detail =
+                `فوز! النرد ${diceValue}، رقمك ${STATE.selectedNumber}. ربحت ${winAmount.toFixed(2)} POL.`;
+                resultMsg = `🎉 فوز! ربحت ${winAmount.toFixed(2)} POL`;
+
+                STATE.roundPool = 0;
+
+            } else {
+                STATE.lossesToday += 1;
+                const currentPool = STATE.roundPool;
+                detail =
+                `خسارة! النرد ${diceValue}، رقمك ${STATE.selectedNumber}.`;
+                resultMsg = `💀 خسارة! النرد أظهر ${diceValue}`;
+            }
+
+            addHistory(isWin ? 'win' : 'lose', detail);
+            elResult.innerHTML = `<span>${resultMsg}</span>`;
+            updateUI();
+            STATE.isRolling = false;
+            elDice.style.pointerEvents = 'auto';
+        }
+
+        function addHistory(type, detail) {
+            STATE.history.push({ type, detail });
+            if (STATE.history.length > 50) STATE.history.shift();
+            updateHistory();
+        }
+
+        // =============================================================
+        //  الإحالات
+        // =============================================================
+        function copyReferral() {
+            const link = document.getElementById('referralLinkDisplay').textContent;
+            navigator.clipboard.writeText(link).then(() => alert('📋 تم نسخ الرابط!'))
+                .catch(() => alert('⚠️ الرابط: ' + link));
+        }
+
+        // =============================================================
+        //  التوزيع الليلي (الساعة 12)
+        // =============================================================
+        async function distributeDaily() {
+            if (STATE.hostMarketingPool <= 0) {
+                console.log('صندوق المضيفين فارغ، لا توزيع.');
+                return;
+            }
+
+            const users = getUsers();
+            const usernames = Object.keys(users);
+            if (usernames.length === 0) return;
+
+            let totalPresence = 0;
+            const presenceData = {};
+            for (const u of usernames) {
+                const seconds = users[u].dailyPresenceSeconds || 0;
+                presenceData[u] = seconds;
+                totalPresence += seconds;
+            }
+
+            if (totalPresence === 0) {
+                addHistory('info', '⚠️ لا يوجد وقت تواجد مسجل، تم تأجيل التوزيع.');
+                return;
+            }
+
+            const poolToDistribute = STATE.hostMarketingPool;
+
+            for (const u of usernames) {
+                const ratio = presenceData[u] / totalPresence;
+                const amount = poolToDistribute * ratio;
+                if (amount < 0.01) continue;
+
+                const userAddress = users[u].address;
+                if (!userAddress || !userAddress.startsWith('0x')) continue;
+
+                try {
+                    const txHash = await sendPOL(vaultWallet, userAddress, amount);
+                    addHistory('dist',
+                        `تم إرسال ${amount.toFixed(2)} POL إلى ${u} (${userAddress.substring(0,10)}...) - التجزئة: ${txHash.substring(0,10)}`
+                        );
+                } catch (e) {
+                    console.error(`فشل إرسال الأموال إلى ${u}:`, e);
+                    addHistory('info', `❌ فشل إرسال ${amount.toFixed(2)} POL إلى ${u}`);
+                }
+            }
+
+            addHistory('dist',
+                `🎉 تم توزيع ${poolToDistribute.toFixed(2)} POL بنجاح على ${usernames.length} مستخدم بناءً على وقت التواجد.`
+                );
+
+            STATE.hostMarketingPool = 0;
+            for (const u of usernames) {
+                users[u].dailyPresenceSeconds = 0;
+            }
+            if (STATE.loggedIn && users[STATE.username]) {
+                users[STATE.username].dailyPresenceSeconds = 0;
+                STATE.dailyPresenceSeconds = 0;
+            }
+            saveUsers(users);
+            updateUI();
+            alert(`🎁 تم توزيع ${poolToDistribute.toFixed(2)} POL من صندوق المضيفين على الحاضرين في الغرفة.`);
+        }
+
+        setInterval(() => {
+            const now = new Date();
+            if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() === 0) {
+                console.log('🕛 منتصف الليل: بدء التوزيع اليومي...');
+                distributeDaily();
+            }
+        }, 1000);
+
+        // =============================================================
+        //  التبويبات
+        // =============================================================
+        document.querySelectorAll('.tab-item').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+                if (this.dataset.tab === 'tab-game') {
+                    updateUSDValues();
+                }
+            });
+        });
+
+        // =============================================================
+        //  التهيئة
+        // =============================================================
+        window.onload = function() {
+            initAuth();
+            const users = getUsers();
+            const keys = Object.keys(users);
+            if (keys.length > 0) {
+                document.getElementById('authOverlay').style.display = 'flex';
+                document.getElementById('loginUsername').value = keys[0];
+            } else {
+                document.getElementById('authOverlay').style.display = 'flex';
+                document.querySelector('.auth-tab[data-auth="register"]').click();
+            }
+            renderDice(1);
+            updateUI();
+            fetchPolPrice();
+            // تهيئة Peer بعد تسجيل الدخول
+            // سيتم استدعاؤها في loginAs
+            console.log('✅ التطبيق جاهز مع PeerJS');
+        };
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && document.getElementById('tab-game').classList.contains('active')) {
+                if (!STATE.isRolling && STATE.selectedNumber !== null) {
+                    onDiceClick();
+                }
+            }
+        });
+
+        console.log('🚀 منصة النرد جاهزة مع غرفة صوتية PeerJS');
+    </script>
+</body>
+</html>
