@@ -747,13 +747,13 @@
                     </div>
                     <div class="peer-id-box" id="peerIdDisplay">معرفك: جاري التحميل...</div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap; margin:4px 0;">
-                        <button class="mic-test-btn" id="micTestBtn" onclick="testMicrophone()">🎤 اختبار الميكروفون</button>
+                        <button class="mic-test-btn" id="micTestBtn" onclick="window.testMicrophone()">🎤 اختبار الميكروفون</button>
                         <span id="micTestStatus" style="font-size:0.8rem; color:#8ab4d6; align-self:center;">غير مختبر</span>
                     </div>
                     <div class="room-controls">
-                        <button class="btn btn-primary" id="joinRoomBtn" onclick="joinVoiceRoom()">🔊 دخول الغرفة</button>
-                        <button class="btn btn-mic" id="muteBtn" onclick="toggleLocalMute()" disabled>🎤 كتم</button>
-                        <button class="btn btn-danger" onclick="leaveVoiceRoom()" id="leaveBtn" disabled>🚪 مغادرة</button>
+                        <button class="btn btn-primary" id="joinRoomBtn" onclick="window.joinVoiceRoom()">🔊 دخول الغرفة</button>
+                        <button class="btn btn-mic" id="muteBtn" onclick="window.toggleLocalMute()" disabled>🎤 كتم</button>
+                        <button class="btn btn-danger" onclick="window.leaveVoiceRoom()" id="leaveBtn" disabled>🚪 مغادرة</button>
                     </div>
                     <div class="room-info" id="roomInfo">📡 غير متصل</div>
                     <p class="small-text" style="margin-top:6px;">* يتم حساب وقت تواجدك في الغرفة لتوزيع أرباح المضيفين يومياً.</p>
@@ -770,7 +770,7 @@
                     <div class="value gold" id="userBalance">100.00</div>
                     <div class="small-text" id="balanceUSD">≈ $0.00</div>
                 </div>
-                <div class="dice-container" onclick="onDiceClick()" title="اضغط للرمي">
+                <div class="dice-container" onclick="window.onDiceClick()" title="اضغط للرمي">
                     <div class="dice" id="diceElement"></div>
                     <div style="font-size:1.2rem; font-weight:bold; color:#f1c40f; margin-top:6px;" id="diceResult">اختر رقمك</div>
                     <div class="dice-hint">👆 اضغط على النرد للرمي</div>
@@ -798,18 +798,18 @@
             <div class="tab-pane" id="tab-settings">
                 <div class="card"><h3 style="margin:0 0 10px;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div></div>
                 <div class="card"><h3 style="margin:0 0 10px;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
-                <div class="card"><h3 style="margin:0 0 10px;">🔗 رابط الإحالة</h3><div class="referral-link-box"><span class="link-code">🔗 الرابط:</span><button class="copy-btn" onclick="copyReferral()">📋 نسخ</button><div class="link-display" id="referralLinkDisplay">https://app.example.com/ref/abc123</div></div><hr /><div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div></div>
+                <div class="card"><h3 style="margin:0 0 10px;">🔗 رابط الإحالة</h3><div class="referral-link-box"><span class="link-code">🔗 الرابط:</span><button class="copy-btn" onclick="window.copyReferral()">📋 نسخ</button><div class="link-display" id="referralLinkDisplay">https://app.example.com/ref/abc123</div></div><hr /><div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div></div>
             </div>
 
             <!-- المحفظة -->
             <div class="tab-pane" id="tab-wallet">
-                <div class="card"><div class="label">💳 عنوان محفظتك الداخلية (Polygon)</div><div class="wallet-address" id="walletAddressDisplay">0x...</div><div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"><button class="btn btn-secondary" onclick="copyWalletAddress()">📋 نسخ العنوان</button><button class="btn btn-primary" onclick="showQR()">📱 عرض QR للاستلام</button></div><div id="qrContainer" style="display:none; margin-top:12px;" class="qr-container"><div id="qrcode"></div></div></div>
-                <div class="card"><div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay">100.00</span></div><div class="small-text" id="walletBalanceUSD">≈ $0.00</div><div class="wallet-actions" style="margin-top:12px;"><button class="btn btn-success" onclick="deposit()" style="flex:1;">➕ إيداع</button><button class="btn btn-danger" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button></div><div id="withdrawFormContainer" style="display:none; margin-top:12px;"><div class="withdraw-form"><div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 100)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="100" step="1" /></div><div class="field-group"><label>📤 عنوان الاستلام (شبكة Polygon)</label><div class="input-with-btn"><input type="text" id="withdrawAddress" placeholder="0x..." /><button class="cam-btn" onclick="openScannerForWithdraw()" title="مسح QR">📷</button></div></div><button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button></div></div><p class="small-text" style="margin-top:6px;">* الإيداع والسحب عبر POL (شبكة Polygon). الحد الأدنى للسحب 100 POL.</p></div>
+                <div class="card"><div class="label">💳 عنوان محفظتك الداخلية (Polygon)</div><div class="wallet-address" id="walletAddressDisplay">0x...</div><div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"><button class="btn btn-secondary" onclick="window.copyWalletAddress()">📋 نسخ العنوان</button><button class="btn btn-primary" onclick="window.showQR()">📱 عرض QR للاستلام</button></div><div id="qrContainer" style="display:none; margin-top:12px;" class="qr-container"><div id="qrcode"></div></div></div>
+                <div class="card"><div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay">100.00</span></div><div class="small-text" id="walletBalanceUSD">≈ $0.00</div><div class="wallet-actions" style="margin-top:12px;"><button class="btn btn-success" onclick="window.deposit()" style="flex:1;">➕ إيداع</button><button class="btn btn-danger" onclick="window.toggleWithdrawForm()" style="flex:1;">➖ سحب</button></div><div id="withdrawFormContainer" style="display:none; margin-top:12px;"><div class="withdraw-form"><div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 100)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="100" step="1" /></div><div class="field-group"><label>📤 عنوان الاستلام (شبكة Polygon)</label><div class="input-with-btn"><input type="text" id="withdrawAddress" placeholder="0x..." /><button class="cam-btn" onclick="window.openScannerForWithdraw()" title="مسح QR">📷</button></div></div><button class="btn btn-primary btn-block" onclick="window.executeWithdraw()">✅ تأكيد السحب</button></div></div><p class="small-text" style="margin-top:6px;">* الإيداع والسحب عبر POL (شبكة Polygon). الحد الأدنى للسحب 100 POL.</p></div>
             </div>
         </div>
     </div>
 
-    <!-- شاشة الدخول -->
+    <!-- شاشة الدخول (معدلة لاستخدام البريد الإلكتروني) -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-card">
             <h2>🎲 مرحباً بك!</h2>
@@ -821,7 +821,7 @@
             <div class="auth-panel active" id="authLogin">
                 <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" />
                 <input type="password" id="loginPassword" placeholder="كلمة المرور" />
-                <button class="btn btn-primary btn-block" onclick="loginUser()">🔑 تسجيل الدخول</button>
+                <button class="btn btn-primary btn-block" id="loginBtn">🔑 تسجيل الدخول</button>
             </div>
             <div class="auth-panel" id="authRegister">
                 <input type="text" id="registerUsername" placeholder="اسم المستخدم (فريد)" />
@@ -834,7 +834,7 @@
     </div>
 
     <!-- ماسح QR -->
-    <div id="scannerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; align-items:center; justify-content:center;"><div style="background:#0e2238; border-radius:32px; padding:24px; max-width:400px; width:100%; border:1px solid #f1c40f44;"><h3 style="color:#f1c40f; margin-bottom:12px;">📷 امسح QR code</h3><video id="scannerVideo" autoplay playsinline style="width:100%; border-radius:16px; background:#000;"></video><div style="display:flex; gap:10px; margin-top:12px;"><button class="btn btn-secondary" onclick="stopScanner()">إلغاء</button><button class="btn btn-primary" onclick="captureQRForWithdraw()">📸 التقاط</button></div><p class="small-text" style="margin-top:8px;">ضع عنوان المحفظة في منتصف الإطار.</p></div></div>
+    <div id="scannerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; align-items:center; justify-content:center;"><div style="background:#0e2238; border-radius:32px; padding:24px; max-width:400px; width:100%; border:1px solid #f1c40f44;"><h3 style="color:#f1c40f; margin-bottom:12px;">📷 امسح QR code</h3><video id="scannerVideo" autoplay playsinline style="width:100%; border-radius:16px; background:#000;"></video><div style="display:flex; gap:10px; margin-top:12px;"><button class="btn btn-secondary" onclick="window.stopScanner()">إلغاء</button><button class="btn btn-primary" onclick="window.captureQRForWithdraw()">📸 التقاط</button></div><p class="small-text" style="margin-top:8px;">ضع عنوان المحفظة في منتصف الإطار.</p></div></div>
 
     <script>
         // =============================================================
@@ -843,11 +843,10 @@
         const SUPABASE_URL = 'https://ozzrdraeirhdrxztmhfr.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         console.log('✅ Supabase initialized');
 
         // =============================================================
-        //  2. إعدادات الشبكة والمحافظ (نفسها)
+        //  2. إعدادات الشبكة والمحافظ
         // =============================================================
         const INFURA_URL = 'https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99';
         const VAULT_ADDRESS = '0xb77577772412d2784a077f7CaC95Fec3e90AB75b';
@@ -870,6 +869,7 @@
             } catch (e) { console.warn('تعذر جلب السعر:', e); }
             updatePriceDisplay();
         }
+        setInterval(fetchPolPrice, 30000);
 
         function updatePriceDisplay() {
             const el = document.getElementById('polPriceDisplay');
@@ -885,7 +885,6 @@
             if (el1) el1.textContent = `≈ $${usd.toFixed(2)}`;
             if (el2) el2.textContent = `≈ $${usd.toFixed(2)}`;
         }
-        setInterval(fetchPolPrice, 30000);
 
         // =============================================================
         //  4. دوال blockchain
@@ -993,10 +992,25 @@
         const elMicTestBtn = document.getElementById('micTestBtn');
 
         // =============================================================
-        //  8. دوال المصادقة (Supabase Auth) - المُصلحة
+        //  8. دوال المصادقة (Supabase Auth) - المُصلحة بالكامل
         // =============================================================
         function initAuth() {
             console.log('🔐 تهيئة المصادقة...');
+
+            // ربط الأزرار باستخدام addEventListener
+            document.getElementById('registerBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🖱️ زر إنشاء الحساب - تم الضغط');
+                registerUser();
+            });
+
+            document.getElementById('loginBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🖱️ زر تسجيل الدخول - تم الضغط');
+                loginUser();
+            });
+
+            // تبديل التبويبات
             document.querySelectorAll('.auth-tab').forEach(tab => {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -1008,32 +1022,17 @@
                 });
             });
 
-            // ربط زر إنشاء الحساب بالدالة بشكل صريح
-            const registerBtn = document.getElementById('registerBtn');
-            if (registerBtn) {
-                registerBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('🖱️ تم الضغط على زر إنشاء الحساب (via addEventListener)');
-                    registerUser();
-                });
-                console.log('✅ تم ربط زر إنشاء الحساب');
-            } else {
-                console.error('❌ لم يتم العثور على زر إنشاء الحساب');
-            }
-
             // التحقق من جلسة موجودة
             supabase.auth.getSession().then(({ data }) => {
                 if (data.session) {
                     console.log('🔐 جلسة موجودة مسبقاً');
                     loadUserData(data.session.user);
-                } else {
-                    console.log('🔐 لا توجد جلسة');
                 }
             });
 
             // الاستماع لتغييرات المصادقة
             supabase.auth.onAuthStateChange((event, session) => {
-                console.log('🔐 حدث Auth:', event, session ? 'جلسة موجودة' : 'لا جلسة');
+                console.log('🔐 حدث Auth:', event);
                 if (event === 'SIGNED_IN' && session) {
                     loadUserData(session.user);
                 } else if (event === 'SIGNED_OUT') {
@@ -1043,7 +1042,7 @@
         }
 
         // =============================================================
-        //  دالة التسجيل المُصلحة
+        //  دالة التسجيل - المُصلحة
         // =============================================================
         async function registerUser() {
             console.log('🚀 بدء عملية التسجيل...');
@@ -1052,51 +1051,24 @@
             const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value.trim();
 
-            console.log('📝 البيانات المدخلة:', { username, email, password: '***' });
-
-            // تحقق من صحة الحقول
-            if (!username) {
-                alert('⚠️ يرجى إدخال اسم مستخدم.');
-                console.warn('اسم المستخدم فارغ');
-                return;
-            }
-            if (!email) {
-                alert('⚠️ يرجى إدخال البريد الإلكتروني.');
-                console.warn('البريد الإلكتروني فارغ');
-                return;
-            }
-            if (!password || password.length < 6) {
-                alert('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
-                console.warn('كلمة المرور قصيرة جداً');
-                return;
-            }
+            if (!username) { alert('⚠️ يرجى إدخال اسم مستخدم.'); return; }
+            if (!email) { alert('⚠️ يرجى إدخال البريد الإلكتروني.'); return; }
+            if (!password || password.length < 6) { alert('⚠️ كلمة المرور 6 أحرف على الأقل.'); return; }
 
             try {
-                // 1. إنشاء المستخدم في Auth
-                console.log('📤 إرسال طلب التسجيل إلى Supabase Auth...');
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email,
                     password,
-                    options: {
-                        data: { username: username }
-                    }
+                    options: { data: { username } }
                 });
-
                 if (authError) {
-                    console.error('❌ خطأ في Auth:', authError);
                     alert('❌ فشل إنشاء الحساب: ' + authError.message);
                     return;
                 }
 
-                console.log('✅ تم إنشاء المستخدم في Auth:', authData);
-
-                // 2. إنشاء محفظة
-                console.log('🔑 توليد محفظة جديدة...');
                 const wallet = generateWallet24();
                 const encryptedKey = encrypt(wallet.privateKey, password);
 
-                // 3. تخزين الملف الشخصي في جدول profiles
-                console.log('📤 إدراج البيانات في جدول profiles...');
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .insert([{
@@ -1107,20 +1079,15 @@
                     }]);
 
                 if (profileError) {
-                    console.error('❌ خطأ في إدراج profiles:', profileError);
-                    alert('❌ فشل حفظ البيانات الشخصية: ' + profileError.message);
+                    alert('⚠️ تم إنشاء الحساب لكن فشل حفظ البيانات: ' + profileError.message);
                     return;
                 }
 
-                console.log('✅ تم حفظ الملف الشخصي بنجاح');
-
-                // 4. تسجيل الدخول تلقائياً
                 alert('✅ تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...');
                 await loginUser(email, password);
 
             } catch (err) {
-                console.error('❌ خطأ غير متوقع:', err);
-                alert('❌ حدث خطأ غير متوقع: ' + err.message);
+                alert('❌ خطأ غير متوقع: ' + err.message);
             }
         }
 
@@ -1133,23 +1100,19 @@
                 password = document.getElementById('loginPassword').value.trim();
             }
             if (!email || !password) {
-                alert('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
+                alert('⚠️ أدخل البريد الإلكتروني وكلمة المرور.');
                 return;
             }
 
             try {
-                console.log('📤 محاولة تسجيل الدخول...');
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) {
-                    console.error('❌ خطأ في تسجيل الدخول:', error);
                     alert('❌ فشل تسجيل الدخول: ' + error.message);
                     return;
                 }
-                console.log('✅ تم تسجيل الدخول بنجاح');
                 // loadUserData ستُستدعى تلقائياً عبر onAuthStateChange
             } catch (err) {
-                console.error('❌ خطأ غير متوقع:', err);
-                alert('❌ حدث خطأ غير متوقع: ' + err.message);
+                alert('❌ خطأ: ' + err.message);
             }
         }
 
@@ -1157,7 +1120,6 @@
         //  تحميل بيانات المستخدم
         // =============================================================
         async function loadUserData(user) {
-            console.log('📥 جلب بيانات المستخدم من profiles...');
             const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -1165,12 +1127,9 @@
                 .single();
 
             if (error) {
-                console.error('❌ خطأ في جلب الملف الشخصي:', error);
-                alert('⚠️ تعذر تحميل بياناتك. قد تحتاج إلى إعادة التسجيل.');
+                alert('⚠️ تعذر تحميل بياناتك: ' + error.message);
                 return;
             }
-
-            console.log('✅ تم تحميل الملف الشخصي:', profile);
 
             STATE.loggedIn = true;
             STATE.userId = user.id;
@@ -1182,25 +1141,18 @@
             STATE.lossesToday = profile.losses || 0;
             STATE.referralEarned = profile.referral_earned || 0;
             STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
-            STATE.history = [];
 
             document.getElementById('authOverlay').style.display = 'none';
             updateUI();
             renderDice(1);
-            elResult.innerHTML = `<span style="color:#8ab4d6;">🎯 اختر رقمًا ثم اضغط على النرد</span>`;
-            elDiceResult.textContent = 'اختر رقمك';
-            document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
             fetchPolPrice();
             initPeer();
-
-            console.log('✅ تم تحميل بيانات المستخدم:', profile.username);
         }
 
         // =============================================================
         //  تسجيل الخروج
         // =============================================================
         async function logoutUser() {
-            console.log('🚪 تسجيل الخروج...');
             if (STATE.inRoom) await leaveVoiceRoom();
             STATE.loggedIn = false;
             STATE.userId = null;
@@ -1215,7 +1167,7 @@
         async function saveProfile() {
             if (!STATE.loggedIn) return;
             try {
-                const { error } = await supabase
+                await supabase
                     .from('profiles')
                     .update({
                         balance: STATE.userBalance,
@@ -1225,12 +1177,11 @@
                         daily_presence_seconds: STATE.dailyPresenceSeconds,
                     })
                     .eq('id', STATE.userId);
-                if (error) console.error('❌ خطأ في حفظ الملف الشخصي:', error);
-            } catch (e) { console.error('❌ خطأ في حفظ الملف الشخصي:', e); }
+            } catch (e) { console.error(e); }
         }
 
         // =============================================================
-        //  9. النرد (نفسه)
+        //  9. النرد
         // =============================================================
         function renderDice(value) {
             const dotsMap = {
@@ -1293,7 +1244,7 @@
         function onDiceClick() {
             if (STATE.isRolling) return;
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
-            if (STATE.selectedNumber === null) { alert('⚠️ يرجى اختيار رقم من 1 إلى 6 أولاً.'); return; }
+            if (STATE.selectedNumber === null) { alert('⚠️ اختر رقمًا أولاً.'); return; }
             rollDice();
         }
 
@@ -1317,10 +1268,7 @@
             updateHistory();
             updateRoomUI();
             updateUSDValues();
-
-            if (STATE.loggedIn) {
-                saveProfile();
-            }
+            if (STATE.loggedIn) saveProfile();
         }
 
         function updateHistory() {
@@ -1347,7 +1295,7 @@
                 joinBtn.disabled = true;
                 leaveBtn.disabled = false;
                 muteBtn.disabled = false;
-                roomInfo.textContent = '📡 متصل (Supabase Auth + PeerJS)';
+                roomInfo.textContent = '📡 متصل';
                 roomStatus.textContent = '🟢 متصل';
             } else {
                 joinBtn.textContent = '🔊 دخول الغرفة';
@@ -1366,26 +1314,16 @@
         //  11. اختبار الميكروفون
         // =============================================================
         async function testMicrophone() {
-            elMicTestBtn.textContent = '⏳ جاري...';
-            elMicTestBtn.disabled = true;
-            elMicTestBtn.className = 'mic-test-btn';
-            elMicTestStatus.textContent = 'جاري الاختبار...';
-            elMicTestStatus.style.color = '#f1c40f';
-
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 STATE.micTested = true;
                 STATE.micWorking = true;
-                if (STATE.localStream) {
-                    STATE.localStream.getTracks().forEach(t => t.stop());
-                    STATE.localStream = null;
-                }
+                if (STATE.localStream) STATE.localStream.getTracks().forEach(t => t.stop());
                 STATE.localStream = stream;
                 elMicTestBtn.textContent = '✅ يعمل';
                 elMicTestBtn.className = 'mic-test-btn active';
                 elMicTestStatus.textContent = '✅ الميكروفون يعمل';
                 elMicTestStatus.style.color = '#2ecc71';
-                console.log('✅ الميكروفون يعمل.');
             } catch (err) {
                 STATE.micTested = true;
                 STATE.micWorking = false;
@@ -1393,14 +1331,11 @@
                 elMicTestBtn.className = 'mic-test-btn error';
                 elMicTestStatus.textContent = `❌ ${err.message}`;
                 elMicTestStatus.style.color = '#e74c3c';
-                console.error('فشل اختبار الميكروفون:', err);
-            } finally {
-                elMicTestBtn.disabled = false;
             }
         }
 
         // =============================================================
-        //  12. دوال الغرفة الصوتية (نفسها - مختصرة للاختصار)
+        //  12. دوال الغرفة الصوتية
         // =============================================================
         let peerInitialized = false;
 
@@ -1410,46 +1345,28 @@
                 host: '0.peerjs.com',
                 port: 443,
                 secure: true,
-                debug: 3,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' }
-                    ]
-                }
+                debug: 2,
             });
 
             peer.on('open', (id) => {
                 STATE.myPeerId = id;
                 elPeerIdDisplay.textContent = `معرفك: ${id}`;
-                console.log('✅ PeerJS ID:', id);
-                if (STATE.loggedIn && STATE.inRoom) {
-                    joinVoiceRoomActual();
-                }
+                if (STATE.loggedIn && STATE.inRoom) joinVoiceRoomActual();
                 elDbStatus.textContent = '✅ جاهز';
                 elDbStatus.style.color = '#2ecc71';
             });
 
             peer.on('error', (err) => {
-                console.error('❌ PeerJS error:', err);
                 elPeerIdDisplay.textContent = `⚠️ خطأ: ${err.message}`;
                 elDbStatus.textContent = '❌ خطأ';
                 elDbStatus.style.color = '#e74c3c';
             });
 
             peer.on('call', (call) => {
-                if (!STATE.localStream) {
-                    console.warn('⚠️ لا يوجد تيار محلي للرد');
-                    return;
-                }
-                console.log('📞 مكالمة واردة من:', call.peer);
+                if (!STATE.localStream) return;
                 call.answer(STATE.localStream);
-                call.on('stream', (remoteStream) => {
-                    addRemoteStream(call.peer, remoteStream);
-                });
-                call.on('close', () => {
-                    removeRemoteStream(call.peer);
-                });
+                call.on('stream', (remoteStream) => addRemoteStream(call.peer, remoteStream));
+                call.on('close', () => removeRemoteStream(call.peer));
                 STATE.connections[call.peer] = call;
                 updatePeerListFromConnections();
             });
@@ -1468,10 +1385,6 @@
                     STATE.localStream = stream;
                     STATE.micTested = true;
                     STATE.micWorking = true;
-                    elMicTestBtn.textContent = '✅ يعمل';
-                    elMicTestBtn.className = 'mic-test-btn active';
-                    elMicTestStatus.textContent = '✅ الميكروفون يعمل';
-                    elMicTestStatus.style.color = '#2ecc71';
                 } catch (e) {
                     alert('⚠️ تعذر الوصول إلى الميكروفون: ' + e.message);
                     return;
@@ -1520,8 +1433,7 @@
                 .single();
 
             if (error) {
-                console.error('❌ خطأ في الإدراج Supabase:', error);
-                alert('⚠️ فشل الاتصال بقاعدة البيانات.\nتأكد من:\n1. وجود جدول room_participants\n2. تفعيل Realtime\n3. سياسات RLS تسمح للمستخدمين المسجلين بالإدراج');
+                alert('⚠️ فشل الاتصال بقاعدة البيانات.');
                 STATE.inRoom = false;
                 updateUI();
                 return;
@@ -1530,32 +1442,19 @@
             STATE.myRecordId = data.id;
             elDbStatus.textContent = '✅ في الغرفة';
             elDbStatus.style.color = '#2ecc71';
-            console.log('✅ تم إدراج السجل في Supabase:', data);
 
-            if (STATE.channel) {
-                STATE.channel.unsubscribe();
-            }
-
+            if (STATE.channel) STATE.channel.unsubscribe();
             STATE.channel = supabase.channel(`room:${STATE.roomId}`)
                 .on('postgres_changes', {
                     event: '*',
                     schema: 'public',
                     table: 'room_participants',
                     filter: `room_id=eq.${STATE.roomId}`,
-                }, (payload) => {
-                    console.log('🔄 تغيير في الجدول:', payload);
-                    refreshParticipants();
-                })
-                .subscribe((status) => {
-                    if (status === 'SUBSCRIBED') {
-                        console.log('✅ مشترك في Realtime');
-                    } else {
-                        console.warn('⚠️ حالة الاشتراك:', status);
-                    }
-                });
+                }, () => refreshParticipants())
+                .subscribe();
 
             await refreshParticipants();
-            alert('✅ دخلت الغرفة الصوتية. سيتم حساب وقت تواجدك.');
+            alert('✅ دخلت الغرفة الصوتية.');
         }
 
         async function refreshParticipants() {
@@ -1564,12 +1463,7 @@
                 .select('*')
                 .eq('room_id', STATE.roomId);
 
-            if (error) {
-                console.error('❌ خطأ في جلب المشاركين:', error);
-                return;
-            }
-
-            console.log('📋 المشاركين في الغرفة:', data);
+            if (error) return;
 
             const allPeers = data.filter(row => row.peer_id !== STATE.myPeerId);
             const peerIds = allPeers.map(row => row.peer_id);
@@ -1580,54 +1474,39 @@
 
             for (const pid of peerIds) {
                 if (!STATE.connections[pid]) {
-                    console.log(`📞 محاولة الاتصال بـ ${pid}`);
                     callPeerWithRetry(pid);
                 }
             }
         }
 
         function callPeerWithRetry(peerId, attempt = 0) {
-            if (!STATE.localStream) {
-                console.warn('⚠️ لا يوجد تيار محلي');
-                return;
-            }
-            if (STATE.connections[peerId]) {
-                console.log(`✅ متصل بالفعل بـ ${peerId}`);
-                return;
-            }
-            if (attempt >= 5) {
-                console.warn(`❌ فشل الاتصال بـ ${peerId} بعد 5 محاولات`);
-                return;
-            }
+            if (!STATE.localStream) return;
+            if (STATE.connections[peerId]) return;
+            if (attempt >= 5) return;
 
-            console.log(`📞 محاولة ${attempt + 1} للاتصال بـ ${peerId}`);
             const call = STATE.peer.call(peerId, STATE.localStream);
-
             const timeout = setTimeout(() => {
-                if (STATE.connections[peerId]) return;
-                console.warn(`⏰ انتهت مهلة الاتصال بـ ${peerId}`);
-                setTimeout(() => {
-                    if (!STATE.connections[peerId] && STATE.inRoom) {
-                        callPeerWithRetry(peerId, attempt + 1);
-                    }
-                }, 3000);
+                if (!STATE.connections[peerId]) {
+                    setTimeout(() => {
+                        if (!STATE.connections[peerId] && STATE.inRoom) {
+                            callPeerWithRetry(peerId, attempt + 1);
+                        }
+                    }, 3000);
+                }
             }, 10000);
 
             call.on('stream', (remoteStream) => {
                 clearTimeout(timeout);
-                console.log(`✅ تم استلام التيار من ${peerId}`);
                 addRemoteStream(peerId, remoteStream);
             });
 
             call.on('close', () => {
                 clearTimeout(timeout);
-                console.log(`🔌 تم إغلاق الاتصال بـ ${peerId}`);
                 removeRemoteStream(peerId);
             });
 
-            call.on('error', (err) => {
+            call.on('error', () => {
                 clearTimeout(timeout);
-                console.warn(`❌ فشل الاتصال بـ ${peerId}:`, err.message);
                 setTimeout(() => {
                     if (!STATE.connections[peerId] && STATE.inRoom) {
                         callPeerWithRetry(peerId, attempt + 1);
@@ -1667,15 +1546,14 @@
             list.innerHTML = '';
             const me = document.createElement('div');
             me.className = 'participant';
-            me.innerHTML = `<span class="status online"></span> أنت (المضيف)`;
+            me.innerHTML = `<span class="status online"></span> أنت`;
             list.appendChild(me);
             for (const pid of peers) {
                 const isConnected = STATE.connections[pid] ? true : false;
                 const statusClass = isConnected ? 'online' : 'offline';
-                const label = pid.substring(0, 8);
                 const div = document.createElement('div');
                 div.className = 'participant';
-                div.innerHTML = `<span class="status ${statusClass}"></span> ${label}`;
+                div.innerHTML = `<span class="status ${statusClass}"></span> ${pid.substring(0,8)}`;
                 list.appendChild(div);
             }
         }
@@ -1686,25 +1564,16 @@
             if (STATE.localStream) {
                 STATE.localStream.getAudioTracks().forEach(track => track.enabled = !STATE.muted);
             }
-            if (STATE.muted) {
-                muteBtn.textContent = '🔇 مكتوم';
-                muteBtn.classList.add('active');
-            } else {
-                muteBtn.textContent = '🎤 كتم';
-                muteBtn.classList.remove('active');
-            }
+            muteBtn.textContent = STATE.muted ? '🔇 مكتوم' : '🎤 كتم';
+            muteBtn.classList.toggle('active', STATE.muted);
         }
 
         async function leaveVoiceRoom() {
             if (!STATE.inRoom) return;
 
             if (STATE.myRecordId) {
-                await supabase
-                    .from('room_participants')
-                    .delete()
-                    .eq('id', STATE.myRecordId);
+                await supabase.from('room_participants').delete().eq('id', STATE.myRecordId);
                 STATE.myRecordId = null;
-                console.log('🗑️ تم حذف السجل من Supabase');
             }
 
             if (STATE.channel) {
@@ -1735,61 +1604,49 @@
             STATE.inRoom = false;
             STATE.muted = false;
             updateUI();
-            elPeerIdDisplay.textContent = `معرفك: ${STATE.myPeerId || 'غير جاهز'}`;
             elDbStatus.textContent = '⏳ غير متصل';
             elDbStatus.style.color = '#f1c40f';
-            alert('🚪 غادرت الغرفة. تم تسجيل وقت تواجدك.');
+            alert('🚪 غادرت الغرفة.');
         }
 
         // =============================================================
-        //  13. نموذج السحب والإيداع (نفسها)
+        //  13. نموذج السحب والإيداع
         // =============================================================
         function toggleWithdrawForm() {
-            if (withdrawFormContainer.style.display === 'none') {
-                withdrawFormContainer.style.display = 'block';
-            } else {
-                withdrawFormContainer.style.display = 'none';
-            }
+            withdrawFormContainer.style.display = withdrawFormContainer.style.display === 'none' ? 'block' : 'none';
         }
 
         function deposit() {
-            const amount = 20;
-            STATE.userBalance += amount;
-            addHistory('info', `إيداع ${amount} POL`);
+            STATE.userBalance += 20;
+            addHistory('info', 'إيداع 20 POL');
             updateUI();
-            alert(`✅ تم إيداع ${amount} POL بنجاح.`);
+            alert('✅ تم إيداع 20 POL.');
         }
 
         async function executeWithdraw() {
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
             const amount = parseFloat(withdrawAmount.value);
             const address = withdrawAddress.value.trim();
-            if (isNaN(amount) || amount < 100) { alert('الحد الأدنى للسحب 100 POL'); return; }
+            if (isNaN(amount) || amount < 100) { alert('الحد الأدنى 100 POL'); return; }
             if (amount > STATE.userBalance) { alert('رصيد غير كافٍ'); return; }
-            if (!address || !address.startsWith('0x')) { alert('يرجى إدخال عنوان استلام صحيح (يبدأ بـ 0x).'); return; }
+            if (!address || !address.startsWith('0x')) { alert('عنوان غير صحيح'); return; }
 
-            const password = prompt('أدخل كلمة المرور لتأكيد السحب:');
+            const password = prompt('أدخل كلمة المرور:');
             if (!password) return;
 
             const privateKey = decrypt(STATE.privateKeyEncrypted, password);
-            if (!privateKey) {
-                alert('❌ كلمة المرور غير صحيحة.');
-                return;
-            }
+            if (!privateKey) { alert('❌ كلمة المرور غير صحيحة.'); return; }
 
             const userWallet = new ethers.Wallet(privateKey, provider);
             const balance = await getBalance(userWallet.address);
-            if (balance < amount) {
-                alert(`❌ رصيد محفظتك غير كافٍ (الرصيد: ${balance.toFixed(2)} POL).`);
-                return;
-            }
+            if (balance < amount) { alert(`❌ رصيد المحفظة ${balance.toFixed(2)} POL`); return; }
 
             try {
                 const txHash = await sendPOL(userWallet, address, amount);
                 STATE.userBalance -= amount;
-                addHistory('info', `سحب ${amount} POL إلى ${address.substring(0,10)}... (التجزئة: ${txHash.substring(0,10)})`);
+                addHistory('info', `سحب ${amount} POL`);
                 updateUI();
-                alert(`✅ تم سحب ${amount} POL بنجاح إلى العنوان: ${address}\nتجزئة المعاملة: ${txHash}`);
+                alert(`✅ تم السحب بنجاح.\nالتجزئة: ${txHash}`);
                 withdrawFormContainer.style.display = 'none';
                 withdrawAmount.value = '';
                 withdrawAddress.value = '';
@@ -1799,9 +1656,7 @@
         }
 
         function copyWalletAddress() {
-            const addr = elWalletAddress.textContent;
-            navigator.clipboard.writeText(addr).then(() => alert('📋 تم نسخ العنوان!'))
-                .catch(() => alert('⚠️ العنوان: ' + addr));
+            navigator.clipboard.writeText(STATE.walletAddress).then(() => alert('📋 تم النسخ!'));
         }
 
         // =============================================================
@@ -1816,11 +1671,10 @@
                 return;
             }
             container.style.display = 'block';
-            const address = STATE.walletAddress || '0x...';
             const qrDiv = document.getElementById('qrcode');
             qrDiv.innerHTML = '';
             qrCodeInstance = new QRCode(qrDiv, {
-                text: address,
+                text: STATE.walletAddress || '0x...',
                 width: 180,
                 height: 180,
                 colorDark: '#000000',
@@ -1835,8 +1689,7 @@
         let scannerStream = null;
 
         function openScannerForWithdraw() {
-            const modal = document.getElementById('scannerModal');
-            modal.style.display = 'flex';
+            document.getElementById('scannerModal').style.display = 'flex';
             const video = document.getElementById('scannerVideo');
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then(stream => {
@@ -1844,10 +1697,7 @@
                     video.srcObject = stream;
                     video.play();
                 })
-                .catch(err => {
-                    alert('⚠️ تعذر الوصول إلى الكاميرا: ' + err.message);
-                    modal.style.display = 'none';
-                });
+                .catch(() => alert('⚠️ تعذر الوصول إلى الكاميرا.'));
         }
 
         function stopScanner() {
@@ -1859,7 +1709,7 @@
         }
 
         function captureQRForWithdraw() {
-            alert('📷 تم التقاط الصورة. الرجاء إدخال العنوان يدوياً.');
+            alert('📷 تم التقاط الصورة. أدخل العنوان يدوياً.');
             stopScanner();
             document.getElementById('withdrawAddress').focus();
         }
@@ -1872,8 +1722,8 @@
         async function rollDice() {
             if (STATE.isRolling) return;
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
-            if (STATE.selectedNumber === null) { alert('⚠️ يرجى اختيار رقم من 1 إلى 6 أولاً.'); return; }
-            if (STATE.userBalance < BET_AMOUNT) { alert('❌ رصيدك غير كافٍ. الحد الأدنى 10 POL.'); return; }
+            if (STATE.selectedNumber === null) { alert('⚠️ اختر رقمًا.'); return; }
+            if (STATE.userBalance < BET_AMOUNT) { alert('❌ رصيد غير كافٍ.'); return; }
 
             STATE.isRolling = true;
             elDice.style.pointerEvents = 'none';
@@ -1885,8 +1735,7 @@
             elDice.classList.add('bounce');
 
             let interval = setInterval(() => {
-                const randVal = Math.floor(Math.random() * 6) + 1;
-                renderDice(randVal);
+                renderDice(Math.floor(Math.random() * 6) + 1);
             }, 200);
 
             await new Promise(resolve => setTimeout(resolve, 2500));
@@ -1898,10 +1747,7 @@
             renderDice(diceValue);
             elDiceResult.textContent = `🎲 النتيجة: ${diceValue}`;
 
-            let resultMsg = '';
-            let detail = '';
             let isWin = false;
-
             if (STATE.selectedNumber === diceValue) {
                 const winAmount = STATE.roundPool * 0.7;
                 const hostAmount = STATE.roundPool * 0.24;
@@ -1910,26 +1756,17 @@
                 STATE.userBalance += winAmount;
                 STATE.winsToday += 1;
                 isWin = true;
-
                 STATE.hostMarketingPool += hostAmount;
                 STATE.platformPool += platformAmount;
-
-                detail =
-                    `فوز! النرد ${diceValue}، رقمك ${STATE.selectedNumber}. ربحت ${winAmount.toFixed(2)} POL.`;
-                resultMsg = `🎉 فوز! ربحت ${winAmount.toFixed(2)} POL`;
-
                 STATE.roundPool = 0;
-
+                elResult.innerHTML = `🎉 فوز! ربحت ${winAmount.toFixed(2)} POL`;
+                addHistory('win', `فوز! النرد ${diceValue}`);
             } else {
                 STATE.lossesToday += 1;
-                const currentPool = STATE.roundPool;
-                detail =
-                    `خسارة! النرد ${diceValue}، رقمك ${STATE.selectedNumber}.`;
-                resultMsg = `💀 خسارة! النرد أظهر ${diceValue}`;
+                elResult.innerHTML = `💀 خسارة! النرد ${diceValue}`;
+                addHistory('lose', `خسارة! النرد ${diceValue}`);
             }
 
-            addHistory(isWin ? 'win' : 'lose', detail);
-            elResult.innerHTML = `<span>${resultMsg}</span>`;
             updateUI();
             STATE.isRolling = false;
             elDice.style.pointerEvents = 'auto';
@@ -1946,86 +1783,51 @@
         // =============================================================
         function copyReferral() {
             const link = document.getElementById('referralLinkDisplay').textContent;
-            navigator.clipboard.writeText(link).then(() => alert('📋 تم نسخ الرابط!'))
-                .catch(() => alert('⚠️ الرابط: ' + link));
+            navigator.clipboard.writeText(link).then(() => alert('📋 تم نسخ الرابط!'));
         }
 
         // =============================================================
         //  18. التوزيع الليلي
         // =============================================================
         async function distributeDaily() {
-            if (STATE.hostMarketingPool <= 0) {
-                console.log('صندوق المضيفين فارغ، لا توزيع.');
-                return;
-            }
+            if (STATE.hostMarketingPool <= 0) return;
 
             const { data: users, error } = await supabase
                 .from('profiles')
                 .select('id, username, wallet_address, daily_presence_seconds');
 
-            if (error) {
-                console.error('خطأ في جلب المستخدمين:', error);
-                return;
-            }
+            if (error || !users) return;
 
-            let totalPresence = 0;
-            const presenceData = {};
+            let totalPresence = users.reduce((sum, u) => sum + (u.daily_presence_seconds || 0), 0);
+            if (totalPresence === 0) return;
+
+            const pool = STATE.hostMarketingPool;
             for (const u of users) {
-                const seconds = u.daily_presence_seconds || 0;
-                presenceData[u.id] = { ...u, seconds };
-                totalPresence += seconds;
-            }
-
-            if (totalPresence === 0) {
-                addHistory('info', '⚠️ لا يوجد وقت تواجد مسجل، تم تأجيل التوزيع.');
-                return;
-            }
-
-            const poolToDistribute = STATE.hostMarketingPool;
-
-            for (const uid in presenceData) {
-                const u = presenceData[uid];
-                const ratio = u.seconds / totalPresence;
-                const amount = poolToDistribute * ratio;
+                const ratio = (u.daily_presence_seconds || 0) / totalPresence;
+                const amount = pool * ratio;
                 if (amount < 0.01) continue;
-
-                const userAddress = u.wallet_address;
-                if (!userAddress || !userAddress.startsWith('0x')) continue;
+                if (!u.wallet_address || !u.wallet_address.startsWith('0x')) continue;
 
                 try {
-                    const txHash = await sendPOL(vaultWallet, userAddress, amount);
-                    addHistory('dist',
-                        `تم إرسال ${amount.toFixed(2)} POL إلى ${u.username} (${userAddress.substring(0,10)}...) - التجزئة: ${txHash.substring(0,10)}`
-                    );
+                    await sendPOL(vaultWallet, u.wallet_address, amount);
+                    addHistory('dist', `تم إرسال ${amount.toFixed(2)} POL إلى ${u.username}`);
                 } catch (e) {
-                    console.error(`فشل إرسال الأموال إلى ${u.username}:`, e);
-                    addHistory('info', `❌ فشل إرسال ${amount.toFixed(2)} POL إلى ${u.username}`);
+                    console.error(e);
                 }
             }
 
-            addHistory('dist',
-                `🎉 تم توزيع ${poolToDistribute.toFixed(2)} POL بنجاح على ${users.length} مستخدم بناءً على وقت التواجد.`
-            );
-
             STATE.hostMarketingPool = 0;
-
             for (const u of users) {
-                await supabase
-                    .from('profiles')
-                    .update({ daily_presence_seconds: 0 })
-                    .eq('id', u.id);
+                await supabase.from('profiles').update({ daily_presence_seconds: 0 }).eq('id', u.id);
             }
-            if (STATE.loggedIn) {
-                STATE.dailyPresenceSeconds = 0;
-            }
+            if (STATE.loggedIn) STATE.dailyPresenceSeconds = 0;
             updateUI();
-            alert(`🎁 تم توزيع ${poolToDistribute.toFixed(2)} POL من صندوق المضيفين على الحاضرين في الغرفة.`);
+            alert(`🎁 تم توزيع ${pool.toFixed(2)} POL على الحاضرين.`);
         }
 
         setInterval(() => {
             const now = new Date();
             if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() === 0) {
-                console.log('🕛 منتصف الليل: بدء التوزيع اليومي...');
                 distributeDaily();
             }
         }, 1000);
@@ -2039,9 +1841,7 @@
                 document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
                 document.getElementById(this.dataset.tab).classList.add('active');
-                if (this.dataset.tab === 'tab-game') {
-                    updateUSDValues();
-                }
+                if (this.dataset.tab === 'tab-game') updateUSDValues();
             });
         });
 
@@ -2054,22 +1854,7 @@
             console.log('✅ التطبيق جاهز مع Supabase Auth');
         };
 
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && document.getElementById('tab-game').classList.contains('active')) {
-                if (!STATE.isRolling && STATE.selectedNumber !== null) {
-                    onDiceClick();
-                }
-            }
-        });
-
-        console.log('🚀 منصة النرد جاهزة مع Supabase Auth + PeerJS');
-
-        // =============================================================
-        //  جعل الدوال عامة بشكل صريح
-        // =============================================================
-        window.registerUser = registerUser;
-        window.loginUser = loginUser;
-        window.logoutUser = logoutUser;
+        // جعل جميع الدوال عامة
         window.testMicrophone = testMicrophone;
         window.joinVoiceRoom = joinVoiceRoom;
         window.leaveVoiceRoom = leaveVoiceRoom;
@@ -2084,7 +1869,10 @@
         window.stopScanner = stopScanner;
         window.captureQRForWithdraw = captureQRForWithdraw;
         window.copyReferral = copyReferral;
-        console.log('✅ تم ربط جميع الدوال العامة');
+        window.registerUser = registerUser;
+        window.loginUser = loginUser;
+        window.logoutUser = logoutUser;
+        console.log('✅ جميع الدوال العامة جاهزة');
     </script>
 </body>
 </html>
