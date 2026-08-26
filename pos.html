@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== جميع الأنماط (كما هي) ===== */
+        /* جميع الأنماط كما هي (نفس الكود السابق) */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -991,7 +991,7 @@
         const elMicTestBtn = document.getElementById('micTestBtn');
 
         // =============================================================
-        //  8. دوال المصادقة (Supabase Auth)
+        //  8. دوال المصادقة (Supabase Auth) - المُصلحة
         // =============================================================
         function initAuth() {
             document.querySelectorAll('.auth-tab').forEach(tab => {
@@ -1012,6 +1012,7 @@
             });
             // الاستماع لتغييرات المصادقة
             supabase.auth.onAuthStateChange((event, session) => {
+                console.log('🔐 حدث Auth:', event, session ? 'جلسة موجودة' : 'لا جلسة');
                 if (event === 'SIGNED_IN' && session) {
                     loadUserData(session.user);
                 } else if (event === 'SIGNED_OUT') {
@@ -1020,28 +1021,59 @@
             });
         }
 
+        // =============================================================
+        //  دالة التسجيل المُصلحة (مع سجلات واضحة)
+        // =============================================================
         async function registerUser() {
+            console.log('🚀 بدء عملية التسجيل...');
+
             const username = document.getElementById('registerUsername').value.trim();
             const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value.trim();
 
-            if (!username) { alert('يرجى إدخال اسم مستخدم.'); return; }
-            if (!email) { alert('يرجى إدخال البريد الإلكتروني.'); return; }
-            if (!password || password.length < 6) { alert('كلمة المرور يجب أن تكون 6 أحرف على الأقل.'); return; }
+            // تحقق من صحة الحقول
+            if (!username) {
+                alert('⚠️ يرجى إدخال اسم مستخدم.');
+                console.warn('اسم المستخدم فارغ');
+                return;
+            }
+            if (!email) {
+                alert('⚠️ يرجى إدخال البريد الإلكتروني.');
+                console.warn('البريد الإلكتروني فارغ');
+                return;
+            }
+            if (!password || password.length < 6) {
+                alert('⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
+                console.warn('كلمة المرور قصيرة جداً');
+                return;
+            }
 
             try {
                 // 1. إنشاء المستخدم في Auth
+                console.log('📤 إرسال طلب التسجيل إلى Supabase Auth...');
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        data: { username: username } // نمرر اسم المستخدم في metadata
+                    }
                 });
-                if (authError) throw authError;
+
+                if (authError) {
+                    console.error('❌ خطأ في Auth:', authError);
+                    alert('❌ فشل إنشاء الحساب: ' + authError.message);
+                    return;
+                }
+
+                console.log('✅ تم إنشاء المستخدم في Auth:', authData);
 
                 // 2. إنشاء محفظة
+                console.log('🔑 توليد محفظة جديدة...');
                 const wallet = generateWallet24();
                 const encryptedKey = encrypt(wallet.privateKey, password);
 
                 // 3. تخزين الملف الشخصي في جدول profiles
+                console.log('📤 إدراج البيانات في جدول profiles...');
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .insert([{
@@ -1050,19 +1082,30 @@
                         wallet_address: wallet.address,
                         encrypted_private_key: encryptedKey,
                     }]);
-                if (profileError) throw profileError;
 
-                alert('✅ تم إنشاء الحساب بنجاح! سيتم تسجيل الدخول تلقائياً.');
-                // تسجيل الدخول تلقائياً
+                if (profileError) {
+                    console.error('❌ خطأ في إدراج profiles:', profileError);
+                    // محاولة حذف المستخدم من Auth إذا فشل الإدراج (اختياري)
+                    alert('❌ فشل حفظ البيانات الشخصية: ' + profileError.message);
+                    return;
+                }
+
+                console.log('✅ تم حفظ الملف الشخصي بنجاح');
+
+                // 4. تسجيل الدخول تلقائياً
+                alert('✅ تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...');
                 await loginUser(email, password);
-            } catch (e) {
-                alert('❌ فشل إنشاء الحساب: ' + e.message);
-                console.error(e);
+
+            } catch (err) {
+                console.error('❌ خطأ غير متوقع:', err);
+                alert('❌ حدث خطأ غير متوقع: ' + err.message);
             }
         }
 
+        // =============================================================
+        //  دالة تسجيل الدخول
+        // =============================================================
         async function loginUser(email, password) {
-            // إذا تم استدعاؤها من الزر بدون وسيطات، نأخذ القيم من الحقول
             if (!email) {
                 email = document.getElementById('loginEmail').value.trim();
                 password = document.getElementById('loginPassword').value.trim();
@@ -1073,16 +1116,26 @@
             }
 
             try {
+                console.log('📤 محاولة تسجيل الدخول...');
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ خطأ في تسجيل الدخول:', error);
+                    alert('❌ فشل تسجيل الدخول: ' + error.message);
+                    return;
+                }
+                console.log('✅ تم تسجيل الدخول بنجاح');
                 // loadUserData ستُستدعى تلقائياً عبر onAuthStateChange
-            } catch (e) {
-                alert('❌ فشل تسجيل الدخول: ' + e.message);
+            } catch (err) {
+                console.error('❌ خطأ غير متوقع:', err);
+                alert('❌ حدث خطأ غير متوقع: ' + err.message);
             }
         }
 
+        // =============================================================
+        //  تحميل بيانات المستخدم
+        // =============================================================
         async function loadUserData(user) {
-            // جلب البيانات من جدول profiles
+            console.log('📥 جلب بيانات المستخدم من profiles...');
             const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('*')
@@ -1090,9 +1143,12 @@
                 .single();
 
             if (error) {
-                console.error('خطأ في جلب الملف الشخصي:', error);
+                console.error('❌ خطأ في جلب الملف الشخصي:', error);
+                alert('⚠️ تعذر تحميل بياناتك. قد تحتاج إلى إعادة التسجيل.');
                 return;
             }
+
+            console.log('✅ تم تحميل الملف الشخصي:', profile);
 
             STATE.loggedIn = true;
             STATE.userId = user.id;
@@ -1104,7 +1160,7 @@
             STATE.lossesToday = profile.losses || 0;
             STATE.referralEarned = profile.referral_earned || 0;
             STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
-            STATE.history = []; // سنخزن التاريخ محلياً
+            STATE.history = [];
 
             document.getElementById('authOverlay').style.display = 'none';
             updateUI();
@@ -1118,41 +1174,41 @@
             console.log('✅ تم تحميل بيانات المستخدم:', profile.username);
         }
 
-        function logoutUser() {
+        // =============================================================
+        //  تسجيل الخروج
+        // =============================================================
+        async function logoutUser() {
+            console.log('🚪 تسجيل الخروج...');
+            if (STATE.inRoom) await leaveVoiceRoom();
             STATE.loggedIn = false;
             STATE.userId = null;
             document.getElementById('authOverlay').style.display = 'flex';
-            // إعادة تعيين الواجهة
             updateUI();
             alert('تم تسجيل الخروج.');
         }
 
+        // =============================================================
+        //  حفظ الملف الشخصي
+        // =============================================================
         async function saveProfile() {
             if (!STATE.loggedIn) return;
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    balance: STATE.userBalance,
-                    wins: STATE.winsToday,
-                    losses: STATE.lossesToday,
-                    referral_earned: STATE.referralEarned,
-                    daily_presence_seconds: STATE.dailyPresenceSeconds,
-                })
-                .eq('id', STATE.userId);
-            if (error) console.error('خطأ في حفظ الملف الشخصي:', error);
-        }
-
-        function getPrivateKey() {
-            if (!STATE.privateKeyEncrypted) return null;
-            // نحتاج لكلمة المرور، لكننا لا نخزنها، لذا سنطلبها من المستخدم عند الحاجة
-            // في هذا الإصدار، نستخدم كلمة المرور المخزنة مؤقتاً من جلسة تسجيل الدخول
-            // لكن Supabase Auth لا يوفر كلمة المرور، لذا سنطلبها عند السحب
-            // سنقوم بتعديل دالة السحب لطلب كلمة المرور
-            return null;
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({
+                        balance: STATE.userBalance,
+                        wins: STATE.winsToday,
+                        losses: STATE.lossesToday,
+                        referral_earned: STATE.referralEarned,
+                        daily_presence_seconds: STATE.dailyPresenceSeconds,
+                    })
+                    .eq('id', STATE.userId);
+                if (error) console.error('❌ خطأ في حفظ الملف الشخصي:', error);
+            } catch (e) { console.error('❌ خطأ في حفظ الملف الشخصي:', e); }
         }
 
         // =============================================================
-        //  9. النرد
+        //  9. النرد (نفسه)
         // =============================================================
         function renderDice(value) {
             const dotsMap = {
@@ -1240,7 +1296,6 @@
             updateRoomUI();
             updateUSDValues();
 
-            // حفظ التغييرات في قاعدة البيانات
             if (STATE.loggedIn) {
                 saveProfile();
             }
@@ -1323,7 +1378,7 @@
         }
 
         // =============================================================
-        //  12. دوال الغرفة الصوتية (مع Supabase Auth)
+        //  12. دوال الغرفة الصوتية (نفسها)
         // =============================================================
         let peerInitialized = false;
 
@@ -1385,7 +1440,6 @@
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
             if (STATE.inRoom) { alert('أنت بالفعل في الغرفة.'); return; }
 
-            // طلب الميكروفون
             if (!STATE.micTested) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -1432,7 +1486,6 @@
             STATE.lastEntryTime = Date.now();
             updateUI();
 
-            // إدراج السجل في Supabase باستخدام user_id
             const { data, error } = await supabase
                 .from('room_participants')
                 .insert([{
@@ -1457,7 +1510,6 @@
             elDbStatus.style.color = '#2ecc71';
             console.log('✅ تم إدراج السجل في Supabase:', data);
 
-            // الاشتراك في Realtime
             if (STATE.channel) {
                 STATE.channel.unsubscribe();
             }
@@ -1694,7 +1746,6 @@
             if (amount > STATE.userBalance) { alert('رصيد غير كافٍ'); return; }
             if (!address || !address.startsWith('0x')) { alert('يرجى إدخال عنوان استلام صحيح (يبدأ بـ 0x).'); return; }
 
-            // طلب كلمة المرور لفك تشفير المفتاح الخاص
             const password = prompt('أدخل كلمة المرور لتأكيد السحب:');
             if (!password) return;
 
@@ -1886,7 +1937,6 @@
                 return;
             }
 
-            // جلب جميع المستخدمين من جدول profiles
             const { data: users, error } = await supabase
                 .from('profiles')
                 .select('id, username, wallet_address, daily_presence_seconds');
@@ -1937,7 +1987,6 @@
 
             STATE.hostMarketingPool = 0;
 
-            // إعادة تعيين أوقات التواجد
             for (const u of users) {
                 await supabase
                     .from('profiles')
