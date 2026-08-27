@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar"dir="rtl">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== الأنماط الكاملة ===== */
+        /* ===== جميع الأنماط ===== */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -723,7 +723,7 @@
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: 180px;
+            height: 220px;
             border: 1px solid #1f3347;
             border-radius: 16px;
             overflow: hidden;
@@ -733,14 +733,16 @@
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 6px 10px;
+            padding: 8px 12px;
             display: flex;
             flex-direction: column;
             gap: 4px;
+            min-height: 120px;
+            max-height: 160px;
         }
         .chat-message {
-            font-size: 0.8rem;
-            padding: 4px 8px;
+            font-size: 0.85rem;
+            padding: 6px 10px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.05);
             word-break: break-word;
@@ -759,37 +761,40 @@
             border-right: 3px solid #f1c40f;
             text-align: center;
             color: #f1c40f;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
+            padding: 8px 12px;
         }
         .chat-input-row {
             display: flex;
             gap: 6px;
-            padding: 6px 8px;
+            padding: 8px 10px;
             background: #0f1f30;
             border-top: 1px solid #1f3347;
         }
         .chat-input-row input {
             flex: 1;
-            padding: 8px 12px;
+            padding: 10px 14px;
             border-radius: 40px;
             border: none;
             background: #1c2f44;
             color: #fff;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             outline: 1px solid #3a5a7a;
+            min-height: 44px;
         }
         .chat-input-row input:focus {
             outline: 2px solid #f1c40f;
         }
         .chat-input-row button {
-            padding: 6px 14px;
+            padding: 10px 18px;
             border: none;
             border-radius: 40px;
             background: linear-gradient(135deg, #f39c12, #e67e22);
             color: #fff;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            min-height: 44px;
         }
         .game-timer {
             font-size: 1.4rem;
@@ -858,7 +863,10 @@
                 font-size: 1.1rem;
             }
             .chat-container {
-                height: 140px;
+                height: 180px;
+            }
+            .chat-messages {
+                max-height: 120px;
             }
             .room-card .room-name {
                 font-size: 0.7rem;
@@ -1404,7 +1412,6 @@
             elDbStatusRooms.style.color = '#2ecc71';
         }
 
-        // دالة الدخول المباشر (عند الضغط على الغرفة)
         function selectAndJoinRoom(roomName) {
             if (STATE.inRoom && STATE.roomName === roomName) return;
             STATE.selectedRoomName = roomName;
@@ -1462,21 +1469,26 @@
             });
 
             peer.on('call', (call) => {
+                console.log(`📞 وردت مكالمة من ${call.peer}`);
                 if (!STATE.localStream) {
                     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
                         .then(stream => {
                             STATE.localStream = stream;
+                            stream.getAudioTracks().forEach(track => track.enabled = true);
                             call.answer(stream);
                             call.on('stream', (remoteStream) => {
+                                console.log(`✅ استقبال صوت من ${call.peer}`);
                                 addRemoteStream(call.peer, remoteStream);
                             });
                             call.on('close', () => removeRemoteStream(call.peer));
                             STATE.connections[call.peer] = call;
                         })
-                        .catch(() => {});
+                        .catch(err => console.error('❌ فشل الحصول على الميكروفون:', err));
                 } else {
+                    STATE.localStream.getAudioTracks().forEach(track => track.enabled = true);
                     call.answer(STATE.localStream);
                     call.on('stream', (remoteStream) => {
+                        console.log(`✅ استقبال صوت من ${call.peer}`);
                         addRemoteStream(call.peer, remoteStream);
                     });
                     call.on('close', () => removeRemoteStream(call.peer));
@@ -1588,6 +1600,7 @@
                         filter: `room_id=eq.${STATE.roomName}`,
                     }, (payload) => {
                         const msg = payload.new;
+                        console.log('📩 رسالة جديدة:', msg);
                         addChatMessage(msg.username, msg.message, msg.created_at, msg.user_id === STATE.userId);
                     })
                     .subscribe();
@@ -1693,7 +1706,7 @@
         }
 
         // ============================================================
-        // 11. إدارة الصوت (مصلح)
+        // 11. إدارة الصوت
         // ============================================================
         function updateRemoteAudio() {
             const speaker = STATE.participants.find(p => p.is_speaking && p.user_id !== STATE.userId);
@@ -1718,43 +1731,59 @@
         }
 
         function callPeerWithRetry(peerId, attempt = 0) {
-            if (!STATE.localStream || STATE.connections[peerId] || attempt >= 5) return;
+            if (!STATE.localStream) {
+                console.warn('⚠️ لا يوجد تدفق محلي');
+                return;
+            }
+            if (STATE.connections[peerId] || attempt >= 10) return;
+
+            console.log(`📞 محاولة الاتصال بـ ${peerId} (محاولة ${attempt + 1})`);
+
+            const audioTracks = STATE.localStream.getAudioTracks();
+            if (audioTracks.length === 0) {
+                console.warn('⚠️ لا توجد مسارات صوتية في التدفق المحلي!');
+                return;
+            }
+            audioTracks.forEach(track => track.enabled = true);
+
             const call = STATE.peer.call(peerId, STATE.localStream);
-            const timeout = setTimeout(() => {
-                if (!STATE.connections[peerId]) {
-                    setTimeout(() => {
-                        if (!STATE.connections[peerId] && STATE.inRoom) {
-                            callPeerWithRetry(peerId, attempt + 1);
-                        }
-                    }, 3000);
-                }
-            }, 10000);
+
             call.on('stream', (remoteStream) => {
-                clearTimeout(timeout);
+                console.log(`✅ تم استقبال الصوت من ${peerId}`);
                 addRemoteStream(peerId, remoteStream);
             });
+
             call.on('close', () => {
-                clearTimeout(timeout);
+                console.log(`🔇 تم قطع الاتصال بـ ${peerId}`);
                 removeRemoteStream(peerId);
             });
-            call.on('error', () => {
-                clearTimeout(timeout);
+
+            call.on('error', (err) => {
+                console.warn(`⚠️ فشل الاتصال بـ ${peerId}:`, err.message);
                 setTimeout(() => {
-                    if (!STATE.connections[peerId] && STATE.inRoom) {
+                    if (STATE.inRoom && !STATE.connections[peerId]) {
                         callPeerWithRetry(peerId, attempt + 1);
                     }
                 }, 3000);
             });
+
             STATE.connections[peerId] = call;
         }
 
         function addRemoteStream(peerId, stream) {
+            console.log(`🎵 إضافة تدفق صوتي من ${peerId}`);
             STATE.remoteStreams[peerId] = stream;
+
             const audio = new Audio();
             audio.srcObject = stream;
             audio.autoplay = true;
+            audio.volume = 1.0;
             audio.dataset.peerId = peerId;
+            audio.onplay = () => console.log(`▶️ بدأ تشغيل الصوت من ${peerId}`);
+            audio.onerror = (e) => console.error(`❌ خطأ في تشغيل الصوت من ${peerId}:`, e);
+
             document.body.appendChild(audio);
+            audio.play().catch(e => console.warn('⚠️ تعذر تشغيل الصوت تلقائياً:', e));
         }
 
         function removeRemoteStream(peerId) {
@@ -1788,11 +1817,27 @@
                     .eq('id', STATE.myRecordId);
 
                 STATE.isSpeaking = true;
+
                 if (STATE.localStream) {
-                    STATE.localStream.getAudioTracks().forEach(track => track.enabled = true);
+                    STATE.localStream.getAudioTracks().forEach(track => {
+                        track.enabled = true;
+                        console.log('🎤 تفعيل مسار الصوت:', track);
+                    });
                 }
+
                 await refreshParticipants();
                 addChatMessage('نظام', `🎤 ${STATE.username} التقط الميكروفون`, new Date().toISOString(), false, true);
+
+                // إعادة محاولة الاتصال بجميع المشاركين
+                setTimeout(() => {
+                    if (STATE.inRoom) {
+                        for (const p of STATE.participants) {
+                            if (p.user_id !== STATE.userId && p.peer_id) {
+                                callPeerWithRetry(p.peer_id);
+                            }
+                        }
+                    }
+                }, 1000);
             } catch (e) {
                 console.error(e);
                 alert('❌ فشل التقاط الميكروفون.');
@@ -1942,14 +1987,22 @@
         }
 
         // ============================================================
-        // 13. الدردشة
+        // 13. الدردشة (مصلحة بالكامل)
         // ============================================================
         async function sendChatMessage() {
             const msg = elChatInput.value.trim();
-            if (!msg || !STATE.inRoom || !STATE.roomName) return;
+            if (!msg) {
+                console.log('⚠️ رسالة فارغة');
+                return;
+            }
+            if (!STATE.inRoom || !STATE.roomName) {
+                alert('⚠️ يجب أن تكون في غرفة لإرسال رسالة.');
+                return;
+            }
 
             try {
-                await supabaseClient
+                console.log(`📤 إرسال رسالة إلى ${STATE.roomName}: ${msg}`);
+                const { error } = await supabaseClient
                     .from('chat_messages')
                     .insert([{
                         room_id: STATE.roomName,
@@ -1957,13 +2010,26 @@
                         username: STATE.username,
                         message: msg,
                     }]);
+
+                if (error) {
+                    console.error('❌ فشل إرسال الرسالة:', error);
+                    alert('فشل إرسال الرسالة: ' + error.message);
+                    return;
+                }
+                console.log('✅ تم إرسال الرسالة بنجاح');
                 elChatInput.value = '';
-            } catch (e) { console.error(e); }
+                elChatInput.focus();
+            } catch (e) {
+                console.error('❌ خطأ في الإرسال:', e);
+                alert('حدث خطأ أثناء الإرسال.');
+            }
         }
 
         function addChatMessage(username, message, timestamp, isMe = false, isSystem = false) {
+            console.log(`📩 إضافة رسالة: ${username} - ${message}`);
             const container = elChatMessages;
 
+            // إزالة رسالة الترحيب إذا كانت موجودة
             if (container.querySelector('.system') && container.children.length === 1) {
                 container.innerHTML = '';
             }
@@ -1976,7 +2042,7 @@
                 div.textContent = `📢 ${message}`;
             } else {
                 const time = timestamp ? new Date(timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) :
-                    '';
+                    'الآن';
                 div.innerHTML = `
                     <span class="msg-user">${isMe ? 'أنت' : username}</span>
                     <span class="msg-time">${time}</span>
@@ -1985,7 +2051,11 @@
             }
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
-            while (container.children.length > 50) container.removeChild(container.firstChild);
+
+            // الاحتفاظ بآخر 50 رسالة فقط
+            while (container.children.length > 50) {
+                container.removeChild(container.firstChild);
+            }
         }
 
         // ============================================================
@@ -2005,6 +2075,7 @@
                 btn.className = 'mic-test-btn active';
                 elMicTestStatus.textContent = '✅ الميكروفون يعمل';
                 elMicTestStatus.style.color = '#2ecc71';
+                console.log('🎤 اختبار الميكروفون: نجاح');
             } catch (err) {
                 STATE.micTested = true;
                 STATE.micWorking = false;
@@ -2012,6 +2083,7 @@
                 btn.className = 'mic-test-btn error';
                 elMicTestStatus.textContent = `❌ ${err.message}`;
                 elMicTestStatus.style.color = '#e74c3c';
+                console.error('❌ اختبار الميكروفون: فشل', err);
             } finally {
                 btn.disabled = false;
             }
@@ -2083,7 +2155,7 @@
         }
 
         // ============================================================
-        // 16. لعبة النرد الجماعي (معدلة للتزامن الدقيق)
+        // 16. لعبة النرد الجماعي (تعمل مثل التلفزيون)
         // ============================================================
         function startGameLoop() {
             if (STATE.gameInterval) clearInterval(STATE.gameInterval);
@@ -2110,36 +2182,38 @@
 
                 if (STATE.gameTimer <= 0) {
                     if (STATE.gamePhase === 'betting') {
-                        // نهاية التخمين
+                        // نهاية فترة التخمين - الانتقال إلى الكشف
                         STATE.gamePhase = 'revealing';
                         STATE.guessClosed = true;
                         guessButtons.forEach(b => b.disabled = true);
 
-                        // إظهار النتيجة مع حركة
+                        // عرض النتيجة مع حركة
                         elDice.classList.add('rolling');
                         setTimeout(() => {
                             elDice.classList.remove('rolling');
                             renderDice(STATE.gameNumber);
                             elDiceResult.textContent = `🎲 ${STATE.gameNumber}`;
+                            // حل الجولة وحساب الفائزين
                             resolveGame();
-                        }, 800);
 
-                        // بدء جولة جديدة بعد 30 ثانية
-                        setTimeout(() => {
-                            STATE.gamePhase = 'betting';
-                            STATE.gameTimer = 30;
-                            STATE.gameNumber = Math.floor(Math.random() * 6) + 1;
-                            STATE.gamePoolAmount = 0;
-                            STATE.myGuess = null;
-                            STATE.guessClosed = false;
-                            STATE.guesses = {};
-                            guessButtons.forEach(b => b.disabled = false);
-                            document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
-                            renderDice(0);
-                            elDiceResult.textContent = '❓';
-                            elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رقمك خلال 30 ثانية!</span>';
-                            updateGameUI();
-                        }, 30000);
+                            // بعد 30 ثانية (نهاية الدقيقة)، نبدأ جولة جديدة
+                            setTimeout(() => {
+                                // بدء جولة جديدة
+                                STATE.gamePhase = 'betting';
+                                STATE.gameTimer = 30;
+                                STATE.gameNumber = Math.floor(Math.random() * 6) + 1;
+                                STATE.gamePoolAmount = 0;
+                                STATE.myGuess = null;
+                                STATE.guessClosed = false;
+                                STATE.guesses = {};
+                                guessButtons.forEach(b => b.disabled = false);
+                                document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
+                                renderDice(0);
+                                elDiceResult.textContent = '❓';
+                                elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رقمك خلال 30 ثانية!</span>';
+                                updateGameUI();
+                            }, 30000);
+                        }, 800);
                     }
                 }
                 updateGameUI();
@@ -2507,7 +2581,10 @@
         });
 
         elChatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendChatMessage();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendChatMessage();
+            }
         });
 
         window.onload = function() {
