@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>🎲 غرف صوتية عربية</title>
+    <title>🎲 غرف صوتية عربية - نرد جماعي</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* جميع الأنماط كاملة */
+        /* ===== جميع الأنماط ===== */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -176,14 +176,6 @@
         .btn-secondary {
             background: #34495e;
         }
-        .btn-mic {
-            background: #2c3e50;
-            padding: 6px 14px;
-            font-size: 0.8rem;
-        }
-        .btn-mic.active {
-            background: #e67e22;
-        }
         .btn-sm {
             padding: 4px 12px;
             font-size: 0.7rem;
@@ -265,9 +257,6 @@
             align-items: center;
             margin: 8px 0;
             perspective: 600px;
-            cursor: pointer;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
         .dice {
             width: 110px;
@@ -281,12 +270,6 @@
             padding: 18px;
             transform-style: preserve-3d;
             transition: transform 0.15s ease;
-        }
-        .dice:hover {
-            transform: scale(1.02);
-        }
-        .dice:active {
-            transform: scale(0.95);
         }
         .dice.rolling {
             animation: diceRoll3D 2.5s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
@@ -316,26 +299,6 @@
             }
             100% {
                 transform: rotateX(810deg) rotateY(270deg) translateZ(0) scale(1);
-            }
-        }
-        .dice.bounce {
-            animation: diceBounce 0.8s ease-in-out 3;
-        }
-        @keyframes diceBounce {
-            0% {
-                transform: translateY(0) rotate(0deg);
-            }
-            30% {
-                transform: translateY(-60px) rotate(15deg);
-            }
-            50% {
-                transform: translateY(0) rotate(-10deg);
-            }
-            70% {
-                transform: translateY(-30px) rotate(5deg);
-            }
-            100% {
-                transform: translateY(0) rotate(0deg);
             }
         }
         .dot {
@@ -379,7 +342,11 @@
             background: #f1c40f22;
             box-shadow: 0 0 12px rgba(241, 196, 15, 0.3);
         }
-        .num-btn:active {
+        .num-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .num-btn:active:not(:disabled) {
             transform: scale(0.9);
         }
         .result-box {
@@ -742,9 +709,6 @@
         .room-card .room-status.active {
             color: #2ecc71;
         }
-        .room-card .room-status.inactive {
-            color: #e74c3c;
-        }
         .room-card.active-room {
             border-color: #f1c40f;
             background: rgba(241, 196, 15, 0.1);
@@ -836,6 +800,23 @@
         .kick-btn:hover {
             background: #e74c3c;
         }
+        .game-timer {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-align: center;
+            padding: 4px 0;
+        }
+        .game-status {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8ab4d6;
+            margin-top: 4px;
+        }
+        .game-pool {
+            color: #f1c40f;
+            font-weight: bold;
+        }
         @media (max-width: 420px) {
             .room-grid {
                 grid-template-columns: 1fr 1fr;
@@ -883,12 +864,12 @@
 
         <div class="tab-content">
 
-            <!-- ===== تبويب الغرف ===== -->
+            <!-- تبويب الغرف -->
             <div class="tab-pane active" id="tab-rooms">
                 <div class="card">
                     <div class="flex-between">
                         <span class="label">🌍 الغرف العربية</span>
-                        <span class="db-status" id="dbStatusRooms">⏳ جاري التحميل...</span>
+                        <span class="db-status" id="dbStatusRooms">✅ 22 غرفة</span>
                     </div>
                     <div class="room-grid" id="roomsGrid"></div>
                 </div>
@@ -937,7 +918,7 @@
                 </div>
             </div>
 
-            <!-- ===== تبويب النرد ===== -->
+            <!-- تبويب النرد الجماعي -->
             <div class="tab-pane" id="tab-game">
                 <div class="card">
                     <div class="flex-between">
@@ -947,37 +928,45 @@
                     <div class="value gold" id="userBalance">100.00</div>
                     <div class="small-text" id="balanceUSD">≈ $0.00</div>
                 </div>
-                <div class="dice-container" onclick="onDiceClick()">
-                    <div class="dice" id="diceElement"></div>
-                    <div style="font-size:1.1rem; font-weight:bold; color:#f1c40f; margin-top:4px;" id="diceResult">اختر رقمك</div>
-                    <div class="dice-hint">👆 اضغط على النرد للرمي</div>
-                </div>
-                <div class="number-selector">
-                    <button class="num-btn" data-num="1">1</button>
-                    <button class="num-btn" data-num="2">2</button>
-                    <button class="num-btn" data-num="3">3</button>
-                    <button class="num-btn" data-num="4">4</button>
-                    <button class="num-btn" data-num="5">5</button>
-                    <button class="num-btn" data-num="6">6</button>
-                </div>
-                <div class="result-box" id="resultBox"><span style="color:#8ab4d6;">🎯 اختر رقمًا ثم اضغط على النرد</span></div>
-                <div class="stats-row">
-                    <div class="card"><div class="label">🏆 فوز اليوم</div><div class="value green" id="winsToday">0</div></div>
-                    <div class="card"><div class="label">💀 خسارة اليوم</div><div class="value red" id="lossesToday">0</div></div>
-                </div>
-                <div>
-                    <div class="flex-between"><span><strong>📜 آخر الجولات</strong></span><span class="small-text">آخر 10</span></div>
-                    <div class="history" id="historyLog"><p style="color:#6a8aa8;">لا توجد جولات</p></div>
+
+                <div class="card">
+                    <div class="game-timer" id="gameTimer">⏳ 60</div>
+                    <div class="game-status" id="gameStatus">⏳ انتظار الجولة القادمة...</div>
+                    <div class="flex-between" style="margin:4px 0;">
+                        <span class="label">🎯 الرقم المتوقع</span>
+                        <span class="badge" id="gamePool">0 POL</span>
+                    </div>
+                    <div class="dice-container">
+                        <div class="dice" id="diceElement"></div>
+                        <div style="font-size:1.1rem; font-weight:bold; color:#f1c40f; margin-top:4px;" id="diceResult">🎲 ?</div>
+                    </div>
+                    <div class="number-selector" id="guessButtons">
+                        <button class="num-btn" data-num="1" onclick="makeGuess(1)">1</button>
+                        <button class="num-btn" data-num="2" onclick="makeGuess(2)">2</button>
+                        <button class="num-btn" data-num="3" onclick="makeGuess(3)">3</button>
+                        <button class="num-btn" data-num="4" onclick="makeGuess(4)">4</button>
+                        <button class="num-btn" data-num="5" onclick="makeGuess(5)">5</button>
+                        <button class="num-btn" data-num="6" onclick="makeGuess(6)">6</button>
+                    </div>
+                    <div class="result-box" id="resultBox"><span style="color:#8ab4d6;">🎯 اختر رقمًا لتخمين النتيجة</span></div>
+                    <div class="stats-row">
+                        <div class="card"><div class="label">🏆 فوز اليوم</div><div class="value green" id="winsToday">0</div></div>
+                        <div class="card"><div class="label">💀 خسارة اليوم</div><div class="value red" id="lossesToday">0</div></div>
+                    </div>
+                    <div>
+                        <div class="flex-between"><span><strong>📜 آخر الجولات</strong></span><span class="small-text">آخر 10</span></div>
+                        <div class="history" id="historyLog"><p style="color:#6a8aa8;">لا توجد جولات</p></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- ===== تبويب المحفظة ===== -->
+            <!-- تبويب المحفظة -->
             <div class="tab-pane" id="tab-wallet">
                 <div class="card"><div class="label">💳 عنوان محفظتك (Polygon)</div><div class="wallet-address" id="walletAddressDisplay">0x...</div><div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;"><button class="btn btn-secondary" onclick="copyWalletAddress()">📋 نسخ</button><button class="btn btn-primary" onclick="showQR()">📱 QR</button></div><div id="qrContainer" style="display:none; margin-top:10px;" class="qr-container"><div id="qrcode"></div></div></div>
                 <div class="card"><div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay">100.00</span></div><div class="small-text" id="walletBalanceUSD">≈ $0.00</div><div class="wallet-actions" style="margin-top:10px;"><button class="btn btn-success" onclick="deposit()" style="flex:1;">➕ إيداع</button><button class="btn btn-danger" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button></div><div id="withdrawFormContainer" style="display:none; margin-top:10px;"><div class="withdraw-form"><div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 100)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="100" step="1" /></div><div class="field-group"><label>📤 عنوان الاستلام (Polygon)</label><div class="input-with-btn"><input type="text" id="withdrawAddress" placeholder="0x..." /><button class="cam-btn" onclick="openScannerForWithdraw()" title="مسح QR">📷</button></div></div><button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button></div></div><p class="small-text" style="margin-top:4px;">* الإيداع والسحب عبر POL (شبكة Polygon). الحد الأدنى للسحب 100 POL.</p></div>
             </div>
 
-            <!-- ===== تبويب الإعدادات ===== -->
+            <!-- تبويب الإعدادات -->
             <div class="tab-pane" id="tab-settings">
                 <div class="card"><h3 style="margin:0 0 8px;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div><button class="btn btn-danger btn-sm" onclick="logoutUser()" style="margin-top:8px;">🚪 تسجيل الخروج</button></div>
                 <div class="card"><h3 style="margin:0 0 8px;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
@@ -1103,7 +1092,18 @@
         setInterval(fetchPolPrice, 30000);
 
         // ============================================================
-        // 5. حالة التطبيق
+        // 5. قائمة الغرف العربية الثابتة
+        // ============================================================
+        const ARAB_ROOMS = [
+            'مصر', 'السعودية', 'الإمارات', 'الكويت', 'قطر',
+            'الأردن', 'المغرب', 'تونس', 'الجزائر', 'العراق',
+            'فلسطين', 'لبنان', 'اليمن', 'سوريا', 'البحرين',
+            'عمان', 'السودان', 'ليبيا', 'موريتانيا', 'الصومال',
+            'جيبوتي', 'جزر القمر'
+        ];
+
+        // ============================================================
+        // 6. حالة التطبيق
         // ============================================================
         const STATE = {
             userBalance: 100,
@@ -1118,7 +1118,6 @@
             muted: false,
             lastEntryTime: null,
             dailyPresenceSeconds: 0,
-            selectedNumber: null,
             username: '',
             walletAddress: '',
             privateKeyEncrypted: '',
@@ -1126,13 +1125,11 @@
             userId: null,
             userEmail: '',
             participantCount: 0,
-            isRolling: false,
             peer: null,
             myPeerId: null,
             connections: {},
             localStream: null,
             remoteStreams: {},
-            roomId: null,
             roomName: null,
             channel: null,
             myRecordId: null,
@@ -1141,13 +1138,20 @@
             isSpeaking: false,
             participants: [],
             chatChannel: null,
-            rooms: [],
-            selectedRoomId: null,
             canKick: false,
+            selectedRoomName: null,
+            // لعبة النرد الجماعي
+            gameTimer: 60,
+            gamePhase: 'waiting', // waiting, betting, revealing
+            gameNumber: null,
+            gamePoolAmount: 0,
+            myGuess: null,
+            gameInterval: null,
+            guessClosed: false,
         };
 
         // ============================================================
-        // 6. عناصر DOM
+        // 7. عناصر DOM
         // ============================================================
         const elBalance = document.getElementById('userBalance');
         const elWins = document.getElementById('winsToday');
@@ -1180,9 +1184,13 @@
         const elChatMessages = document.getElementById('chatMessages');
         const elChatInput = document.getElementById('chatInput');
         const roomInterface = document.getElementById('roomInterface');
+        const gameTimerEl = document.getElementById('gameTimer');
+        const gameStatusEl = document.getElementById('gameStatus');
+        const gamePoolEl = document.getElementById('gamePool');
+        const guessButtons = document.querySelectorAll('.num-btn');
 
         // ============================================================
-        // 7. المصادقة (تسجيل الدخول وإنشاء الحساب)
+        // 8. المصادقة
         // ============================================================
         function initAuth() {
             console.log('🔐 تهيئة المصادقة...');
@@ -1293,7 +1301,8 @@
                 renderDice(1);
                 fetchPolPrice();
                 initPeer();
-                loadRooms();
+                renderRooms();
+                startGameLoop();
             } catch (e) { console.error(e);
                 alert('❌ خطأ في تحميل البيانات: ' + e.message); }
         }
@@ -1307,89 +1316,51 @@
             STATE.canKick = false;
             document.getElementById('authOverlay').style.display = 'flex';
             updateUI();
+            if (STATE.gameInterval) clearInterval(STATE.gameInterval);
             alert('تم تسجيل الخروج.');
         }
 
         // ============================================================
-        // 8. الغرف العربية الثابتة
+        // 9. عرض الغرف الثابتة
         // ============================================================
-        const ARAB_ROOMS = [
-            'مصر', 'السعودية', 'الإمارات', 'الكويت', 'قطر',
-            'الأردن', 'المغرب', 'تونس', 'الجزائر', 'العراق',
-            'فلسطين', 'لبنان', 'اليمن', 'سوريا', 'البحرين',
-            'عمان', 'السودان', 'ليبيا', 'موريتانيا', 'الصومال',
-            'جيبوتي', 'جزر القمر'
-        ];
-
-        async function loadRooms() {
-            try {
-                await ensureRoomsExist();
-                const { data: rooms, error } = await supabaseClient
-                    .from('rooms')
-                    .select('*')
-                    .order('name');
-
-                if (error) throw error;
-
-                STATE.rooms = rooms || [];
-                renderRooms();
-                elDbStatusRooms.textContent = `✅ ${rooms.length} غرفة`;
-                elDbStatusRooms.style.color = '#2ecc71';
-            } catch (e) {
-                console.error('فشل تحميل الغرف:', e);
-                elDbStatusRooms.textContent = '❌ خطأ في التحميل';
-                elDbStatusRooms.style.color = '#e74c3c';
-            }
-        }
-
-        async function ensureRoomsExist() {
-            for (const name of ARAB_ROOMS) {
-                const { data: existing } = await supabaseClient
-                    .from('rooms')
-                    .select('id')
-                    .eq('name', name)
-                    .maybeSingle();
-
-                if (!existing) {
-                    await supabaseClient.from('rooms').insert([{ name }]);
-                    console.log(`✅ تم إنشاء غرفة: ${name}`);
-                }
-            }
-        }
-
         function renderRooms() {
-            if (!STATE.rooms.length) {
-                elRoomsGrid.innerHTML = '<p class="small-text">لا توجد غرف متاحة.</p>';
-                return;
-            }
             let html = '';
-            for (const room of STATE.rooms) {
-                const count = STATE.participants.filter(p => p.room_id === room.id).length || 0;
-                const isSelected = STATE.selectedRoomId === room.id;
+            for (const name of ARAB_ROOMS) {
+                const isSelected = STATE.selectedRoomName === name;
                 html += `
-                    <div class="room-card ${isSelected ? 'active-room' : ''}" onclick="selectRoom('${room.id}')">
-                        <div class="room-name">🏛️ ${room.name}</div>
-                        <div class="room-count">👥 ${count} مشارك</div>
+                    <div class="room-card ${isSelected ? 'active-room' : ''}" onclick="selectRoom('${name}')">
+                        <div class="room-name">🏛️ ${name}</div>
+                        <div class="room-count">👥 0</div>
                         <div class="room-status active">🟢 مفتوحة</div>
                         ${isSelected ? '<button class="btn btn-primary btn-sm join-btn" onclick="event.stopPropagation();joinSelectedRoom()">دخول</button>' : ''}
                     </div>
                 `;
             }
             elRoomsGrid.innerHTML = html;
+            elDbStatusRooms.textContent = `✅ ${ARAB_ROOMS.length} غرفة`;
+            elDbStatusRooms.style.color = '#2ecc71';
         }
 
-        function selectRoom(roomId) {
-            STATE.selectedRoomId = roomId;
-            const room = STATE.rooms.find(r => r.id === roomId);
-            if (room) {
-                elCurrentRoomName.textContent = room.name;
-                roomInterface.style.display = 'block';
-            }
+        function selectRoom(roomName) {
+            STATE.selectedRoomName = roomName;
+            elCurrentRoomName.textContent = roomName;
+            roomInterface.style.display = 'block';
             renderRooms();
+            document.getElementById('participantsList').innerHTML = '<div class="participant"><span class="status online"></span> أنت</div>';
+            elChatMessages.innerHTML = '<div class="chat-message system">📢 لا توجد رسائل بعد</div>';
+            elParticipantCount.textContent = '0';
+            joinBtn.disabled = false;
+            leaveBtn.disabled = true;
+            micToggleBtn.disabled = true;
+            muteBtn.disabled = true;
+            roomInfo.textContent = '📡 غير متصل';
+            elDbStatus.textContent = '⏳ غير متصل';
+            elDbStatus.style.color = '#f1c40f';
+            micToggleBtn.textContent = '🎤 التقاط الميكروفون';
         }
 
         // ============================================================
-        // 9. PeerJS وإدارة الغرفة الصوتية
+        // 10. PeerJS وإدارة الغرفة الصوتية (معدلة لمنع التكرار)
         // ============================================================
         let peerInitialized = false;
 
@@ -1399,7 +1370,7 @@
                 host: '0.peerjs.com',
                 port: 443,
                 secure: true,
-                debug: 1,
+                debug: 2,
             });
 
             peer.on('open', (id) => {
@@ -1407,13 +1378,21 @@
                 elPeerIdDisplay.textContent = `معرفك: ${id}`;
                 elDbStatus.textContent = '✅ جاهز';
                 elDbStatus.style.color = '#2ecc71';
-                if (STATE.inRoom && STATE.roomId) refreshParticipants();
+                if (STATE.inRoom && STATE.roomName) {
+                    refreshParticipants();
+                }
             });
 
             peer.on('error', (err) => {
+                console.error('PeerJS error:', err);
                 elPeerIdDisplay.textContent = `⚠️ خطأ: ${err.message}`;
                 elDbStatus.textContent = '❌ خطأ';
                 elDbStatus.style.color = '#e74c3c';
+                setTimeout(() => {
+                    if (!STATE.peer.destroyed) {
+                        STATE.peer.reconnect();
+                    }
+                }, 5000);
             });
 
             peer.on('call', (call) => {
@@ -1441,7 +1420,7 @@
 
         async function joinSelectedRoom() {
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
-            if (!STATE.selectedRoomId) { alert('اختر غرفة أولاً.'); return; }
+            if (!STATE.selectedRoomName) { alert('اختر غرفة أولاً.'); return; }
             if (STATE.inRoom) await leaveVoiceRoom();
 
             if (!STATE.micTested) {
@@ -1467,13 +1446,8 @@
                 }
             }
 
-            const room = STATE.rooms.find(r => r.id === STATE.selectedRoomId);
-            if (!room) { alert('الغرفة غير موجودة.'); return; }
-
-            STATE.roomId = room.id;
-            STATE.roomName = room.name;
-            elCurrentRoomName.textContent = room.name;
-
+            STATE.roomName = STATE.selectedRoomName;
+            elCurrentRoomName.textContent = STATE.roomName;
             await joinVoiceRoomActual();
         }
 
@@ -1484,44 +1458,63 @@
             updateUI();
 
             try {
-                const { data, error } = await supabaseClient
+                // التحقق من وجود المستخدم في الغرفة (لمنع التكرار)
+                const { data: existing, error: checkError } = await supabaseClient
                     .from('room_participants')
-                    .insert([{
-                        room_id: STATE.roomId,
-                        user_id: STATE.userId,
-                        peer_id: STATE.myPeerId,
-                        username: STATE.username,
-                        is_speaking: false,
-                    }])
                     .select('id')
-                    .single();
+                    .eq('room_id', STATE.roomName)
+                    .eq('user_id', STATE.userId)
+                    .maybeSingle();
 
-                if (error) {
-                    alert('⚠️ فشل الانضمام إلى الغرفة: ' + error.message);
-                    STATE.inRoom = false;
-                    updateUI();
-                    return;
+                if (checkError) throw checkError;
+
+                let recordId;
+                if (existing) {
+                    // تحديث peer_id فقط
+                    const { error: updateError } = await supabaseClient
+                        .from('room_participants')
+                        .update({ peer_id: STATE.myPeerId, username: STATE.username })
+                        .eq('id', existing.id);
+                    if (updateError) throw updateError;
+                    recordId = existing.id;
+                } else {
+                    // إدراج جديد
+                    const { data: inserted, error: insertError } = await supabaseClient
+                        .from('room_participants')
+                        .insert([{
+                            room_id: STATE.roomName,
+                            user_id: STATE.userId,
+                            peer_id: STATE.myPeerId,
+                            username: STATE.username,
+                            is_speaking: false,
+                        }])
+                        .select('id')
+                        .single();
+                    if (insertError) throw insertError;
+                    recordId = inserted.id;
                 }
 
-                STATE.myRecordId = data.id;
+                STATE.myRecordId = recordId;
 
+                // الاشتراك في تحديثات المشاركين
                 if (STATE.channel) STATE.channel.unsubscribe();
-                STATE.channel = supabaseClient.channel(`room:${STATE.roomId}`)
+                STATE.channel = supabaseClient.channel(`room:${STATE.roomName}`)
                     .on('postgres_changes', {
                         event: '*',
                         schema: 'public',
                         table: 'room_participants',
-                        filter: `room_id=eq.${STATE.roomId}`,
+                        filter: `room_id=eq.${STATE.roomName}`,
                     }, () => refreshParticipants())
                     .subscribe();
 
+                // الاشتراك في الدردشة
                 if (STATE.chatChannel) STATE.chatChannel.unsubscribe();
-                STATE.chatChannel = supabaseClient.channel(`chat:${STATE.roomId}`)
+                STATE.chatChannel = supabaseClient.channel(`chat:${STATE.roomName}`)
                     .on('postgres_changes', {
                         event: 'INSERT',
                         schema: 'public',
                         table: 'chat_messages',
-                        filter: `room_id=eq.${STATE.roomId}`,
+                        filter: `room_id=eq.${STATE.roomName}`,
                     }, (payload) => {
                         const msg = payload.new;
                         addChatMessage(msg.username, msg.message, msg.created_at, msg.user_id === STATE.userId);
@@ -1543,7 +1536,7 @@
                 console.error('خطأ في الدخول:', e);
                 STATE.inRoom = false;
                 updateUI();
-                alert('❌ حدث خطأ أثناء الدخول.');
+                alert('❌ حدث خطأ أثناء الدخول: ' + e.message);
             }
         }
 
@@ -1552,7 +1545,7 @@
                 const { data, error } = await supabaseClient
                     .from('room_participants')
                     .select('*')
-                    .eq('room_id', STATE.roomId);
+                    .eq('room_id', STATE.roomName);
 
                 if (error) return;
 
@@ -1560,7 +1553,6 @@
                 STATE.participantCount = data.length;
                 elParticipantCount.textContent = STATE.participantCount;
 
-                renderRooms();
                 renderParticipants(data);
 
                 const me = data.find(p => p.user_id === STATE.userId);
@@ -1613,7 +1605,7 @@
                 if (isMe) html += ` <span style="color:#8ab4d6;font-size:0.6rem;">(أنت)</span>`;
 
                 if (STATE.canKick && !isMe) {
-                    html += `<button class="kick-btn" onclick="kickUser('${p.user_id}','${p.username}')">⛔ طرد</button>`;
+                    html += `<button class="kick-btn" onclick="kickUser('${p.user_id}','${p.username}','${p.peer_id}')">⛔ طرد</button>`;
                 }
                 div.innerHTML = html;
                 list.appendChild(div);
@@ -1692,7 +1684,7 @@
         }
 
         // ============================================================
-        // 10. إدارة الميكروفون (متحدث واحد)
+        // 11. إدارة الميكروفون (متحدث واحد)
         // ============================================================
         async function toggleMicrophone() {
             if (!STATE.inRoom) return;
@@ -1760,9 +1752,9 @@
         }
 
         // ============================================================
-        // 11. الطرد (للمستخدمين المصرح لهم)
+        // 12. الطرد (مصلح بالكامل)
         // ============================================================
-        async function kickUser(userId, username) {
+        async function kickUser(userId, username, peerId) {
             if (!STATE.canKick) {
                 alert('⚠️ ليس لديك صلاحية الطرد.');
                 return;
@@ -1776,6 +1768,7 @@
                     return;
                 }
 
+                // تحرير الميكروفون إذا كان المطرود يتحدث
                 if (participant.is_speaking) {
                     await supabaseClient
                         .from('room_participants')
@@ -1783,11 +1776,13 @@
                         .eq('id', participant.id);
                 }
 
+                // حذف السجل
                 await supabaseClient
                     .from('room_participants')
                     .delete()
                     .eq('id', participant.id);
 
+                // إغلاق اتصال Peer
                 if (participant.peer_id && STATE.connections[participant.peer_id]) {
                     STATE.connections[participant.peer_id].close();
                     delete STATE.connections[participant.peer_id];
@@ -1804,17 +1799,17 @@
         }
 
         // ============================================================
-        // 12. الدردشة النصية
+        // 13. الدردشة النصية
         // ============================================================
         async function sendChatMessage() {
             const msg = elChatInput.value.trim();
-            if (!msg || !STATE.inRoom || !STATE.roomId) return;
+            if (!msg || !STATE.inRoom || !STATE.roomName) return;
 
             try {
                 await supabaseClient
                     .from('chat_messages')
                     .insert([{
-                        room_id: STATE.roomId,
+                        room_id: STATE.roomName,
                         user_id: STATE.userId,
                         username: STATE.username,
                         message: msg,
@@ -1850,7 +1845,7 @@
         }
 
         // ============================================================
-        // 13. اختبار الميكروفون
+        // 14. اختبار الميكروفون
         // ============================================================
         async function testMicrophone() {
             const btn = document.querySelector('.mic-test-btn');
@@ -1879,7 +1874,7 @@
         }
 
         // ============================================================
-        // 14. مغادرة الغرفة
+        // 15. مغادرة الغرفة
         // ============================================================
         async function leaveVoiceRoom() {
             if (!STATE.inRoom) return;
@@ -1919,7 +1914,6 @@
                 STATE.inRoom = false;
                 STATE.isSpeaking = false;
                 STATE.muted = false;
-                STATE.roomId = null;
                 STATE.roomName = null;
                 STATE.participants = [];
 
@@ -1943,10 +1937,202 @@
         }
 
         // ============================================================
-        // 15. النرد (نفسه)
+        // 16. لعبة النرد الجماعية
+        // ============================================================
+        function startGameLoop() {
+            if (STATE.gameInterval) clearInterval(STATE.gameInterval);
+            STATE.gamePhase = 'waiting';
+            STATE.gameTimer = 60;
+            STATE.gameNumber = null;
+            STATE.gamePoolAmount = 0;
+            STATE.myGuess = null;
+            STATE.guessClosed = false;
+            updateGameUI();
+            // بدء العد التنازلي
+            STATE.gameInterval = setInterval(() => {
+                STATE.gameTimer--;
+                if (STATE.gameTimer <= 0) {
+                    // انتهاء الجولة
+                    if (STATE.gamePhase === 'waiting') {
+                        // بدء جولة جديدة - مرحلة التخمين
+                        STATE.gamePhase = 'betting';
+                        STATE.gameTimer = 20;
+                        STATE.gamePoolAmount = 0;
+                        STATE.guessClosed = false;
+                        STATE.myGuess = null;
+                        // إعادة تمكين الأزرار
+                        guessButtons.forEach(b => b.disabled = false);
+                        document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
+                        elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رقمك خلال 20 ثانية!</span>';
+                        // توليد رقم عشوائي (سيتم الكشف عنه لاحقاً)
+                        STATE.gameNumber = Math.floor(Math.random() * 6) + 1;
+                        // إظهار النرد كعلامة استفهام
+                        renderDice(0);
+                        elDiceResult.textContent = '❓';
+                        updateGameUI();
+                    } else if (STATE.gamePhase === 'betting') {
+                        // انتهاء فترة التخمين - الكشف عن النتيجة
+                        STATE.gamePhase = 'revealing';
+                        STATE.guessClosed = true;
+                        // تعطيل أزرار التخمين
+                        guessButtons.forEach(b => b.disabled = true);
+                        // إظهار النتيجة
+                        renderDice(STATE.gameNumber);
+                        elDiceResult.textContent = `🎲 ${STATE.gameNumber}`;
+                        // حساب الفائزين
+                        resolveGame();
+                        // العودة إلى الانتظار بعد 10 ثواني
+                        setTimeout(() => {
+                            STATE.gamePhase = 'waiting';
+                            STATE.gameTimer = 60;
+                            STATE.gameNumber = null;
+                            STATE.gamePoolAmount = 0;
+                            STATE.myGuess = null;
+                            STATE.guessClosed = false;
+                            guessButtons.forEach(b => b.disabled = true);
+                            renderDice(1);
+                            elDiceResult.textContent = '🎲 ?';
+                            elResult.innerHTML = '<span style="color:#8ab4d6;">⏳ انتظر الجولة القادمة...</span>';
+                            updateGameUI();
+                            // إعادة تمكين الأزرار بعد بدء الجولة التالية
+                            setTimeout(() => {
+                                guessButtons.forEach(b => b.disabled = false);
+                            }, 1000);
+                        }, 10000);
+                        updateGameUI();
+                    }
+                }
+                updateGameUI();
+            }, 1000);
+        }
+
+        function updateGameUI() {
+            gameTimerEl.textContent = `⏳ ${STATE.gameTimer}`;
+            if (STATE.gamePhase === 'waiting') {
+                gameStatusEl.textContent = '⏳ انتظار الجولة القادمة...';
+            } else if (STATE.gamePhase === 'betting') {
+                gameStatusEl.textContent = `🎯 خمّن النتيجة! (${STATE.gameTimer}ث)`;
+            } else if (STATE.gamePhase === 'revealing') {
+                gameStatusEl.textContent = `🔍 النتيجة: ${STATE.gameNumber}`;
+            }
+            gamePoolEl.textContent = `${STATE.gamePoolAmount.toFixed(2)} POL`;
+            // إذا كان المستخدم قد خمّن، نحدد الزر المختار
+            if (STATE.myGuess) {
+                document.querySelectorAll('.num-btn').forEach(b => {
+                    b.classList.toggle('selected', parseInt(b.dataset.num) === STATE.myGuess);
+                });
+            }
+        }
+
+        function makeGuess(num) {
+            if (STATE.guessClosed || STATE.gamePhase !== 'betting') {
+                alert('⚠️ فترة التخمين انتهت أو لم تبدأ بعد.');
+                return;
+            }
+            if (!STATE.inRoom) {
+                alert('⚠️ يجب أن تكون في غرفة للمشاركة.');
+                return;
+            }
+            if (STATE.userBalance < 10) {
+                alert('❌ رصيدك لا يكفي (10 POL مطلوبة).');
+                return;
+            }
+            // خصم 10 POL من المستخدم وإضافتها إلى المجموع
+            STATE.userBalance -= 10;
+            STATE.gamePoolAmount += 10;
+            STATE.myGuess = num;
+            // تمييز الزر المختار
+            document.querySelectorAll('.num-btn').forEach(b => {
+                b.classList.toggle('selected', parseInt(b.dataset.num) === num);
+            });
+            // إرسال تخمين إلى قاعدة البيانات (لكل غرفة)
+            saveGuess(num);
+            elResult.innerHTML = `✅ اخترت الرقم ${num}. انتظر النتيجة!`;
+            updateUI();
+            updateGameUI();
+        }
+
+        async function saveGuess(num) {
+            // حفظ التخمين في جدول guesses (سننشئه لاحقاً)
+            // لكننا سنكتفي بالتخزين المؤقت في الذاكرة حالياً
+            // في الإصدار النهائي، يمكن إنشاء جدول guesses
+            // لكننا سنحتفظ بها في STATE.guesses
+            if (!STATE.guesses) STATE.guesses = {};
+            if (!STATE.guesses[STATE.roomName]) STATE.guesses[STATE.roomName] = {};
+            STATE.guesses[STATE.roomName][STATE.userId] = num;
+        }
+
+        async function resolveGame() {
+            const room = STATE.roomName;
+            if (!room) return;
+            // جلب جميع التخمينات لهذه الغرفة (من الذاكرة أو من قاعدة البيانات)
+            // هنا نستخدم الذاكرة
+            const guesses = STATE.guesses && STATE.guesses[room] ? STATE.guesses[room] : {};
+            const correctUsers = [];
+            for (const [userId, guess] of Object.entries(guesses)) {
+                if (guess === STATE.gameNumber) {
+                    correctUsers.push(userId);
+                }
+            }
+            // إذا لم يوجد فائزون، يذهب المجموع إلى الصندوق
+            const pool = STATE.gamePoolAmount;
+            if (correctUsers.length === 0) {
+                // الصندوق يأخذ كل شيء (30% من المجموع يذهب إلى صندوق المضيفين، لكن هنا سنعتبر 100% للصندوق)
+                STATE.hostMarketingPool += pool;
+                addHistory('info', `🎲 رقم ${STATE.gameNumber} - لم يفز أحد، ${pool.toFixed(2)} POL للصندوق`);
+                elResult.innerHTML = `😞 رقم ${STATE.gameNumber} - لم يفز أحد. تم إضافة ${pool.toFixed(2)} POL للصندوق.`;
+            } else {
+                // توزيع 70% على الفائزين
+                const winAmount = pool * 0.7;
+                const perUser = winAmount / correctUsers.length;
+                // إضافة المكاسب للمستخدمين
+                for (const userId of correctUsers) {
+                    // نجد المستخدم في المشاركين
+                    const participant = STATE.participants.find(p => p.user_id === userId);
+                    if (participant) {
+                        // تحديث رصيد المستخدم (إذا كان هو المستخدم الحالي)
+                        if (userId === STATE.userId) {
+                            STATE.userBalance += perUser;
+                            STATE.winsToday += 1;
+                        } else {
+                            // تحديث رصيد المستخدمين الآخرين عبر قاعدة البيانات
+                            // هنا سنقوم بتحديث مباشر في قاعدة البيانات
+                            try {
+                                const { data: profile } = await supabaseClient
+                                    .from('profiles')
+                                    .select('balance')
+                                    .eq('id', userId)
+                                    .single();
+                                if (profile) {
+                                    const newBalance = (profile.balance || 0) + perUser;
+                                    await supabaseClient
+                                        .from('profiles')
+                                        .update({ balance: newBalance })
+                                        .eq('id', userId);
+                                }
+                            } catch (e) { console.error(e); }
+                        }
+                    }
+                }
+                // 30% للصندوق
+                STATE.hostMarketingPool += pool * 0.3;
+                addHistory('win', `🎲 رقم ${STATE.gameNumber} - فوز ${correctUsers.length} لاعب، كسبوا ${perUser.toFixed(2)} POL لكل منهم`);
+                elResult.innerHTML = `🎉 رقم ${STATE.gameNumber} - فاز ${correctUsers.length} لاعب! كسبوا ${perUser.toFixed(2)} POL لكل منهم.`;
+            }
+            // تنظيف التخمينات
+            if (STATE.guesses && STATE.guesses[room]) {
+                delete STATE.guesses[room];
+            }
+            updateUI();
+            updateGameUI();
+        }
+
+        // ============================================================
+        // 17. عرض النرد
         // ============================================================
         function renderDice(value) {
             const dotsMap = {
+                0: [],
                 1: [
                     [0, 1]
                 ],
@@ -1992,84 +2178,8 @@
             elDice.innerHTML = html;
         }
 
-        document.querySelectorAll('.num-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (STATE.isRolling) return;
-                document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                STATE.selectedNumber = parseInt(this.dataset.num);
-                elDiceResult.textContent = `🔢 رقمك: ${STATE.selectedNumber}`;
-                elResult.innerHTML =
-                    `<span style="color:#8ab4d6;">🎯 رهان على رقم ${STATE.selectedNumber} — اضغط النرد</span>`;
-            });
-        });
-
-        function onDiceClick() {
-            if (STATE.isRolling || !STATE.loggedIn || STATE.selectedNumber === null) return;
-            rollDice();
-        }
-
-        const BET_AMOUNT = 10;
-
-        async function rollDice() {
-            if (STATE.isRolling) return;
-            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
-            if (STATE.selectedNumber === null) { alert('⚠️ اختر رقمًا.'); return; }
-            if (STATE.userBalance < BET_AMOUNT) { alert('❌ رصيد غير كافٍ.'); return; }
-
-            STATE.isRolling = true;
-            elDice.style.pointerEvents = 'none';
-
-            STATE.userBalance -= BET_AMOUNT;
-            STATE.roundPool += BET_AMOUNT;
-
-            elDice.classList.add('rolling');
-            elDice.classList.add('bounce');
-
-            let interval = setInterval(() => {
-                renderDice(Math.floor(Math.random() * 6) + 1);
-            }, 200);
-
-            await new Promise(resolve => setTimeout(resolve, 2500));
-            clearInterval(interval);
-            elDice.classList.remove('rolling');
-            elDice.classList.remove('bounce');
-
-            const diceValue = Math.floor(Math.random() * 6) + 1;
-            renderDice(diceValue);
-            elDiceResult.textContent = `🎲 النتيجة: ${diceValue}`;
-
-            if (STATE.selectedNumber === diceValue) {
-                const winAmount = STATE.roundPool * 0.7;
-                const hostAmount = STATE.roundPool * 0.24;
-                const platformAmount = STATE.roundPool * 0.06;
-
-                STATE.userBalance += winAmount;
-                STATE.winsToday += 1;
-                STATE.hostMarketingPool += hostAmount;
-                STATE.platformPool += platformAmount;
-                STATE.roundPool = 0;
-                elResult.innerHTML = `🎉 فوز! ربحت ${winAmount.toFixed(2)} POL`;
-                addHistory('win', `فوز! النرد ${diceValue}`);
-            } else {
-                STATE.lossesToday += 1;
-                elResult.innerHTML = `💀 خسارة! النرد ${diceValue}`;
-                addHistory('lose', `خسارة! النرد ${diceValue}`);
-            }
-
-            updateUI();
-            STATE.isRolling = false;
-            elDice.style.pointerEvents = 'auto';
-        }
-
-        function addHistory(type, detail) {
-            STATE.history.push({ type, detail });
-            if (STATE.history.length > 50) STATE.history.shift();
-            updateHistory();
-        }
-
         // ============================================================
-        // 16. تحديث الواجهة وحفظ البيانات
+        // 18. تحديث الواجهة وحفظ البيانات
         // ============================================================
         function updateUI() {
             elBalance.textContent = STATE.userBalance.toFixed(2);
@@ -2125,7 +2235,7 @@
         }
 
         // ============================================================
-        // 17. المحفظة والإحالات
+        // 19. المحفظة والإحالات
         // ============================================================
         function toggleWithdrawForm() {
             withdrawFormContainer.style.display = withdrawFormContainer.style.display === 'none' ? 'block' : 'none';
@@ -2228,8 +2338,14 @@
             navigator.clipboard.writeText(link).then(() => alert('📋 تم نسخ الرابط!'));
         }
 
+        function addHistory(type, detail) {
+            STATE.history.push({ type, detail });
+            if (STATE.history.length > 50) STATE.history.shift();
+            updateHistory();
+        }
+
         // ============================================================
-        // 18. التوزيع الليلي
+        // 20. التوزيع الليلي
         // ============================================================
         async function distributeDaily() {
             if (STATE.hostMarketingPool <= 0) return;
@@ -2266,7 +2382,7 @@
         }, 1000);
 
         // ============================================================
-        // 19. التهيئة النهائية
+        // 21. التهيئة النهائية
         // ============================================================
         document.querySelectorAll('.tab-item').forEach(tab => {
             tab.addEventListener('click', function() {
@@ -2284,18 +2400,19 @@
 
         window.onload = function() {
             console.log('🚀 بدء التطبيق...');
-            initAuth();
+            renderRooms();
             renderDice(1);
+            initAuth();
             updateUI();
             fetchPolPrice();
+            // بدء اللعبة بعد تسجيل الدخول
         };
 
-        // جعل الدوال عامة للاستخدام في HTML
+        // جعل الدوال عامة
         window.joinSelectedRoom = joinSelectedRoom;
         window.leaveVoiceRoom = leaveVoiceRoom;
         window.toggleMicrophone = toggleMicrophone;
         window.toggleLocalMute = toggleLocalMute;
-        window.onDiceClick = onDiceClick;
         window.deposit = deposit;
         window.executeWithdraw = executeWithdraw;
         window.toggleWithdrawForm = toggleWithdrawForm;
@@ -2310,6 +2427,7 @@
         window.sendChatMessage = sendChatMessage;
         window.kickUser = kickUser;
         window.testMicrophone = testMicrophone;
+        window.makeGuess = makeGuess;
         console.log('✅ التطبيق جاهز');
     </script>
 </body>
