@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar"dir="rtl">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== جميع الأنماط (معدلة) ===== */
+        /* ===== الأنماط الكاملة ===== */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -720,11 +720,6 @@
             border-color: #f1c40f;
             background: rgba(241, 196, 15, 0.15);
         }
-        .room-card .join-btn {
-            margin-top: 4px;
-            padding: 2px 8px;
-            font-size: 0.6rem;
-        }
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -821,6 +816,18 @@
             font-size: 0.6rem;
             margin-left: 4px;
         }
+        .room-leave-btn {
+            background: #c0392b;
+            border: none;
+            color: #fff;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .room-leave-btn:hover {
+            background: #e74c3c;
+        }
         @media (max-width: 420px) {
             .room-grid {
                 grid-template-columns: 1fr 1fr 1fr;
@@ -885,7 +892,7 @@
                     <div class="flex-between">
                         <span class="label">📍 الغرفة الحالية</span>
                         <span id="currentRoomName" style="color:#f1c40f; font-weight:bold;">-</span>
-                        <button class="btn btn-danger btn-sm" onclick="leaveVoiceRoom()" id="leaveRoomBtn">🚪 مغادرة</button>
+                        <button class="room-leave-btn" onclick="leaveVoiceRoom()" id="leaveRoomBtn">🚪 مغادرة</button>
                     </div>
                     <div class="room-controls">
                         <button class="btn btn-success" id="micToggleBtn" onclick="toggleMicrophone()" disabled>🎤 التقاط الميكروفون</button>
@@ -1026,7 +1033,7 @@
         ];
 
         // ============================================================
-        // 3. قائمة المحافظات السورية (بدلاً من الدول العربية)
+        // 3. قائمة المحافظات السورية
         // ============================================================
         const SYRIAN_CITIES = [
             'دمشق', 'حلب', 'حمص', 'حماة', 'اللاذقية',
@@ -1145,7 +1152,7 @@
             selectedRoomName: null,
             // لعبة النرد الجماعي
             gameTimer: 30,
-            gamePhase: 'betting', // betting, revealing
+            gamePhase: 'betting',
             gameNumber: null,
             gamePoolAmount: 0,
             myGuess: null,
@@ -1193,7 +1200,7 @@
         const guessButtons = document.querySelectorAll('.num-btn');
 
         // ============================================================
-        // 8. المصادقة (معدلة لاستخدام maybeSingle)
+        // 8. المصادقة
         // ============================================================
         function initAuth() {
             console.log('🔐 تهيئة المصادقة...');
@@ -1311,7 +1318,6 @@
                     return loadUserData(user);
                 }
 
-                // التحقق من الحظر
                 if (profile.is_banned) {
                     if (profile.ban_expires_at) {
                         const now = new Date();
@@ -1321,7 +1327,6 @@
                             await supabaseClient.auth.signOut();
                             return;
                         } else {
-                            // انتهت مدة الحظر
                             await supabaseClient
                                 .from('profiles')
                                 .update({ is_banned: false, ban_expires_at: null })
@@ -1355,11 +1360,9 @@
                 renderRooms();
                 startGameLoop();
 
-                // إذا كان المستخدم في غرفة سابقة، نعيد دخوله
                 if (profile.last_seen_room && SYRIAN_CITIES.includes(profile.last_seen_room)) {
                     STATE.selectedRoomName = profile.last_seen_room;
-                    selectRoom(profile.last_seen_room);
-                    setTimeout(() => joinSelectedRoom(), 1000);
+                    selectAndJoinRoom(profile.last_seen_room);
                 }
             } catch (e) {
                 console.error(e);
@@ -1381,15 +1384,15 @@
         }
 
         // ============================================================
-        // 9. عرض الغرف (المحافظات السورية)
+        // 9. عرض الغرف والدخول المباشر
         // ============================================================
         function renderRooms() {
             let html = '';
             for (const name of SYRIAN_CITIES) {
-                const isSelected = STATE.selectedRoomName === name;
+                const isActive = STATE.selectedRoomName === name;
                 const count = STATE.participants.filter(p => p.room_id === name).length || 0;
                 html += `
-                    <div class="room-card ${isSelected ? 'active-room' : ''}" onclick="selectAndJoinRoom('${name}')">
+                    <div class="room-card ${isActive ? 'active-room' : ''}" onclick="selectAndJoinRoom('${name}')">
                         <div class="room-name">🏛️ ${name}</div>
                         <div class="room-count">👥 ${count}</div>
                         <div class="room-status active">🟢</div>
@@ -1401,14 +1404,14 @@
             elDbStatusRooms.style.color = '#2ecc71';
         }
 
-        // دالة جديدة: اختيار الغرفة والدخول فوراً
+        // دالة الدخول المباشر (عند الضغط على الغرفة)
         function selectAndJoinRoom(roomName) {
+            if (STATE.inRoom && STATE.roomName === roomName) return;
             STATE.selectedRoomName = roomName;
             elCurrentRoomName.textContent = roomName;
             roomInterface.style.display = 'block';
             renderRooms();
 
-            // إعادة تعيين واجهة الغرفة
             document.getElementById('participantsList').innerHTML = '<div class="participant"><span class="status online"></span> أنت</div>';
             elChatMessages.innerHTML = '<div class="chat-message system">📢 مرحباً! الدردشة هنا</div>';
             elParticipantCount.textContent = '0';
@@ -1419,15 +1422,7 @@
             elDbStatus.style.color = '#f1c40f';
             micToggleBtn.textContent = '🎤 التقاط الميكروفون';
 
-            // الدخول فوراً
             setTimeout(() => joinSelectedRoom(), 500);
-        }
-
-        function selectRoom(roomName) {
-            STATE.selectedRoomName = roomName;
-            elCurrentRoomName.textContent = roomName;
-            roomInterface.style.display = 'block';
-            renderRooms();
         }
 
         // ============================================================
@@ -1472,14 +1467,18 @@
                         .then(stream => {
                             STATE.localStream = stream;
                             call.answer(stream);
-                            call.on('stream', (remoteStream) => addRemoteStream(call.peer, remoteStream));
+                            call.on('stream', (remoteStream) => {
+                                addRemoteStream(call.peer, remoteStream);
+                            });
                             call.on('close', () => removeRemoteStream(call.peer));
                             STATE.connections[call.peer] = call;
                         })
                         .catch(() => {});
                 } else {
                     call.answer(STATE.localStream);
-                    call.on('stream', (remoteStream) => addRemoteStream(call.peer, remoteStream));
+                    call.on('stream', (remoteStream) => {
+                        addRemoteStream(call.peer, remoteStream);
+                    });
                     call.on('close', () => removeRemoteStream(call.peer));
                     STATE.connections[call.peer] = call;
                 }
@@ -1492,6 +1491,7 @@
         async function joinSelectedRoom() {
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
             if (!STATE.selectedRoomName) { alert('اختر غرفة أولاً.'); return; }
+            if (STATE.inRoom && STATE.roomName === STATE.selectedRoomName) return;
             if (STATE.inRoom) await leaveVoiceRoom();
 
             if (!STATE.micTested) {
@@ -1523,19 +1523,17 @@
         }
 
         async function joinVoiceRoomActual() {
-            if (STATE.inRoom) return;
+            if (STATE.inRoom && STATE.roomName === STATE.selectedRoomName) return;
             STATE.inRoom = true;
             STATE.lastEntryTime = Date.now();
             updateUI();
 
             try {
-                // تحديث last_seen_room في الملف الشخصي
                 await supabaseClient
                     .from('profiles')
                     .update({ last_seen_room: STATE.roomName })
                     .eq('id', STATE.userId);
 
-                // التحقق من وجود المستخدم في الغرفة (لمنع التكرار)
                 const { data: existing, error: checkError } = await supabaseClient
                     .from('room_participants')
                     .select('id')
@@ -1656,7 +1654,6 @@
                     micToggleBtn.disabled = false;
                 }
 
-                // تحديث عدد المشاركين في الغرف
                 renderRooms();
 
             } catch (e) {
@@ -1678,11 +1675,12 @@
                 if (isSpeaking) html += ` <span class="speaking-badge">🎙️</span>`;
                 if (isMe) html += ` <span style="color:#8ab4d6;font-size:0.6rem;">(أنت)</span>`;
 
-                // أزرار الإدارة (للمسؤولين فقط)
                 if (STATE.canKick && !isMe) {
                     html += `<div class="participant-actions">`;
-                    html += `<button class="btn btn-danger btn-sm" onclick="kickUser('${p.user_id}','${p.username}','${p.peer_id}')">⛔ طرد مؤقت</button>`;
-                    html += `<button class="btn btn-warning btn-sm" onclick="banUser('${p.user_id}','${p.username}','permanent')">🚫 حظر دائم</button>`;
+                    html +=
+                        `<button class="btn btn-danger btn-sm" onclick="kickUser('${p.user_id}','${p.username}','${p.peer_id}')">⛔ طرد</button>`;
+                    html +=
+                        `<button class="btn btn-warning btn-sm" onclick="banUser('${p.user_id}','${p.username}','permanent')">🚫 حظر</button>`;
                     html += `</div>`;
                 }
 
@@ -1694,6 +1692,9 @@
             }
         }
 
+        // ============================================================
+        // 11. إدارة الصوت (مصلح)
+        // ============================================================
         function updateRemoteAudio() {
             const speaker = STATE.participants.find(p => p.is_speaking && p.user_id !== STATE.userId);
             const speakerPeerId = speaker ? speaker.peer_id : null;
@@ -1762,9 +1763,6 @@
             document.querySelectorAll(`audio[data-peer-id="${peerId}"]`).forEach(el => el.remove());
         }
 
-        // ============================================================
-        // 11. إدارة الميكروفون (مع تحرير فوري)
-        // ============================================================
         async function toggleMicrophone() {
             if (!STATE.inRoom) return;
 
@@ -1812,7 +1810,6 @@
                 if (STATE.localStream) {
                     STATE.localStream.getAudioTracks().forEach(track => track.enabled = false);
                 }
-                // تحديث فوري للمشاركين
                 await refreshParticipants();
                 addChatMessage('نظام', `🔇 ${STATE.username} حرر الميكروفون`, new Date().toISOString(), false, true);
             } catch (e) {
@@ -1832,7 +1829,7 @@
         }
 
         // ============================================================
-        // 12. الطرد المؤقت (24 ساعة) والحظر الدائم
+        // 12. الطرد والحظر
         // ============================================================
         async function kickUser(userId, username, peerId) {
             if (!STATE.canKick) {
@@ -1843,33 +1840,24 @@
 
             try {
                 const participant = STATE.participants.find(p => p.user_id === userId);
-                if (!participant) {
-                    alert('المستخدم غير موجود.');
-                    return;
-                }
-
-                // تحرير الميكروفون إذا كان المطرود يتحدث
-                if (participant.is_speaking) {
+                if (participant) {
+                    if (participant.is_speaking) {
+                        await supabaseClient
+                            .from('room_participants')
+                            .update({ is_speaking: false })
+                            .eq('id', participant.id);
+                    }
                     await supabaseClient
                         .from('room_participants')
-                        .update({ is_speaking: false })
+                        .delete()
                         .eq('id', participant.id);
+                    if (participant.peer_id && STATE.connections[participant.peer_id]) {
+                        STATE.connections[participant.peer_id].close();
+                        delete STATE.connections[participant.peer_id];
+                        removeRemoteStream(participant.peer_id);
+                    }
                 }
 
-                // حذف السجل
-                await supabaseClient
-                    .from('room_participants')
-                    .delete()
-                    .eq('id', participant.id);
-
-                // إغلاق اتصال Peer
-                if (participant.peer_id && STATE.connections[participant.peer_id]) {
-                    STATE.connections[participant.peer_id].close();
-                    delete STATE.connections[participant.peer_id];
-                    removeRemoteStream(participant.peer_id);
-                }
-
-                // حظر مؤقت 24 ساعة
                 const expiresAt = new Date();
                 expiresAt.setHours(expiresAt.getHours() + 24);
 
@@ -1881,7 +1869,6 @@
                     })
                     .eq('id', userId);
 
-                // تسجيل في جدول المحظورين
                 await supabaseClient
                     .from('banned_users')
                     .insert([{
@@ -1906,10 +1893,7 @@
                 alert('⚠️ ليس لديك صلاحية الحظر.');
                 return;
             }
-            const confirmMsg = type === 'permanent' ?
-                `هل تريد حظر ${username} بشكل دائم من التطبيق؟` :
-                `هل تريد حظر ${username}؟`;
-            if (!confirm(confirmMsg)) return;
+            if (!confirm(`هل تريد حظر ${username} بشكل دائم؟`)) return;
 
             try {
                 const participant = STATE.participants.find(p => p.user_id === userId);
@@ -1931,7 +1915,6 @@
                     }
                 }
 
-                // حظر دائم
                 await supabaseClient
                     .from('profiles')
                     .update({
@@ -1945,14 +1928,13 @@
                     .insert([{
                         user_id: userId,
                         banned_by: STATE.userId,
-                        reason: type === 'permanent' ? 'حظر دائم' : 'حظر مؤقت',
-                        ban_type: type,
+                        reason: 'حظر دائم',
+                        ban_type: 'permanent',
                     }]);
 
                 await refreshParticipants();
-                addChatMessage('نظام', `🚫 تم حظر ${username} ${type === 'permanent' ? 'بشكل دائم' : 'مؤقتاً'}`, new Date()
-                .toISOString(), false, true);
-                alert(`✅ تم حظر ${username} ${type === 'permanent' ? 'بشكل دائم' : 'مؤقتاً'}.`);
+                addChatMessage('نظام', `🚫 تم حظر ${username} بشكل دائم`, new Date().toISOString(), false, true);
+                alert(`✅ تم حظر ${username} بشكل دائم.`);
             } catch (e) {
                 console.error(e);
                 alert('❌ فشل الحظر.');
@@ -1960,7 +1942,7 @@
         }
 
         // ============================================================
-        // 13. الدردشة النصية (مصلحة)
+        // 13. الدردشة
         // ============================================================
         async function sendChatMessage() {
             const msg = elChatInput.value.trim();
@@ -1982,7 +1964,6 @@
         function addChatMessage(username, message, timestamp, isMe = false, isSystem = false) {
             const container = elChatMessages;
 
-            // إزالة رسالة الترحيب الافتراضية
             if (container.querySelector('.system') && container.children.length === 1) {
                 container.innerHTML = '';
             }
@@ -2074,7 +2055,6 @@
                     STATE.lastEntryTime = null;
                 }
 
-                // تحديث last_seen_room
                 await supabaseClient
                     .from('profiles')
                     .update({ last_seen_room: null })
@@ -2103,12 +2083,12 @@
         }
 
         // ============================================================
-        // 16. لعبة النرد الجماعية (معدلة: 30 ثانية تخمين + 30 ثانية نتيجة)
+        // 16. لعبة النرد الجماعي (معدلة للتزامن الدقيق)
         // ============================================================
         function startGameLoop() {
             if (STATE.gameInterval) clearInterval(STATE.gameInterval);
 
-            // بدء الجولة مباشرة
+            // تهيئة الجولة الأولى
             STATE.gamePhase = 'betting';
             STATE.gameTimer = 30;
             STATE.gameNumber = Math.floor(Math.random() * 6) + 1;
@@ -2124,12 +2104,13 @@
             elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رقمك خلال 30 ثانية!</span>';
             updateGameUI();
 
+            // بدء التحديث كل ثانية
             STATE.gameInterval = setInterval(() => {
                 STATE.gameTimer--;
 
                 if (STATE.gameTimer <= 0) {
                     if (STATE.gamePhase === 'betting') {
-                        // انتهاء التخمين - الانتقال إلى الكشف
+                        // نهاية التخمين
                         STATE.gamePhase = 'revealing';
                         STATE.guessClosed = true;
                         guessButtons.forEach(b => b.disabled = true);
@@ -2143,7 +2124,7 @@
                             resolveGame();
                         }, 800);
 
-                        // بعد 30 ثانية، نبدأ جولة جديدة
+                        // بدء جولة جديدة بعد 30 ثانية
                         setTimeout(() => {
                             STATE.gamePhase = 'betting';
                             STATE.gameTimer = 30;
@@ -2309,7 +2290,7 @@
         }
 
         // ============================================================
-        // 18. تحديث الواجهة وحفظ البيانات
+        // 18. تحديث الواجهة
         // ============================================================
         function updateUI() {
             elBalance.textContent = STATE.userBalance.toFixed(2);
