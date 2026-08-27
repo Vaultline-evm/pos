@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== جميع الأنماط ===== */
+        /* ===== جميع الأنماط (نفسها السابقة) ===== */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -1142,12 +1142,13 @@
             selectedRoomName: null,
             // لعبة النرد الجماعي
             gameTimer: 60,
-            gamePhase: 'waiting', // waiting, betting, revealing
+            gamePhase: 'waiting',
             gameNumber: null,
             gamePoolAmount: 0,
             myGuess: null,
             gameInterval: null,
             guessClosed: false,
+            guesses: {},
         };
 
         // ============================================================
@@ -1190,7 +1191,7 @@
         const guessButtons = document.querySelectorAll('.num-btn');
 
         // ============================================================
-        // 8. المصادقة
+        // 8. المصادقة (معدلة لاستخدام maybeSingle)
         // ============================================================
         function initAuth() {
             console.log('🔐 تهيئة المصادقة...');
@@ -1275,13 +1276,41 @@
 
         async function loadUserData(user) {
             try {
+                // استخدام maybeSingle بدلاً من single
                 const { data: profile, error } = await supabaseClient
                     .from('profiles')
                     .select('*')
                     .eq('id', user.id)
-                    .single();
+                    .maybeSingle();
 
-                if (error) { alert('⚠️ تعذر تحميل بياناتك: ' + error.message); return; }
+                if (error) {
+                    alert('⚠️ تعذر تحميل بياناتك: ' + error.message);
+                    return;
+                }
+
+                // إذا لم يوجد ملف شخصي، ننشئ واحداً تلقائياً
+                if (!profile) {
+                    const wallet = generateWallet24();
+                    const username = user.user_metadata?.username || user.email?.split('@')[0] || 'مستخدم';
+                    const encryptedKey = encrypt(wallet.privateKey, 'temporary_password_123');
+
+                    const { error: insertError } = await supabaseClient
+                        .from('profiles')
+                        .insert([{
+                            id: user.id,
+                            username: username,
+                            wallet_address: wallet.address,
+                            encrypted_private_key: encryptedKey,
+                        }]);
+
+                    if (insertError) {
+                        alert('⚠️ فشل إنشاء ملفك الشخصي: ' + insertError.message);
+                        return;
+                    }
+
+                    // إعادة تحميل البيانات
+                    return loadUserData(user);
+                }
 
                 STATE.loggedIn = true;
                 STATE.userId = user.id;
@@ -1303,8 +1332,10 @@
                 initPeer();
                 renderRooms();
                 startGameLoop();
-            } catch (e) { console.error(e);
-                alert('❌ خطأ في تحميل البيانات: ' + e.message); }
+            } catch (e) {
+                console.error(e);
+                alert('❌ خطأ في تحميل البيانات: ' + e.message);
+            }
         }
 
         async function logoutUser() {
@@ -1489,9 +1520,9 @@
                             is_speaking: false,
                         }])
                         .select('id')
-                        .single();
+                        .maybeSingle();
                     if (insertError) throw insertError;
-                    recordId = inserted.id;
+                    recordId = inserted?.id;
                 }
 
                 STATE.myRecordId = recordId;
@@ -1684,7 +1715,7 @@
         }
 
         // ============================================================
-        // 11. إدارة الميكروفون (متحدث واحد)
+        // 11. إدارة الميكروفون
         // ============================================================
         async function toggleMicrophone() {
             if (!STATE.inRoom) return;
@@ -1948,40 +1979,29 @@
             STATE.myGuess = null;
             STATE.guessClosed = false;
             updateGameUI();
-            // بدء العد التنازلي
             STATE.gameInterval = setInterval(() => {
                 STATE.gameTimer--;
                 if (STATE.gameTimer <= 0) {
-                    // انتهاء الجولة
                     if (STATE.gamePhase === 'waiting') {
-                        // بدء جولة جديدة - مرحلة التخمين
                         STATE.gamePhase = 'betting';
                         STATE.gameTimer = 20;
                         STATE.gamePoolAmount = 0;
                         STATE.guessClosed = false;
                         STATE.myGuess = null;
-                        // إعادة تمكين الأزرار
                         guessButtons.forEach(b => b.disabled = false);
                         document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
                         elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رقمك خلال 20 ثانية!</span>';
-                        // توليد رقم عشوائي (سيتم الكشف عنه لاحقاً)
                         STATE.gameNumber = Math.floor(Math.random() * 6) + 1;
-                        // إظهار النرد كعلامة استفهام
                         renderDice(0);
                         elDiceResult.textContent = '❓';
                         updateGameUI();
                     } else if (STATE.gamePhase === 'betting') {
-                        // انتهاء فترة التخمين - الكشف عن النتيجة
                         STATE.gamePhase = 'revealing';
                         STATE.guessClosed = true;
-                        // تعطيل أزرار التخمين
                         guessButtons.forEach(b => b.disabled = true);
-                        // إظهار النتيجة
                         renderDice(STATE.gameNumber);
                         elDiceResult.textContent = `🎲 ${STATE.gameNumber}`;
-                        // حساب الفائزين
                         resolveGame();
-                        // العودة إلى الانتظار بعد 10 ثواني
                         setTimeout(() => {
                             STATE.gamePhase = 'waiting';
                             STATE.gameTimer = 60;
@@ -1994,7 +2014,6 @@
                             elDiceResult.textContent = '🎲 ?';
                             elResult.innerHTML = '<span style="color:#8ab4d6;">⏳ انتظر الجولة القادمة...</span>';
                             updateGameUI();
-                            // إعادة تمكين الأزرار بعد بدء الجولة التالية
                             setTimeout(() => {
                                 guessButtons.forEach(b => b.disabled = false);
                             }, 1000);
@@ -2016,7 +2035,6 @@
                 gameStatusEl.textContent = `🔍 النتيجة: ${STATE.gameNumber}`;
             }
             gamePoolEl.textContent = `${STATE.gamePoolAmount.toFixed(2)} POL`;
-            // إذا كان المستخدم قد خمّن، نحدد الزر المختار
             if (STATE.myGuess) {
                 document.querySelectorAll('.num-btn').forEach(b => {
                     b.classList.toggle('selected', parseInt(b.dataset.num) === STATE.myGuess);
@@ -2037,72 +2055,50 @@
                 alert('❌ رصيدك لا يكفي (10 POL مطلوبة).');
                 return;
             }
-            // خصم 10 POL من المستخدم وإضافتها إلى المجموع
             STATE.userBalance -= 10;
             STATE.gamePoolAmount += 10;
             STATE.myGuess = num;
-            // تمييز الزر المختار
             document.querySelectorAll('.num-btn').forEach(b => {
                 b.classList.toggle('selected', parseInt(b.dataset.num) === num);
             });
-            // إرسال تخمين إلى قاعدة البيانات (لكل غرفة)
-            saveGuess(num);
+            if (!STATE.guesses[STATE.roomName]) STATE.guesses[STATE.roomName] = {};
+            STATE.guesses[STATE.roomName][STATE.userId] = num;
             elResult.innerHTML = `✅ اخترت الرقم ${num}. انتظر النتيجة!`;
             updateUI();
             updateGameUI();
         }
 
-        async function saveGuess(num) {
-            // حفظ التخمين في جدول guesses (سننشئه لاحقاً)
-            // لكننا سنكتفي بالتخزين المؤقت في الذاكرة حالياً
-            // في الإصدار النهائي، يمكن إنشاء جدول guesses
-            // لكننا سنحتفظ بها في STATE.guesses
-            if (!STATE.guesses) STATE.guesses = {};
-            if (!STATE.guesses[STATE.roomName]) STATE.guesses[STATE.roomName] = {};
-            STATE.guesses[STATE.roomName][STATE.userId] = num;
-        }
-
         async function resolveGame() {
             const room = STATE.roomName;
             if (!room) return;
-            // جلب جميع التخمينات لهذه الغرفة (من الذاكرة أو من قاعدة البيانات)
-            // هنا نستخدم الذاكرة
-            const guesses = STATE.guesses && STATE.guesses[room] ? STATE.guesses[room] : {};
+            const guesses = STATE.guesses[room] || {};
             const correctUsers = [];
             for (const [userId, guess] of Object.entries(guesses)) {
                 if (guess === STATE.gameNumber) {
                     correctUsers.push(userId);
                 }
             }
-            // إذا لم يوجد فائزون، يذهب المجموع إلى الصندوق
             const pool = STATE.gamePoolAmount;
             if (correctUsers.length === 0) {
-                // الصندوق يأخذ كل شيء (30% من المجموع يذهب إلى صندوق المضيفين، لكن هنا سنعتبر 100% للصندوق)
                 STATE.hostMarketingPool += pool;
                 addHistory('info', `🎲 رقم ${STATE.gameNumber} - لم يفز أحد، ${pool.toFixed(2)} POL للصندوق`);
                 elResult.innerHTML = `😞 رقم ${STATE.gameNumber} - لم يفز أحد. تم إضافة ${pool.toFixed(2)} POL للصندوق.`;
             } else {
-                // توزيع 70% على الفائزين
                 const winAmount = pool * 0.7;
                 const perUser = winAmount / correctUsers.length;
-                // إضافة المكاسب للمستخدمين
                 for (const userId of correctUsers) {
-                    // نجد المستخدم في المشاركين
                     const participant = STATE.participants.find(p => p.user_id === userId);
                     if (participant) {
-                        // تحديث رصيد المستخدم (إذا كان هو المستخدم الحالي)
                         if (userId === STATE.userId) {
                             STATE.userBalance += perUser;
                             STATE.winsToday += 1;
                         } else {
-                            // تحديث رصيد المستخدمين الآخرين عبر قاعدة البيانات
-                            // هنا سنقوم بتحديث مباشر في قاعدة البيانات
                             try {
                                 const { data: profile } = await supabaseClient
                                     .from('profiles')
                                     .select('balance')
                                     .eq('id', userId)
-                                    .single();
+                                    .maybeSingle();
                                 if (profile) {
                                     const newBalance = (profile.balance || 0) + perUser;
                                     await supabaseClient
@@ -2114,15 +2110,11 @@
                         }
                     }
                 }
-                // 30% للصندوق
                 STATE.hostMarketingPool += pool * 0.3;
                 addHistory('win', `🎲 رقم ${STATE.gameNumber} - فوز ${correctUsers.length} لاعب، كسبوا ${perUser.toFixed(2)} POL لكل منهم`);
                 elResult.innerHTML = `🎉 رقم ${STATE.gameNumber} - فاز ${correctUsers.length} لاعب! كسبوا ${perUser.toFixed(2)} POL لكل منهم.`;
             }
-            // تنظيف التخمينات
-            if (STATE.guesses && STATE.guesses[room]) {
-                delete STATE.guesses[room];
-            }
+            delete STATE.guesses[room];
             updateUI();
             updateGameUI();
         }
@@ -2405,7 +2397,6 @@
             initAuth();
             updateUI();
             fetchPolPrice();
-            // بدء اللعبة بعد تسجيل الدخول
         };
 
         // جعل الدوال عامة
