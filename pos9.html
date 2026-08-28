@@ -20,8 +20,8 @@
             padding: 0;
         }
         body {
-            background: #0b1a2e;
-            color: #fff;
+            background: #f0f4f8;
+            color: #1a2332;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -32,17 +32,17 @@
         .app-container {
             max-width: 480px;
             width: 100%;
-            background: linear-gradient(145deg, #0e2238, #0b1a2e);
+            background: #ffffff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             position: relative;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
         }
         .tab-bar {
             display: flex;
-            background: #0f1f30;
-            border-bottom: 2px solid #1f3347;
+            background: #ffffff;
+            border-bottom: 2px solid #e8edf2;
             position: sticky;
             top: 0;
             z-index: 10;
@@ -73,9 +73,9 @@
             line-height: 1;
         }
         .tab-item.active {
-            color: #f1c40f;
-            border-bottom-color: #f1c40f;
-            background: rgba(241, 196, 15, 0.05);
+            color: #2c3e50;
+            border-bottom-color: #2c3e50;
+            background: rgba(44, 62, 80, 0.05);
         }
         .tab-item:active {
             opacity: 0.6;
@@ -109,29 +109,29 @@
             }
         }
         .card {
-            background: rgba(255, 255, 255, 0.06);
+            background: #f8fafc;
             border-radius: 20px;
             padding: 12px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            border: 1px solid #e8edf2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
         .card .label {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #8ab4d6;
+            color: #5a7a8a;
         }
         .card .value {
             font-size: 1.4rem;
             font-weight: 700;
             margin-top: 4px;
-            color: #fff;
+            color: #1a2332;
         }
         .card .value.gold {
-            color: #f1c40f;
+            color: #e67e22;
         }
         .card .value.green {
-            color: #2ecc71;
+            color: #27ae60;
         }
         .card .value.red {
             color: #e74c3c;
@@ -151,8 +151,8 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            background: #2c3e50;
-            color: #fff;
+            background: #e8edf2;
+            color: #1a2332;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -165,15 +165,15 @@
         }
         .btn-success {
             background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: #fff;
         }
         .btn-danger {
             background: linear-gradient(135deg, #c0392b, #e74c3c);
+            color: #fff;
         }
         .btn-secondary {
             background: #34495e;
-        }
-        .btn-warning {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff;
         }
         .btn-sm {
             padding: 3px 10px;
@@ -188,16 +188,16 @@
             justify-content: center;
         }
         .badge {
-            background: rgba(241, 196, 15, 0.2);
+            background: rgba(230, 126, 34, 0.15);
             padding: 3px 10px;
             border-radius: 30px;
             font-size: 0.65rem;
-            border: 1px solid #f1c40f44;
-            color: #f1c40f;
+            border: 1px solid #e67e2244;
+            color: #e67e22;
         }
         .small-text {
             font-size: 0.65rem;
-            color: #8ab4d6;
+            color: #5a7a8a;
         }
         .bonus-badge {
             background: linear-gradient(135deg, #f39c12, #e67e22);
@@ -216,13 +216,13 @@
             overflow-y: auto;
         }
         .participant {
-            background: #1c2f44;
+            background: #e8edf2;
             padding: 3px 10px;
             border-radius: 30px;
             display: flex;
             align-items: center;
             gap: 4px;
-            border: 1px solid #3a5a7a;
+            border: 1px solid #d5dce3;
             font-size: 0.7rem;
             flex-wrap: wrap;
         }
@@ -239,12 +239,7 @@
             background: #e67e22;
         }
         .status.offline {
-            background: #7f8c8d;
-        }
-        .participant .speaking-badge {
-            color: #2ecc71;
-            font-size: 0.7rem;
-            margin-left: 2px;
+            background: #95a5a6;
         }
         .room-controls {
             display: flex;
@@ -253,11 +248,11 @@
             margin-top: 4px;
         }
         .room-info {
-            background: #0a1825;
+            background: #e8edf2;
             padding: 4px 10px;
             border-radius: 16px;
             font-size: 0.7rem;
-            color: #8ab4d6;
+            color: #5a7a8a;
         }
         .wheel-container {
             display: flex;
@@ -275,10 +270,10 @@
             width: 240px;
             height: 240px;
             border-radius: 50%;
-            border: 6px solid #f1c40f;
+            border: 6px solid #2c3e50;
             position: relative;
             transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-            box-shadow: 0 0 40px rgba(241, 196, 15, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.15), inset 0 0 40px rgba(0, 0, 0, 0.1);
             margin: 0 auto;
         }
         .wheel-pointer {
@@ -290,9 +285,9 @@
             height: 0;
             border-left: 18px solid transparent;
             border-right: 18px solid transparent;
-            border-top: 35px solid #f1c40f;
+            border-top: 35px solid #e74c3c;
             z-index: 10;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
         }
         .wheel-center {
             position: absolute;
@@ -302,26 +297,14 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: radial-gradient(circle, #2c3e50, #1a1a2e);
-            border: 4px solid #f1c40f;
+            background: radial-gradient(circle, #ffffff, #e8edf2);
+            border: 4px solid #2c3e50;
             z-index: 5;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-        }
-        .wheel-emoji {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.2rem;
-            font-weight: bold;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-            pointer-events: none;
         }
         .bet-options {
             display: grid;
@@ -332,9 +315,9 @@
         .bet-option {
             padding: 10px 6px;
             border-radius: 16px;
-            border: 2px solid #3a5a7a;
-            background: #1c2f44;
-            color: #fff;
+            border: 2px solid #d5dce3;
+            background: #f8fafc;
+            color: #1a2332;
             font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.3s;
@@ -348,9 +331,9 @@
             gap: 4px;
         }
         .bet-option.selected {
-            border-color: #f1c40f;
-            background: #f1c40f22;
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+            border-color: #f39c12;
+            background: #fef9e7;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.2);
             transform: scale(1.05);
         }
         .bet-option:disabled {
@@ -364,22 +347,22 @@
         }
         .bet-option .label {
             font-size: 0.6rem;
-            color: #8ab4d6;
+            color: #5a7a8a;
         }
         .bet-option .pool-amount {
             font-size: 0.55rem;
-            color: #f1c40f;
-            background: rgba(241, 196, 15, 0.15);
+            color: #e67e22;
+            background: rgba(230, 126, 34, 0.1);
             padding: 1px 8px;
             border-radius: 12px;
             margin-top: 2px;
         }
         .result-box {
-            background: #0f1f30;
+            background: #f8fafc;
             border-radius: 16px;
             padding: 12px;
             min-height: 50px;
-            border-right: 4px solid #f1c40f;
+            border-right: 4px solid #f39c12;
             font-size: 0.9rem;
             line-height: 1.5;
             text-align: center;
@@ -388,45 +371,45 @@
             max-height: 80px;
             overflow-y: auto;
             font-size: 0.7rem;
-            background: #0a1825;
+            background: #f8fafc;
             padding: 4px 8px;
             border-radius: 12px;
-            border: 1px solid #1f3347;
+            border: 1px solid #e8edf2;
         }
         .history p {
             margin: 2px 0;
             padding: 2px 0;
-            border-bottom: 1px solid #1a2a3a;
+            border-bottom: 1px solid #e8edf2;
         }
         .history .win {
-            color: #2ecc71;
+            color: #27ae60;
         }
         .history .lose {
             color: #e74c3c;
         }
         .history .info {
-            color: #f1c40f;
+            color: #e67e22;
         }
         .wallet-address {
-            background: #0a1825;
+            background: #f8fafc;
             padding: 8px 12px;
             border-radius: 16px;
             font-family: monospace;
             font-size: 0.7rem;
             direction: ltr;
             word-break: break-all;
-            border: 1px solid #1f3347;
-            color: #8ab4d6;
+            border: 1px solid #e8edf2;
+            color: #5a7a8a;
         }
         .referral-link-box {
-            background: #0a1825;
+            background: #f8fafc;
             padding: 6px 10px;
             border-radius: 16px;
             direction: ltr;
             font-size: 0.7rem;
-            color: #f1c40f;
+            color: #e67e22;
             word-break: break-all;
-            border: 1px solid #1f3347;
+            border: 1px solid #e8edf2;
         }
         .qr-container {
             display: flex;
@@ -452,20 +435,47 @@
         }
         .withdraw-form .field-group label {
             font-size: 0.7rem;
-            color: #8ab4d6;
+            color: #5a7a8a;
         }
         .withdraw-form .field-group input {
             width: 100%;
             padding: 8px 12px;
             border-radius: 30px;
-            border: none;
-            background: #1c2f44;
-            color: #fff;
+            border: 1px solid #d5dce3;
+            background: #ffffff;
+            color: #1a2332;
             font-size: 0.85rem;
-            outline: 1px solid #3a5a7a;
+            outline: none;
         }
         .withdraw-form .field-group input:focus {
-            outline: 2px solid #f1c40f;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+        }
+        .withdraw-form .input-with-btn {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .withdraw-form .input-with-btn input {
+            flex: 1;
+        }
+        .withdraw-form .input-with-btn .cam-btn {
+            background: #2c3e50;
+            border: none;
+            color: #fff;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .withdraw-form .input-with-btn .cam-btn:hover {
+            background: #f39c12;
         }
         .auth-overlay {
             position: fixed;
@@ -473,7 +483,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
             z-index: 1000;
             display: flex;
@@ -482,21 +492,21 @@
             padding: 16px;
         }
         .auth-card {
-            background: #0e2238;
+            background: #ffffff;
             border-radius: 28px;
             padding: 20px 18px;
             max-width: 400px;
             width: 100%;
-            border: 1px solid #f1c40f44;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            border: 1px solid #e8edf2;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         }
         .auth-card h2 {
-            color: #f1c40f;
+            color: #2c3e50;
             margin-bottom: 4px;
             font-size: 1.3rem;
         }
         .auth-card .sub {
-            color: #8ab4d6;
+            color: #5a7a8a;
             margin-bottom: 14px;
             font-size: 0.8rem;
         }
@@ -504,7 +514,7 @@
             display: flex;
             gap: 6px;
             margin-bottom: 14px;
-            border-bottom: 1px solid #1f3347;
+            border-bottom: 1px solid #e8edf2;
             padding-bottom: 6px;
         }
         .auth-tab {
@@ -521,9 +531,9 @@
             font-size: 0.8rem;
         }
         .auth-tab.active {
-            border-color: #f1c40f;
-            color: #f1c40f;
-            background: rgba(241, 196, 15, 0.1);
+            border-color: #2c3e50;
+            color: #2c3e50;
+            background: rgba(44, 62, 80, 0.05);
         }
         .auth-panel {
             display: none;
@@ -537,22 +547,23 @@
             width: 100%;
             padding: 10px 12px;
             border-radius: 30px;
-            border: none;
-            background: #1c2f44;
-            color: #fff;
+            border: 1px solid #d5dce3;
+            background: #ffffff;
+            color: #1a2332;
             font-size: 0.9rem;
-            outline: 1px solid #3a5a7a;
+            outline: none;
         }
         .auth-panel input:focus {
-            outline: 2px solid #f1c40f;
+            border-color: #2c3e50;
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
         }
         .price-tag {
-            background: rgba(241, 196, 15, 0.12);
-            border: 1px solid #f1c40f44;
+            background: rgba(230, 126, 34, 0.12);
+            border: 1px solid #e67e2244;
             border-radius: 25px;
             padding: 2px 12px;
             font-size: 0.8rem;
-            color: #f1c40f;
+            color: #e67e22;
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -563,7 +574,7 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #2ecc71;
+            background: #27ae60;
             display: inline-block;
             animation: pulse-dot 1.5s ease-in-out infinite;
         }
@@ -579,33 +590,33 @@
             }
         }
         .peer-id-box {
-            background: #0a1825;
+            background: #f8fafc;
             border-radius: 12px;
             padding: 4px 10px;
             font-family: monospace;
             font-size: 0.6rem;
-            color: #8ab4d6;
+            color: #5a7a8a;
             direction: ltr;
             word-break: break-all;
-            border: 1px solid #1f3347;
+            border: 1px solid #e8edf2;
             margin: 3px 0;
         }
         .db-status {
-            color: #f1c40f;
+            color: #e67e22;
             font-size: 0.6rem;
-            background: rgba(241, 196, 15, 0.1);
+            background: rgba(230, 126, 34, 0.1);
             padding: 2px 8px;
             border-radius: 16px;
-            border: 1px solid #f1c40f33;
+            border: 1px solid #e67e2233;
         }
         .mic-test-btn {
-            background: #2c3e50;
-            border: 1px solid #3a5a7a;
+            background: #e8edf2;
+            border: 1px solid #d5dce3;
             border-radius: 30px;
             padding: 3px 12px;
             font-size: 0.7rem;
             cursor: pointer;
-            color: #fff;
+            color: #1a2332;
             transition: 0.2s;
         }
         .room-grid {
@@ -614,94 +625,96 @@
             gap: 4px;
         }
         .room-card {
-            background: rgba(255, 255, 255, 0.06);
+            background: #f8fafc;
             border-radius: 10px;
             padding: 8px 4px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid #e8edf2;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
         }
         .room-card:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: #e8edf2;
         }
         .room-card .room-name {
             font-weight: 700;
             font-size: 0.75rem;
-            color: #f1c40f;
+            color: #2c3e50;
         }
         .room-card .room-count {
             font-size: 0.6rem;
-            color: #8ab4d6;
+            color: #5a7a8a;
         }
         .room-card.active-room {
-            border-color: #f1c40f;
-            background: rgba(241, 196, 15, 0.15);
+            border-color: #f39c12;
+            background: #fef9e7;
         }
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: 160px;
-            border: 1px solid #1f3347;
+            height: 250px;
+            border: 1px solid #e8edf2;
             border-radius: 12px;
             overflow: hidden;
-            background: #0a1825;
+            background: #f8fafc;
             margin-top: 6px;
         }
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 6px 10px;
+            padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            min-height: 100px;
-            max-height: 120px;
+            gap: 4px;
+            min-height: 180px;
+            max-height: 200px;
         }
         .chat-message {
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            border-radius: 12px;
+            background: #ffffff;
             word-break: break-word;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
         }
         .chat-message .msg-user {
             font-weight: 600;
-            color: #8ab4d6;
+            color: #2c3e50;
         }
         .chat-message .msg-time {
             font-size: 0.55rem;
-            color: #5a7a8a;
+            color: #95a5a6;
             margin-left: 4px;
         }
         .chat-message.system {
-            background: rgba(241, 196, 15, 0.08);
-            border-right: 3px solid #f1c40f;
+            background: #fef9e7;
+            border-right: 3px solid #f39c12;
             text-align: center;
-            color: #f1c40f;
-            font-size: 0.65rem;
+            color: #e67e22;
+            font-size: 0.7rem;
             padding: 6px 10px;
         }
         .chat-input-row {
             display: flex;
             gap: 4px;
             padding: 6px 8px;
-            background: #0f1f30;
-            border-top: 1px solid #1f3347;
+            background: #ffffff;
+            border-top: 1px solid #e8edf2;
         }
         .chat-input-row input {
             flex: 1;
             padding: 8px 12px;
             border-radius: 30px;
-            border: none;
-            background: #1c2f44;
-            color: #fff;
+            border: 1px solid #d5dce3;
+            background: #ffffff;
+            color: #1a2332;
             font-size: 0.8rem;
-            outline: 1px solid #3a5a7a;
+            outline: none;
             min-height: 36px;
         }
         .chat-input-row input:focus {
-            outline: 2px solid #f1c40f;
+            border-color: #2c3e50;
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
         }
         .chat-input-row button {
             padding: 8px 14px;
@@ -717,42 +730,37 @@
         .game-timer {
             font-size: 1.4rem;
             font-weight: bold;
-            color: #f1c40f;
+            color: #e67e22;
             text-align: center;
             padding: 4px 0;
         }
         .game-status {
             text-align: center;
             font-size: 0.85rem;
-            color: #8ab4d6;
+            color: #5a7a8a;
             margin-top: 2px;
         }
         .game-pool {
-            color: #f1c40f;
+            color: #e67e22;
             font-weight: bold;
         }
         .bet-input {
-            background: #1c2f44;
-            border: 1px solid #3a5a7a;
+            background: #ffffff;
+            border: 1px solid #d5dce3;
             border-radius: 25px;
             padding: 6px 12px;
-            color: #fff;
+            color: #1a2332;
             font-size: 0.85rem;
             width: 100px;
             text-align: center;
             outline: none;
         }
         .bet-input:focus {
-            border-color: #f1c40f;
-            outline: 2px solid #f1c40f55;
-        }
-        .bet-usd {
-            font-size: 0.65rem;
-            color: #8ab4d6;
-            text-align: center;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
         }
         .room-leave-btn {
-            background: #c0392b;
+            background: #e74c3c;
             border: none;
             color: #fff;
             border-radius: 25px;
@@ -777,7 +785,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             z-index: 999;
             display: none;
@@ -789,24 +797,24 @@
             display: flex;
         }
         .game-tutorial-card {
-            background: linear-gradient(145deg, #1a2f44, #0e2238);
+            background: #ffffff;
             border-radius: 28px;
             padding: 24px 20px;
             max-width: 420px;
             width: 100%;
-            border: 2px solid #f1c40f66;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            border: 2px solid #f39c1266;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             max-height: 90vh;
             overflow-y: auto;
         }
         .game-tutorial-card h2 {
-            color: #f1c40f;
+            color: #2c3e50;
             font-size: 1.4rem;
             text-align: center;
             margin-bottom: 6px;
         }
         .game-tutorial-card .sub-title {
-            color: #8ab4d6;
+            color: #5a7a8a;
             text-align: center;
             font-size: 0.8rem;
             margin-bottom: 16px;
@@ -815,11 +823,11 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255, 255, 255, 0.05);
+            background: #f8fafc;
             padding: 10px 12px;
             border-radius: 14px;
             margin-bottom: 8px;
-            border-right: 3px solid #f1c40f;
+            border-right: 3px solid #f39c12;
         }
         .game-tutorial-card .tutorial-item .icon {
             font-size: 1.8rem;
@@ -828,11 +836,11 @@
         }
         .game-tutorial-card .tutorial-item .text {
             font-size: 0.8rem;
-            color: #d4e6f1;
+            color: #1a2332;
             line-height: 1.4;
         }
         .game-tutorial-card .tutorial-item .text strong {
-            color: #f1c40f;
+            color: #e67e22;
         }
         .game-tutorial-card .btn-close-tutorial {
             width: 100%;
@@ -849,6 +857,41 @@
         }
         .game-tutorial-card .btn-close-tutorial:hover {
             transform: scale(1.02);
+        }
+
+        /* Scanner Modal */
+        #scannerModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            padding: 16px;
+            align-items: center;
+            justify-content: center;
+        }
+        #scannerModal.show {
+            display: flex;
+        }
+        .scanner-content {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 16px;
+            max-width: 380px;
+            width: 100%;
+            border: 1px solid #f39c1266;
+        }
+        .scanner-content h3 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .scanner-content video {
+            width: 100%;
+            border-radius: 12px;
+            background: #000;
         }
 
         @media (max-width: 420px) {
@@ -874,11 +917,6 @@
                 width: 200px;
                 height: 200px;
             }
-            .wheel-emoji {
-                font-size: 1.6rem;
-                width: 45px;
-                height: 45px;
-            }
             .wheel-center {
                 width: 40px;
                 height: 40px;
@@ -896,10 +934,11 @@
                 font-size: 1.5rem;
             }
             .chat-container {
-                height: 140px;
+                height: 200px;
             }
             .chat-messages {
-                max-height: 100px;
+                max-height: 150px;
+                min-height: 130px;
             }
             .bet-input {
                 width: 80px;
@@ -933,7 +972,7 @@
                 <div class="card" id="roomInterface" style="display:none;">
                     <div class="flex-between">
                         <span class="label">📍 الغرفة الحالية</span>
-                        <span id="currentRoomName" style="color:#f1c40f; font-weight:bold;">-</span>
+                        <span id="currentRoomName" style="color:#2c3e50; font-weight:bold;">-</span>
                         <div>
                             <button class="back-btn" onclick="showRoomsList()">⬅️ غرف</button>
                             <button class="room-leave-btn" onclick="leaveVoiceRoom()" id="leaveRoomBtn">🚪 مغادرة</button>
@@ -946,14 +985,14 @@
                     <div class="peer-id-box" id="peerIdDisplay">معرفك: جاري التحميل...</div>
                     <div style="display:flex; gap:4px; flex-wrap:wrap; margin:3px 0;">
                         <button class="mic-test-btn" onclick="testMicrophone()">🎤 اختبار الميكروفون</button>
-                        <span id="micTestStatus" style="font-size:0.65rem; color:#8ab4d6;">غير مختبر</span>
+                        <span id="micTestStatus" style="font-size:0.65rem; color:#5a7a8a;">غير مختبر</span>
                     </div>
                     <div class="room-info" id="roomInfo">📡 غير متصل</div>
 
                     <div style="margin-top:6px;">
                         <div class="flex-between">
                             <span class="label">👥 المشاركون</span>
-                            <span id="participantCount" style="color:#f1c40f; font-weight:bold;">0</span>
+                            <span id="participantCount" style="color:#2c3e50; font-weight:bold;">0</span>
                             <span class="db-status" id="dbStatus">⏳ جاري الاتصال...</span>
                         </div>
                         <div class="participants" id="participantsList">
@@ -983,10 +1022,10 @@
                         <span class="label">💰 رصيدك</span>
                         <span class="price-tag" id="polPriceDisplay"><span class="live-dot"></span> $0.0000</span>
                     </div>
-                    <div class="value gold" id="userBalance">100.00</div>
+                    <div class="value gold" id="userBalance">10.00</div>
                     <div class="small-text" id="balanceUSD">≈ $0.00</div>
                     <div style="margin-top:4px;">
-                        <span class="bonus-badge" id="bonusBadge">🎁 بونص ترحيبي 100 POL (غير قابل للسحب)</span>
+                        <span class="bonus-badge">🎁 بونص ترحيبي 10 POL (غير قابل للسحب)</span>
                     </div>
                 </div>
 
@@ -1002,7 +1041,7 @@
                             <div class="wheel" id="wheelElement"></div>
                             <div class="wheel-center" id="wheelCenterEmoji">🎡</div>
                         </div>
-                        <div style="font-size:1.3rem; font-weight:bold; color:#f1c40f; margin-top:8px;" id="diceResult">🎡 ?</div>
+                        <div style="font-size:1.3rem; font-weight:bold; color:#2c3e50; margin-top:8px;" id="diceResult">🎡 ?</div>
                     </div>
                     <div class="bet-options" id="betOptions">
                         <div class="bet-option" data-item="0" onclick="selectBet(0)">
@@ -1038,19 +1077,18 @@
                     </div>
                     <div style="display:flex; gap:6px; justify-content:center; align-items:center; margin:4px 0; flex-wrap:wrap;">
                         <input type="number" class="bet-input" id="betAmount" value="1" min="1" step="1" />
-                        <span style="color:#8ab4d6; font-size:0.7rem;">POL</span>
-                        <span id="betUsdDisplay" style="color:#8ab4d6; font-size:0.7rem;">≈ $0.00</span>
+                        <span style="color:#5a7a8a; font-size:0.7rem;">POL</span>
+                        <span id="betUsdDisplay" style="color:#5a7a8a; font-size:0.7rem;">≈ $0.00</span>
                         <button class="btn btn-primary btn-sm" onclick="placeBet()" id="placeBetBtn">🎲 رهان</button>
                     </div>
-                    <div class="result-box" id="resultBox"><span style="color:#8ab4d6;">🎯 اختر رهانك ثم اضغط "رهان"</span></div>
+                    <div class="result-box" id="resultBox"><span style="color:#5a7a8a;">🎯 اختر رهانك ثم اضغط "رهان"</span></div>
                     <div class="stats-row" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
                         <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">🏆 فوز اليوم</div><div class="value green" id="winsToday" style="font-size:1.1rem;">0</div></div>
                         <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">💀 خسارة اليوم</div><div class="value red" id="lossesToday" style="font-size:1.1rem;">0</div></div>
-                        <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">🔄 تدويرات مجانية</div><div class="value gold" id="freeSpins" style="font-size:1.1rem;">0</div></div>
                     </div>
                     <div>
                         <div class="flex-between"><span><strong>📜 آخر الجولات</strong></span><span class="small-text">آخر 10</span></div>
-                        <div class="history" id="historyLog"><p style="color:#6a8aa8;">لا توجد جولات</p></div>
+                        <div class="history" id="historyLog"><p style="color:#95a5a6;">لا توجد جولات</p></div>
                     </div>
                 </div>
             </div>
@@ -1059,31 +1097,30 @@
             <div class="tab-pane" id="tab-wallet">
                 <div class="card"><div class="label">💳 عنوان محفظتك (Polygon)</div><div class="wallet-address" id="walletAddressDisplay">0x...</div><div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;"><button class="btn btn-secondary btn-sm" onclick="copyWalletAddress()">📋 نسخ</button><button class="btn btn-primary btn-sm" onclick="showQR()">📱 QR</button></div><div id="qrContainer" style="display:none; margin-top:6px;" class="qr-container"><div id="qrcode"></div></div></div>
                 <div class="card">
-                    <div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay" style="font-size:1.4rem;">100.00</span></div>
+                    <div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay" style="font-size:1.4rem;">10.00</span></div>
                     <div class="small-text" id="walletBalanceUSD">≈ $0.00</div>
                     <div style="margin-top:4px;">
-                        <span class="bonus-badge">🎁 بونص ترحيبي: 100 POL (غير قابل للسحب)</span>
+                        <span class="bonus-badge">🎁 بونص ترحيبي: 10 POL (غير قابل للسحب)</span>
                     </div>
                     <div class="wallet-actions" style="margin-top:8px;">
-                        <button class="btn btn-success btn-sm" onclick="deposit()" style="flex:1;">➕ إيداع</button>
                         <button class="btn btn-danger btn-sm" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button>
                     </div>
                     <div id="withdrawFormContainer" style="display:none; margin-top:8px;">
                         <div class="withdraw-form">
                             <div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="1" step="1" /></div>
-                            <div class="field-group"><label>📤 عنوان الاستلام (Polygon)</label><input type="text" id="withdrawAddress" placeholder="0x..." /></div>
+                            <div class="field-group"><label>📤 عنوان الاستلام (Polygon)</label><div class="input-with-btn"><input type="text" id="withdrawAddress" placeholder="0x..." /><button class="cam-btn" onclick="openScannerForWithdraw()" title="مسح QR">📷</button></div></div>
                             <button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button>
                         </div>
                     </div>
-                    <p class="small-text" style="margin-top:3px;">* المبلغ القابل للسحب هو رصيدك ناقص البونص الترحبي (100 POL).</p>
+                    <p class="small-text" style="margin-top:3px;">* المبلغ القابل للسحب هو رصيدك ناقص البونص الترحبي (10 POL).</p>
                 </div>
             </div>
 
             <!-- تبويب الإعدادات -->
             <div class="tab-pane" id="tab-settings">
-                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div><button class="btn btn-danger btn-sm" onclick="logoutUser()" style="margin-top:6px;">🚪 تسجيل الخروج</button></div>
-                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
-                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">🔗 رابط الإحالة</h3><div class="referral-link-box"><span>🔗 الرابط:</span><button class="btn btn-secondary btn-sm" onclick="copyReferral()">📋 نسخ</button><div class="link-display" id="referralLinkDisplay" style="margin-top:4px;word-break:break-all;font-size:0.7rem;color:#f1c40f;">https://app.example.com/ref/abc123</div></div><hr style="border-color:#1f3347; margin:4px 0;" /><div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div><div class="flex-between"><span>🔄 تدويرات مجانية من الإحالات:</span><span class="badge" id="referralSpins">0</span></div></div>
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#2c3e50;">-</span></div><button class="btn btn-danger btn-sm" onclick="logoutUser()" style="margin-top:6px;">🚪 تسجيل الخروج</button></div>
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#5a7a8a;">0 دقيقة</span></div></div>
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">🔗 رابط الإحالة</h3><div class="referral-link-box"><span>🔗 الرابط:</span><button class="btn btn-secondary btn-sm" onclick="copyReferral()">📋 نسخ</button><div class="link-display" id="referralLinkDisplay" style="margin-top:4px;word-break:break-all;font-size:0.7rem;color:#e67e22;">https://app.example.com/ref/abc123</div></div><hr style="border-color:#e8edf2; margin:4px 0;" /><div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div></div>
             </div>
 
         </div>
@@ -1109,7 +1146,7 @@
                 <input type="password" id="registerPassword" placeholder="كلمة المرور (6 أحرف على الأقل)" />
                 <input type="text" id="referralCode" placeholder="رمز الإحالة (اختياري)" />
                 <button class="btn btn-success btn-block" id="registerBtn">✅ إنشاء الحساب</button>
-                <p class="small-text" style="margin-top:4px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً. * كل إحالة = 3 تدويرات مجانية</p>
+                <p class="small-text" style="margin-top:4px; color:#5a7a8a;">* سيتم توليد محفظة لك تلقائياً. * كل إحالة = مكافأة</p>
             </div>
         </div>
     </div>
@@ -1121,25 +1158,30 @@
             <div class="sub-title">استمتع واربح معنا</div>
             <div class="tutorial-item">
                 <span class="icon">💰</span>
-                <div class="text"><strong>رصيدك:</strong> لديك <strong>100 POL</strong> بونص ترحيبي غير قابل للسحب، يمكنك المراهنة به فقط.</div>
+                <div class="text"><strong>رصيدك:</strong> لديك <strong>10 POL</strong> بونص ترحيبي غير قابل للسحب، يمكنك المراهنة به فقط.</div>
             </div>
             <div class="tutorial-item">
                 <span class="icon">🎯</span>
                 <div class="text"><strong>اختر رهانك:</strong> اختر أحد العناصر الستة (كرزة، جزرة، تفاحة، بيضة، سمكة، بقرة).</div>
             </div>
             <div class="tutorial-item">
-                <span class="icon">📊</span>
-                <div class="text"><strong>آلية الفوز:</strong> سيكون الفائز هو العنصر الذي <strong>أقل مبلغ راهن عليه اللاعبون</strong> في هذه الجولة.</div>
-            </div>
-            <div class="tutorial-item">
                 <span class="icon">🏆</span>
                 <div class="text"><strong>الأرباح:</strong> 70% من مجمل الرهانات توزع على الفائزين، و 30% تذهب للصندوق.</div>
             </div>
-            <div class="tutorial-item">
-                <span class="icon">🔄</span>
-                <div class="text"><strong>تدويرات مجانية:</strong> احصل على 3 تدويرات مجانية لكل إحالة ناجحة!</div>
-            </div>
             <button class="btn-close-tutorial" onclick="closeTutorial()">🎮 هيا نلعب!</button>
+        </div>
+    </div>
+
+    <!-- ماسح QR -->
+    <div id="scannerModal" class="scanner-modal">
+        <div class="scanner-content">
+            <h3>📷 امسح QR code</h3>
+            <video id="scannerVideo" autoplay playsinline style="width:100%; border-radius:12px; background:#000;"></video>
+            <div style="display:flex; gap:6px; margin-top:8px;">
+                <button class="btn btn-secondary btn-sm" onclick="stopScanner()">إلغاء</button>
+                <button class="btn btn-primary btn-sm" onclick="captureQRForWithdraw()">📸 التقاط</button>
+            </div>
+            <p class="small-text" style="margin-top:4px;">ضع عنوان المحفظة في منتصف الإطار.</p>
         </div>
     </div>
 
@@ -1175,7 +1217,7 @@
         const WHEEL_ITEMS = [
             { name: 'كرزة', emoji: '🍒', color: '#e74c3c' },
             { name: 'جزرة', emoji: '🥕', color: '#f39c12' },
-            { name: 'تفاحة', emoji: '🍎', color: '#2ecc71' },
+            { name: 'تفاحة', emoji: '🍎', color: '#27ae60' },
             { name: 'بيضة', emoji: '🥚', color: '#3498db' },
             { name: 'سمكة', emoji: '🐟', color: '#9b59b6' },
             { name: 'بقرة', emoji: '🐄', color: '#1abc9c' }
@@ -1245,7 +1287,7 @@
         }
 
         function updateUSDValues() {
-            const balance = STATE.userBalance || 0;
+            const balance = STATE.userBalance + STATE.bonusBalance;
             const usd = balance * polPriceUSD;
             document.getElementById('balanceUSD').textContent = `≈ $${usd.toFixed(2)}`;
             document.getElementById('walletBalanceUSD').textContent = `≈ $${usd.toFixed(2)}`;
@@ -1258,15 +1300,13 @@
         // 7. حالة التطبيق
         // ============================================================
         const STATE = {
-            userBalance: 100,
-            bonusBalance: 100, // البونص غير القابل للسحب
+            userBalance: 0,
+            bonusBalance: 10,
             withdrawableBalance: 0,
             winsToday: 0,
             lossesToday: 0,
-            freeSpins: 0,
             history: [],
             referralEarned: 0,
-            referralSpins: 0,
             roundPool: 0,
             hostMarketingPool: 0,
             platformPool: 0,
@@ -1296,7 +1336,6 @@
             chatChannel: null,
             canKick: false,
             selectedRoomName: null,
-            // لعبة العجلة
             gameTimer: 30,
             gamePhase: 'betting',
             gameResult: null,
@@ -1318,13 +1357,11 @@
         const elBalance = document.getElementById('userBalance');
         const elWins = document.getElementById('winsToday');
         const elLosses = document.getElementById('lossesToday');
-        const elFreeSpins = document.getElementById('freeSpins');
         const elResult = document.getElementById('resultBox');
         const elWheel = document.getElementById('wheelElement');
         const elDiceResult = document.getElementById('diceResult');
         const elHistory = document.getElementById('historyLog');
         const elReferralEarned = document.getElementById('referralEarned');
-        const elReferralSpins = document.getElementById('referralSpins');
         const elWalletBalance = document.getElementById('walletBalanceDisplay');
         const elWalletAddress = document.getElementById('walletAddressDisplay');
         const elDisplayUsername = document.getElementById('displayUsername');
@@ -1354,8 +1391,8 @@
         const betOptions = document.querySelectorAll('.bet-option');
         const betAmountInput = document.getElementById('betAmount');
         const placeBetBtn = document.getElementById('placeBetBtn');
-        const betUsdDisplay = document.getElementById('betUsdDisplay');
         const tutorialOverlay = document.getElementById('gameTutorial');
+        const scannerModal = document.getElementById('scannerModal');
 
         // ============================================================
         // 9. المصادقة
@@ -1410,7 +1447,7 @@
                 const wallet = generateWallet24();
                 const encryptedKey = encrypt(wallet.privateKey, password);
 
-                let referralSpins = 0;
+                let referralBonus = 0;
                 if (referralCode) {
                     const { data: referrer } = await supabaseClient
                         .from('profiles')
@@ -1418,8 +1455,8 @@
                         .eq('referral_code', referralCode)
                         .maybeSingle();
                     if (referrer) {
-                        referralSpins = 3;
-                        await supabaseClient.rpc('add_referral_spins', { user_id: referrer.id, spins: 3 });
+                        referralBonus = 5;
+                        await supabaseClient.rpc('add_referral_bonus', { user_id: referrer.id, bonus: 5 });
                     }
                 }
 
@@ -1431,9 +1468,9 @@
                         wallet_address: wallet.address,
                         encrypted_private_key: encryptedKey,
                         referral_code: generateReferralCode(username),
-                        free_spins: referralSpins,
-                        bonus_balance: 100, // بونص ترحيبي
+                        bonus_balance: 10,
                         withdrawable_balance: 0,
+                        referral_earned: referralBonus,
                     }]);
 
                 if (profileError) {
@@ -1490,7 +1527,7 @@
                             wallet_address: wallet.address,
                             encrypted_private_key: encryptedKey,
                             referral_code: generateReferralCode(username),
-                            bonus_balance: 100,
+                            bonus_balance: 10,
                             withdrawable_balance: 0,
                         }]);
 
@@ -1530,17 +1567,14 @@
                 STATE.walletAddress = profile.wallet_address;
                 STATE.privateKeyEncrypted = profile.encrypted_private_key;
                 STATE.userBalance = profile.balance || 0;
-                STATE.bonusBalance = profile.bonus_balance || 100;
+                STATE.bonusBalance = profile.bonus_balance || 10;
                 STATE.withdrawableBalance = profile.withdrawable_balance || 0;
                 STATE.winsToday = profile.wins || 0;
                 STATE.lossesToday = profile.losses || 0;
                 STATE.referralEarned = profile.referral_earned || 0;
                 STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
-                STATE.freeSpins = profile.free_spins || 0;
-                STATE.referralSpins = profile.referral_spins || 0;
                 STATE.canKick = ADMIN_EMAILS.includes(user.email);
 
-                // عرض البونص في الواجهة
                 document.getElementById('bonusBadge').textContent = `🎁 بونص ترحيبي ${STATE.bonusBalance} POL (غير قابل للسحب)`;
 
                 document.getElementById('authOverlay').style.display = 'none';
@@ -1550,14 +1584,6 @@
                 initPeer();
                 renderRooms();
                 startGameLoop();
-
-                // عرض نافذة التعريف باللعبة إذا لم تظهر من قبل
-                if (!STATE.tutorialShown) {
-                    setTimeout(() => {
-                        tutorialOverlay.classList.add('show');
-                        STATE.tutorialShown = true;
-                    }, 1000);
-                }
 
                 if (profile.last_seen_room && SYRIAN_CITIES.includes(profile.last_seen_room)) {
                     STATE.selectedRoomName = profile.last_seen_room;
@@ -1610,7 +1636,7 @@
             }
             elRoomsGrid.innerHTML = html;
             elDbStatusRooms.textContent = `✅ ${SYRIAN_CITIES.length} غرفة`;
-            elDbStatusRooms.style.color = '#2ecc71';
+            elDbStatusRooms.style.color = '#27ae60';
         }
 
         function selectAndJoinRoom(roomName) {
@@ -1628,16 +1654,18 @@
             muteBtn.disabled = true;
             roomInfo.textContent = '📡 جاري الاتصال...';
             elDbStatus.textContent = '⏳ جاري الاتصال...';
-            elDbStatus.style.color = '#f1c40f';
+            elDbStatus.style.color = '#e67e22';
             micToggleBtn.textContent = '🎤 التقاط الميكروفون';
 
             setTimeout(() => joinSelectedRoom(), 500);
         }
 
         // ============================================================
-        // 11. PeerJS وإدارة الغرفة الصوتية (مختصرة)
+        // 11. PeerJS وإدارة الغرفة الصوتية
         // ============================================================
         let peerInitialized = false;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
 
         function initPeer() {
             if (peerInitialized) return;
@@ -1645,14 +1673,21 @@
                 host: '0.peerjs.com',
                 port: 443,
                 secure: true,
-                debug: 1,
+                debug: 0,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                }
             });
 
             peer.on('open', (id) => {
                 STATE.myPeerId = id;
                 elPeerIdDisplay.textContent = `معرفك: ${id}`;
                 elDbStatus.textContent = '✅ جاهز';
-                elDbStatus.style.color = '#2ecc71';
+                elDbStatus.style.color = '#27ae60';
+                reconnectAttempts = 0;
                 if (STATE.inRoom && STATE.roomName) {
                     refreshParticipants();
                 }
@@ -1660,28 +1695,56 @@
 
             peer.on('error', (err) => {
                 console.error('PeerJS error:', err);
-                elPeerIdDisplay.textContent = `⚠️ خطأ: ${err.message}`;
-                elDbStatus.textContent = '❌ خطأ';
-                elDbStatus.style.color = '#e74c3c';
-                setTimeout(() => {
-                    if (!STATE.peer.destroyed) {
-                        STATE.peer.reconnect();
+                if (err.type === 'peer-unavailable') {
+                    elDbStatus.textContent = '⚠️ جاري إعادة المحاولة...';
+                    elDbStatus.style.color = '#e67e22';
+                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                        reconnectAttempts++;
+                        setTimeout(() => {
+                            if (!STATE.peer.destroyed) {
+                                STATE.peer.reconnect();
+                            }
+                        }, 2000 * reconnectAttempts);
                     }
-                }, 5000);
+                } else {
+                    elPeerIdDisplay.textContent = `⚠️ خطأ: ${err.message}`;
+                    elDbStatus.textContent = '❌ خطأ';
+                    elDbStatus.style.color = '#e74c3c';
+                }
+            });
+
+            peer.on('disconnected', () => {
+                elDbStatus.textContent = '⚠️ انقطع الاتصال، جاري إعادة المحاولة...';
+                elDbStatus.style.color = '#e67e22';
+                if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                    reconnectAttempts++;
+                    setTimeout(() => {
+                        if (!STATE.peer.destroyed) {
+                            STATE.peer.reconnect();
+                        }
+                    }, 2000 * reconnectAttempts);
+                }
             });
 
             peer.on('call', (call) => {
                 if (!STATE.localStream) {
-                    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-                        .then(stream => {
-                            STATE.localStream = stream;
-                            stream.getAudioTracks().forEach(track => track.enabled = true);
-                            call.answer(stream);
-                            call.on('stream', (remoteStream) => addRemoteStream(call.peer, remoteStream));
-                            call.on('close', () => removeRemoteStream(call.peer));
-                            STATE.connections[call.peer] = call;
-                        })
-                        .catch(() => {});
+                    navigator.mediaDevices.getUserMedia({ 
+                        audio: { 
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }, 
+                        video: false 
+                    })
+                    .then(stream => {
+                        STATE.localStream = stream;
+                        stream.getAudioTracks().forEach(track => track.enabled = true);
+                        call.answer(stream);
+                        call.on('stream', (remoteStream) => addRemoteStream(call.peer, remoteStream));
+                        call.on('close', () => removeRemoteStream(call.peer));
+                        STATE.connections[call.peer] = call;
+                    })
+                    .catch(() => {});
                 } else {
                     STATE.localStream.getAudioTracks().forEach(track => track.enabled = true);
                     call.answer(STATE.localStream);
@@ -1696,21 +1759,40 @@
         }
 
         function joinSelectedRoom() {
-            // محاكاة الانضمام للغرفة
             STATE.inRoom = true;
             STATE.roomName = STATE.selectedRoomName;
             micToggleBtn.disabled = false;
             muteBtn.disabled = false;
             roomInfo.textContent = `📡 متصل بـ ${STATE.roomName}`;
             elDbStatus.textContent = '✅ متصل';
-            elDbStatus.style.color = '#2ecc71';
+            elDbStatus.style.color = '#27ae60';
             refreshParticipants();
-            document.getElementById('participantsList').innerHTML = `
-                <div class="participant"><span class="status online"></span> أنت</div>
-                <div class="participant"><span class="status online"></span> مستخدم1</div>
-                <div class="participant"><span class="status muted"></span> مستخدم2</div>
-            `;
-            elParticipantCount.textContent = '3';
+            // الحصول على قائمة المستخدمين الحقيقيين من Supabase
+            fetchRoomParticipants();
+        }
+
+        async function fetchRoomParticipants() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('profiles')
+                    .select('username, id')
+                    .eq('last_seen_room', STATE.roomName)
+                    .limit(20);
+                
+                if (error) throw error;
+                if (data) {
+                    const participants = data.filter(p => p.id !== STATE.userId);
+                    let html = '<div class="participant"><span class="status online"></span> أنت</div>';
+                    for (const p of participants) {
+                        html += `<div class="participant"><span class="status online"></span> ${p.username}</div>`;
+                    }
+                    elParticipantsList.innerHTML = html;
+                    elParticipantCount.textContent = participants.length + 1;
+                    STATE.participantCount = participants.length + 1;
+                }
+            } catch (e) {
+                console.error('Error fetching participants:', e);
+            }
         }
 
         function leaveVoiceRoom() {
@@ -1720,33 +1802,62 @@
             muteBtn.disabled = true;
             roomInfo.textContent = '📡 غير متصل';
             elDbStatus.textContent = '⏳ غير متصل';
-            elDbStatus.style.color = '#7f8c8d';
+            elDbStatus.style.color = '#95a5a6';
             document.getElementById('participantsList').innerHTML = '<div class="participant"><span class="status online"></span> أنت</div>';
             elParticipantCount.textContent = '0';
+            
+            // تحديث last_seen_room في Supabase
+            if (STATE.loggedIn) {
+                supabaseClient
+                    .from('profiles')
+                    .update({ last_seen_room: null })
+                    .eq('id', STATE.userId)
+                    .then(() => {});
+            }
         }
 
         function refreshParticipants() {
-            // تحديث قائمة المشاركين
+            if (STATE.inRoom && STATE.roomName) {
+                fetchRoomParticipants();
+            }
         }
 
         function addRemoteStream(peerId, stream) {
-            // إضافة تيار صوتي
+            // يتم التعامل مع التيار الصوتي البعيد
+            console.log('Remote stream added from:', peerId);
         }
 
         function removeRemoteStream(peerId) {
-            // إزالة تيار صوتي
+            console.log('Remote stream removed from:', peerId);
         }
 
         function toggleMicrophone() {
             if (!STATE.localStream) {
-                navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-                    .then(stream => {
-                        STATE.localStream = stream;
-                        STATE.localStream.getAudioTracks().forEach(track => track.enabled = true);
-                        micToggleBtn.textContent = '🎤 الميكروفون مفعل';
-                        micToggleBtn.className = 'btn btn-success';
-                    })
-                    .catch(() => alert('⚠️ تعذر الوصول إلى الميكروفون.'));
+                navigator.mediaDevices.getUserMedia({ 
+                    audio: { 
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }, 
+                    video: false 
+                })
+                .then(stream => {
+                    STATE.localStream = stream;
+                    STATE.localStream.getAudioTracks().forEach(track => track.enabled = true);
+                    micToggleBtn.textContent = '🎤 الميكروفون مفعل';
+                    micToggleBtn.className = 'btn btn-success';
+                    
+                    // إعادة توجيه التيار إلى جميع الاتصالات
+                    for (const [peerId, call] of Object.entries(STATE.connections)) {
+                        if (call && call.peerConnection) {
+                            const sender = call.peerConnection.getSenders().find(s => s.track && s.track.kind === 'audio');
+                            if (sender) {
+                                sender.replaceTrack(stream.getAudioTracks()[0]);
+                            }
+                        }
+                    }
+                })
+                .catch(() => alert('⚠️ تعذر الوصول إلى الميكروفون.'));
             } else {
                 const enabled = STATE.localStream.getAudioTracks()[0].enabled;
                 STATE.localStream.getAudioTracks()[0].enabled = !enabled;
@@ -1765,44 +1876,51 @@
         }
 
         function testMicrophone() {
-            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-                .then(stream => {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const source = audioContext.createMediaStreamSource(stream);
-                    const analyser = audioContext.createAnalyser();
-                    source.connect(analyser);
-                    const dataArray = new Uint8Array(analyser.fftSize);
-                    let detected = false;
-                    const checkAudio = setInterval(() => {
-                        analyser.getByteTimeDomainData(dataArray);
-                        let max = 0;
-                        for (let i = 0; i < dataArray.length; i++) {
-                            const value = Math.abs(dataArray[i] - 128);
-                            if (value > max) max = value;
-                        }
-                        if (max > 20) {
-                            detected = true;
-                            clearInterval(checkAudio);
-                            elMicTestStatus.textContent = '✅ يعمل';
-                            elMicTestStatus.style.color = '#2ecc71';
-                            stream.getTracks().forEach(t => t.stop());
-                            audioContext.close();
-                        }
-                    }, 100);
-                    setTimeout(() => {
-                        if (!detected) {
-                            clearInterval(checkAudio);
-                            elMicTestStatus.textContent = '⚠️ لا يوجد صوت';
-                            elMicTestStatus.style.color = '#e74c3c';
-                            stream.getTracks().forEach(t => t.stop());
-                            audioContext.close();
-                        }
-                    }, 3000);
-                })
-                .catch(() => {
-                    elMicTestStatus.textContent = '❌ خطأ في الميكروفون';
-                    elMicTestStatus.style.color = '#e74c3c';
-                });
+            navigator.mediaDevices.getUserMedia({ 
+                audio: { 
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }, 
+                video: false 
+            })
+            .then(stream => {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(stream);
+                const analyser = audioContext.createAnalyser();
+                source.connect(analyser);
+                const dataArray = new Uint8Array(analyser.fftSize);
+                let detected = false;
+                const checkAudio = setInterval(() => {
+                    analyser.getByteTimeDomainData(dataArray);
+                    let max = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        const value = Math.abs(dataArray[i] - 128);
+                        if (value > max) max = value;
+                    }
+                    if (max > 15) {
+                        detected = true;
+                        clearInterval(checkAudio);
+                        elMicTestStatus.textContent = '✅ يعمل';
+                        elMicTestStatus.style.color = '#27ae60';
+                        stream.getTracks().forEach(t => t.stop());
+                        audioContext.close();
+                    }
+                }, 100);
+                setTimeout(() => {
+                    if (!detected) {
+                        clearInterval(checkAudio);
+                        elMicTestStatus.textContent = '⚠️ لا يوجد صوت';
+                        elMicTestStatus.style.color = '#e74c3c';
+                        stream.getTracks().forEach(t => t.stop());
+                        audioContext.close();
+                    }
+                }, 3000);
+            })
+            .catch(() => {
+                elMicTestStatus.textContent = '❌ خطأ في الميكروفون';
+                elMicTestStatus.style.color = '#e74c3c';
+            });
         }
 
         function sendChatMessage() {
@@ -1814,10 +1932,24 @@
             messages.innerHTML += `<div class="chat-message"><span class="msg-user">${STATE.username || 'أنت'}</span><span class="msg-time">${time}</span> ${msg}</div>`;
             messages.scrollTop = messages.scrollHeight;
             input.value = '';
+            
+            // إرسال الرسالة إلى Supabase Realtime
+            if (STATE.roomName && STATE.loggedIn) {
+                supabaseClient
+                    .from('chat_messages')
+                    .insert([{
+                        room: STATE.roomName,
+                        user_id: STATE.userId,
+                        username: STATE.username,
+                        message: msg,
+                        created_at: new Date().toISOString()
+                    }])
+                    .then(() => {});
+            }
         }
 
         // ============================================================
-        // 12. العجلة - الخوارزمية الجديدة (أقل راهن يفوز)
+        // 12. العجلة - الخوارزمية
         // ============================================================
         function initWheel() {
             renderWheelItems();
@@ -1865,10 +1997,16 @@
                 return;
             }
 
-            // التحقق من الرصيد (بونص + رصيد قابل للسحب)
             const totalBalance = STATE.userBalance + STATE.bonusBalance;
             if (amount > totalBalance) {
                 alert('❌ رصيد غير كافٍ.');
+                return;
+            }
+
+            // عرض نافذة التعريف إذا لم تظهر
+            if (!STATE.tutorialShown) {
+                tutorialOverlay.classList.add('show');
+                STATE.tutorialShown = true;
                 return;
             }
 
@@ -1890,7 +2028,6 @@
             STATE.myBet = STATE.selectedBet;
             STATE.myBetAmount = amount;
 
-            // حفظ الرهان مع معرف المستخدم
             if (!STATE.bets[STATE.roomName]) STATE.bets[STATE.roomName] = {};
             STATE.bets[STATE.roomName][STATE.userId] = {
                 bet: STATE.selectedBet,
@@ -1905,43 +2042,39 @@
             updateUI();
             updateGameUI();
             updatePoolDisplay();
-
-            // عرض نافذة التعريف إذا لم تظهر
-            if (!STATE.tutorialShown) {
-                tutorialOverlay.classList.add('show');
-                STATE.tutorialShown = true;
-            }
         }
 
         function spinWheel() {
             if (STATE.isSpinning) return;
             STATE.isSpinning = true;
 
-            // حساب مجموع الرهانات لكل عنصر
             const roomBets = STATE.bets[STATE.roomName] || {};
             const poolPerItem = new Array(WHEEL_ITEMS.length).fill(0);
             for (const [userId, betData] of Object.entries(roomBets)) {
                 poolPerItem[betData.bet] += betData.amount;
             }
 
-            // اختيار العنصر الأقل راهناً كفائز
+            // اختيار الفائز - العنصر الأقل راهناً
             let minAmount = Infinity;
             let resultIndex = 0;
+            const nonZeroItems = [];
             for (let i = 0; i < poolPerItem.length; i++) {
-                if (poolPerItem[i] < minAmount && poolPerItem[i] > 0) {
-                    minAmount = poolPerItem[i];
-                    resultIndex = i;
+                if (poolPerItem[i] > 0) {
+                    nonZeroItems.push(i);
+                    if (poolPerItem[i] < minAmount) {
+                        minAmount = poolPerItem[i];
+                        resultIndex = i;
+                    }
                 }
             }
-            // إذا كانت كل الرهانات صفر أو كلها متساوية، اختر عشوائياً
-            if (minAmount === Infinity || minAmount === 0) {
+            
+            if (nonZeroItems.length === 0) {
                 resultIndex = Math.floor(Math.random() * WHEEL_ITEMS.length);
             }
 
             STATE.gameResult = resultIndex;
             const resultItem = WHEEL_ITEMS[resultIndex];
 
-            // حساب زاوية الدوران
             const segmentAngle = 360 / WHEEL_ITEMS.length;
             const targetAngle = 360 - (resultIndex * segmentAngle + segmentAngle / 2);
             const spins = 6 + Math.random() * 4;
@@ -1949,8 +2082,6 @@
 
             elWheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
             elWheel.style.transform = `rotate(${finalAngle}deg)`;
-
-            // تحديث الإيموجي في المنتصف
             document.getElementById('wheelCenterEmoji').textContent = '🎡';
 
             setTimeout(() => {
@@ -1975,9 +2106,10 @@
                 }
             }
 
+            let resultMessage = '';
             if (winners.length === 0 || totalPool === 0) {
                 STATE.hostMarketingPool += totalPool;
-                elResult.innerHTML = `😞 ${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} - لم يفز أحد.`;
+                resultMessage = `😞 ${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} - لم يفز أحد.`;
                 addHistory('lose', `${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} - لا فائزين`);
                 STATE.lossesToday += Object.keys(bets).length;
             } else {
@@ -1985,13 +2117,15 @@
                 const totalWinnerBets = winners.reduce((sum, w) => sum + w.amount, 0);
                 const payoutMultiplier = winPool / totalWinnerBets;
 
+                const winnerNames = [];
                 for (const winner of winners) {
                     const winAmount = winner.amount * payoutMultiplier;
                     if (winner.userId === STATE.userId) {
                         STATE.userBalance += winAmount;
                         STATE.winsToday += 1;
-                        elResult.innerHTML = `🎉 ربحت! ${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} → +${winAmount.toFixed(2)} POL`;
+                        resultMessage = `🎉 ربحت! ${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} → +${winAmount.toFixed(2)} POL`;
                     } else {
+                        winnerNames.push(winner.username);
                         try {
                             const { data: profile } = await supabaseClient
                                 .from('profiles')
@@ -2009,15 +2143,19 @@
                     }
                 }
                 STATE.hostMarketingPool += totalPool * 0.3;
-                addHistory('win', `${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} - فوز ${winners.length} لاعب`);
+                const winnerList = winnerNames.length > 0 ? winnerNames.join(', ') : 'أنت';
+                addHistory('win', `${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} - فوز: ${winnerList}`);
                 STATE.winsToday += winners.filter(w => w.userId !== STATE.userId).length;
+                
+                if (!resultMessage) {
+                    resultMessage = `🏆 ${WHEEL_ITEMS[winningIndex].emoji} ${WHEEL_ITEMS[winningIndex].name} - فائزون: ${winnerList}`;
+                }
             }
 
-            // عرض تفاصيل الرهانات
             const poolDetails = poolPerItem.map((amount, i) =>
                 `${WHEEL_ITEMS[i].emoji} ${amount.toFixed(0)} POL`
             ).join(' | ');
-            elResult.innerHTML += `<br><small style="color:#8ab4d6;">📊 الرهانات: ${poolDetails}</small>`;
+            elResult.innerHTML = `${resultMessage}<br><small style="color:#5a7a8a;">📊 الرهانات: ${poolDetails}</small>`;
 
             delete STATE.bets[room];
             STATE.gamePoolAmount = 0;
@@ -2080,7 +2218,7 @@
             elWheel.style.transform = 'rotate(0deg)';
             elDiceResult.textContent = '🎡 ?';
             document.getElementById('wheelCenterEmoji').textContent = '🎡';
-            elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رهانك خلال 30 ثانية!</span>';
+            elResult.innerHTML = '<span style="color:#27ae60;">🎯 اختر رهانك خلال 30 ثانية!</span>';
             updateGameUI();
             updatePoolDisplay();
 
@@ -2124,9 +2262,7 @@
             elBalance.textContent = totalBalance.toFixed(2);
             elWins.textContent = STATE.winsToday;
             elLosses.textContent = STATE.lossesToday;
-            elFreeSpins.textContent = STATE.freeSpins;
             elReferralEarned.textContent = STATE.referralEarned.toFixed(2);
-            elReferralSpins.textContent = STATE.referralSpins;
             elWalletBalance.textContent = totalBalance.toFixed(2);
             elWalletAddress.textContent = STATE.walletAddress || '0x...';
             elDisplayUsername.textContent = STATE.username || '-';
@@ -2143,7 +2279,7 @@
 
         function updateHistory() {
             if (STATE.history.length === 0) {
-                elHistory.innerHTML = `<p style="color:#6a8aa8;">لا توجد جولات</p>`;
+                elHistory.innerHTML = `<p style="color:#95a5a6;">لا توجد جولات</p>`;
                 return;
             }
             const items = STATE.history.slice(-10).reverse();
@@ -2172,8 +2308,6 @@
                         losses: STATE.lossesToday,
                         referral_earned: STATE.referralEarned,
                         daily_presence_seconds: STATE.dailyPresenceSeconds,
-                        free_spins: STATE.freeSpins,
-                        referral_spins: STATE.referralSpins,
                     })
                     .eq('id', STATE.userId);
             } catch (e) { console.error(e); }
@@ -2190,13 +2324,6 @@
         // ============================================================
         function toggleWithdrawForm() {
             withdrawFormContainer.style.display = withdrawFormContainer.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function deposit() {
-            STATE.userBalance += 20;
-            addHistory('info', 'إيداع 20 POL');
-            updateUI();
-            alert('✅ تم إيداع 20 POL.');
         }
 
         async function executeWithdraw() {
@@ -2250,10 +2377,38 @@
                 text: STATE.walletAddress || '0x...',
                 width: 140,
                 height: 140,
-                colorDark: '#000000',
+                colorDark: '#1a2332',
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
             });
+        }
+
+        let scannerStream = null;
+
+        function openScannerForWithdraw() {
+            scannerModal.classList.add('show');
+            const video = document.getElementById('scannerVideo');
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(stream => {
+                    scannerStream = stream;
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(() => alert('⚠️ تعذر الوصول إلى الكاميرا.'));
+        }
+
+        function stopScanner() {
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(t => t.stop());
+                scannerStream = null;
+            }
+            scannerModal.classList.remove('show');
+        }
+
+        function captureQRForWithdraw() {
+            alert('📷 تم التقاط الصورة. أدخل العنوان يدوياً.');
+            stopScanner();
+            document.getElementById('withdrawAddress').focus();
         }
 
         function copyReferral() {
@@ -2339,11 +2494,13 @@
         window.leaveVoiceRoom = leaveVoiceRoom;
         window.toggleMicrophone = toggleMicrophone;
         window.toggleLocalMute = toggleLocalMute;
-        window.deposit = deposit;
         window.executeWithdraw = executeWithdraw;
         window.toggleWithdrawForm = toggleWithdrawForm;
         window.copyWalletAddress = copyWalletAddress;
         window.showQR = showQR;
+        window.openScannerForWithdraw = openScannerForWithdraw;
+        window.stopScanner = stopScanner;
+        window.captureQRForWithdraw = captureQRForWithdraw;
         window.copyReferral = copyReferral;
         window.logoutUser = logoutUser;
         window.sendChatMessage = sendChatMessage;
