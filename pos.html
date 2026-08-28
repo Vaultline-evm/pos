@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>🎲 نرد + غرف صوتية (Supabase Auth)</title>
+    <title>🎡 غرف المحافظات السورية</title>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     <style>
-        /* ===== جميع الأنماط (نفس الكود السابق) ===== */
+        /* ===== الأنماط الكاملة ===== */
         * {
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -48,12 +48,14 @@
             top: 0;
             z-index: 10;
             flex-shrink: 0;
+            flex-wrap: wrap;
         }
         .tab-item {
             flex: 1;
+            min-width: 50px;
             text-align: center;
-            padding: 12px 0 8px;
-            font-size: 0.75rem;
+            padding: 10px 0 6px;
+            font-size: 0.6rem;
             font-weight: 600;
             color: #7f8c8d;
             cursor: pointer;
@@ -68,7 +70,7 @@
             border-bottom: 3px solid transparent;
         }
         .tab-item .icon {
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             line-height: 1;
         }
         .tab-item.active {
@@ -81,16 +83,17 @@
         }
         .tab-content {
             flex: 1;
-            padding: 16px;
+            padding: 10px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 10px;
+            max-height: calc(100vh - 100px);
         }
         .tab-pane {
             display: none;
             flex-direction: column;
-            gap: 16px;
+            gap: 10px;
             animation: fadeIn 0.25s ease;
         }
         .tab-pane.active {
@@ -108,19 +111,19 @@
         }
         .card {
             background: rgba(255, 255, 255, 0.06);
-            border-radius: 24px;
-            padding: 18px 20px;
+            border-radius: 20px;
+            padding: 12px 14px;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         .card .label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #8ab4d6;
         }
         .card .value {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: 700;
             margin-top: 4px;
             color: #fff;
@@ -134,21 +137,18 @@
         .card .value.red {
             color: #e74c3c;
         }
-        .card .value.purple {
-            color: #9b59b6;
-        }
         .flex-between {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 4px;
         }
         .btn {
-            padding: 10px 22px;
+            padding: 6px 14px;
             border: none;
             border-radius: 40px;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -156,7 +156,7 @@
             color: #fff;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             justify-content: center;
         }
         .btn-primary {
@@ -173,13 +173,9 @@
         .btn-secondary {
             background: #34495e;
         }
-        .btn-mic {
-            background: #2c3e50;
-            padding: 6px 16px;
-            font-size: 0.85rem;
-        }
-        .btn-mic.active {
-            background: #e67e22;
+        .btn-sm {
+            padding: 3px 10px;
+            font-size: 0.6rem;
         }
         .btn:disabled {
             opacity: 0.4;
@@ -191,35 +187,38 @@
         }
         .badge {
             background: rgba(241, 196, 15, 0.2);
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 30px;
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             border: 1px solid #f1c40f44;
             color: #f1c40f;
         }
         .small-text {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             color: #8ab4d6;
         }
         .participants {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin: 8px 0;
+            gap: 4px;
+            margin: 4px 0;
+            max-height: 100px;
+            overflow-y: auto;
         }
         .participant {
             background: #1c2f44;
-            padding: 6px 14px;
-            border-radius: 40px;
+            padding: 3px 10px;
+            border-radius: 30px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             border: 1px solid #3a5a7a;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
+            flex-wrap: wrap;
         }
         .participant .status {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             display: inline-block;
         }
@@ -235,159 +234,140 @@
         .room-controls {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 6px;
+            gap: 6px;
+            margin-top: 4px;
         }
         .room-info {
             background: #0a1825;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.7rem;
             color: #8ab4d6;
         }
-        .dice-container {
+        .wheel-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 10px 0;
-            perspective: 600px;
-            cursor: pointer;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            margin: 8px 0;
+            position: relative;
         }
-        .dice {
-            width: 130px;
-            height: 130px;
-            background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 -4px 8px rgba(0, 0, 0, 0.1);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            padding: 22px;
-            transform-style: preserve-3d;
-            transition: transform 0.15s ease;
+        .wheel-wrapper {
+            position: relative;
+            width: 240px;
+            height: 240px;
         }
-        .dice:hover {
-            transform: scale(1.02);
-        }
-        .dice:active {
-            transform: scale(0.95);
-        }
-        .dice.rolling {
-            animation: diceRoll3D 2.5s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
-            pointer-events: none;
-        }
-        @keyframes diceRoll3D {
-            0% {
-                transform: rotateX(0deg) rotateY(0deg) translateZ(0) scale(1);
-            }
-            15% {
-                transform: rotateX(120deg) rotateY(40deg) translateZ(40px) scale(1.05);
-            }
-            30% {
-                transform: rotateX(240deg) rotateY(80deg) translateZ(-20px) scale(0.95);
-            }
-            45% {
-                transform: rotateX(360deg) rotateY(120deg) translateZ(30px) scale(1.02);
-            }
-            60% {
-                transform: rotateX(480deg) rotateY(160deg) translateZ(-10px) scale(0.98);
-            }
-            75% {
-                transform: rotateX(600deg) rotateY(200deg) translateZ(20px) scale(1.01);
-            }
-            90% {
-                transform: rotateX(720deg) rotateY(240deg) translateZ(-5px) scale(0.99);
-            }
-            100% {
-                transform: rotateX(810deg) rotateY(270deg) translateZ(0) scale(1);
-            }
-        }
-        .dice.bounce {
-            animation: diceBounce 0.8s ease-in-out 3;
-        }
-        @keyframes diceBounce {
-            0% {
-                transform: translateY(0) rotate(0deg);
-            }
-            30% {
-                transform: translateY(-60px) rotate(15deg);
-            }
-            50% {
-                transform: translateY(0) rotate(-10deg);
-            }
-            70% {
-                transform: translateY(-30px) rotate(5deg);
-            }
-            100% {
-                transform: translateY(0) rotate(0deg);
-            }
-        }
-        .dot {
-            width: 26px;
-            height: 26px;
-            background: #1a1a2e;
+        .wheel {
+            width: 240px;
+            height: 240px;
             border-radius: 50%;
-            align-self: center;
-            justify-self: center;
-            box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s;
+            border: 6px solid #f1c40f;
+            position: relative;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            box-shadow: 0 0 40px rgba(241, 196, 15, 0.3), inset 0 0 40px rgba(0, 0, 0, 0.3);
+            margin: 0 auto;
         }
-        .dot.empty {
-            background: transparent;
-            box-shadow: none;
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 35px solid #f1c40f;
+            z-index: 10;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8));
         }
-        .number-selector {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 6px 0;
-        }
-        .num-btn {
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            border: 2px solid #3a5a7a;
-            background: #1c2f44;
-            color: #fff;
-            font-size: 1.4rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
+            background: radial-gradient(circle, #2c3e50, #1a1a2e);
+            border: 4px solid #f1c40f;
+            z-index: 5;
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.5rem;
         }
-        .num-btn.selected {
+        .bet-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 6px 0;
+        }
+        .bet-option {
+            padding: 10px 6px;
+            border-radius: 16px;
+            border: 2px solid #3a5a7a;
+            background: #1c2f44;
+            color: #fff;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            position: relative;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .bet-option.selected {
             border-color: #f1c40f;
             background: #f1c40f22;
-            box-shadow: 0 0 12px rgba(241, 196, 15, 0.3);
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+            transform: scale(1.05);
         }
-        .num-btn:active {
-            transform: scale(0.9);
+        .bet-option:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .bet-option .emoji {
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .bet-option .label {
+            font-size: 0.6rem;
+            color: #8ab4d6;
+        }
+        .bet-option .pool-amount {
+            font-size: 0.55rem;
+            color: #f1c40f;
+            background: rgba(241, 196, 15, 0.15);
+            padding: 1px 8px;
+            border-radius: 12px;
+            margin-top: 2px;
         }
         .result-box {
             background: #0f1f30;
-            border-radius: 20px;
-            padding: 16px;
-            min-height: 60px;
-            border-right: 6px solid #f1c40f;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            border-radius: 16px;
+            padding: 12px;
+            min-height: 50px;
+            border-right: 4px solid #f1c40f;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            text-align: center;
         }
         .history {
-            max-height: 120px;
+            max-height: 80px;
             overflow-y: auto;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             background: #0a1825;
-            padding: 8px 12px;
-            border-radius: 16px;
+            padding: 4px 8px;
+            border-radius: 12px;
             border: 1px solid #1f3347;
         }
         .history p {
-            margin: 4px 0;
+            margin: 2px 0;
             padding: 2px 0;
             border-bottom: 1px solid #1a2a3a;
         }
@@ -400,132 +380,65 @@
         .history .info {
             color: #f1c40f;
         }
-        .history .dist {
-            color: #9b59b6;
-        }
         .wallet-address {
             background: #0a1825;
-            padding: 12px 16px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 16px;
             font-family: monospace;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             direction: ltr;
             word-break: break-all;
             border: 1px solid #1f3347;
             color: #8ab4d6;
-        }
-        .wallet-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
         }
         .referral-link-box {
             background: #0a1825;
-            padding: 10px 14px;
-            border-radius: 20px;
+            padding: 6px 10px;
+            border-radius: 16px;
             direction: ltr;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #f1c40f;
             word-break: break-all;
             border: 1px solid #1f3347;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .referral-link-box .link-code {
-            flex: 1;
-            min-width: 150px;
-        }
-        .referral-link-box .copy-btn {
-            background: transparent;
-            border: none;
-            color: #8ab4d6;
-            cursor: pointer;
-            font-size: 0.85rem;
-            padding: 4px 8px;
-            border-radius: 30px;
-            transition: 0.2s;
-        }
-        .referral-link-box .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #f1c40f;
-        }
-        .referral-link-box .link-display {
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #f1c40f;
-            word-break: break-all;
-            width: 100%;
-            margin-top: 4px;
         }
         .qr-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 10px 0;
+            margin: 6px 0;
         }
         #qrcode {
             background: #fff;
-            padding: 10px;
-            border-radius: 16px;
+            padding: 6px;
+            border-radius: 12px;
             display: inline-block;
-        }
-        #qrcode img {
-            display: block;
         }
         .withdraw-form {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
         }
         .withdraw-form .field-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
         .withdraw-form .field-group label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #8ab4d6;
         }
         .withdraw-form .field-group input {
             width: 100%;
-            padding: 12px 16px;
-            border-radius: 40px;
+            padding: 8px 12px;
+            border-radius: 30px;
             border: none;
             background: #1c2f44;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.85rem;
             outline: 1px solid #3a5a7a;
         }
         .withdraw-form .field-group input:focus {
             outline: 2px solid #f1c40f;
-        }
-        .withdraw-form .input-with-btn {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .withdraw-form .input-with-btn input {
-            flex: 1;
-        }
-        .withdraw-form .input-with-btn .cam-btn {
-            background: #2c3e50;
-            border: none;
-            color: #fff;
-            width: 46px;
-            height: 46px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .withdraw-form .input-with-btn .cam-btn:hover {
-            background: #f1c40f;
-            color: #0b1a2e;
         }
         .auth-overlay {
             position: fixed;
@@ -539,44 +452,46 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 16px;
         }
         .auth-card {
             background: #0e2238;
-            border-radius: 32px;
-            padding: 30px 24px;
-            max-width: 420px;
+            border-radius: 28px;
+            padding: 20px 18px;
+            max-width: 400px;
             width: 100%;
             border: 1px solid #f1c40f44;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
         }
         .auth-card h2 {
             color: #f1c40f;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+            font-size: 1.3rem;
         }
         .auth-card .sub {
             color: #8ab4d6;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
+            margin-bottom: 14px;
+            font-size: 0.8rem;
         }
         .auth-tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 6px;
+            margin-bottom: 14px;
             border-bottom: 1px solid #1f3347;
-            padding-bottom: 10px;
+            padding-bottom: 6px;
         }
         .auth-tab {
             flex: 1;
-            padding: 8px;
+            padding: 5px;
             text-align: center;
-            border-radius: 30px;
+            border-radius: 25px;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
             font-weight: 600;
             color: #7f8c8d;
             background: transparent;
+            font-size: 0.8rem;
         }
         .auth-tab.active {
             border-color: #f1c40f;
@@ -586,19 +501,19 @@
         .auth-panel {
             display: none;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
         }
         .auth-panel.active {
             display: flex;
         }
         .auth-panel input {
             width: 100%;
-            padding: 14px 16px;
-            border-radius: 40px;
+            padding: 10px 12px;
+            border-radius: 30px;
             border: none;
             background: #1c2f44;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.9rem;
             outline: 1px solid #3a5a7a;
         }
         .auth-panel input:focus {
@@ -607,19 +522,19 @@
         .price-tag {
             background: rgba(241, 196, 15, 0.12);
             border: 1px solid #f1c40f44;
-            border-radius: 30px;
-            padding: 4px 16px;
-            font-size: 0.9rem;
+            border-radius: 25px;
+            padding: 2px 12px;
+            font-size: 0.8rem;
             color: #f1c40f;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             font-weight: 600;
             direction: ltr;
         }
         .price-tag .live-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: #2ecc71;
             display: inline-block;
@@ -636,131 +551,395 @@
                 transform: scale(0.8);
             }
         }
-        .dice-hint {
-            color: #8ab4d6;
-            font-size: 0.8rem;
-            margin-top: 4px;
-            text-align: center;
-        }
-        .stats-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .stats-row .card {
-            flex: 1;
-            min-width: 80px;
-            text-align: center;
-        }
-        .stats-row .card .value {
-            font-size: 1.5rem;
-        }
         .peer-id-box {
             background: #0a1825;
-            border-radius: 16px;
-            padding: 8px 14px;
+            border-radius: 12px;
+            padding: 4px 10px;
             font-family: monospace;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: #8ab4d6;
             direction: ltr;
             word-break: break-all;
             border: 1px solid #1f3347;
-            margin: 4px 0;
+            margin: 3px 0;
         }
         .db-status {
             color: #f1c40f;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             background: rgba(241, 196, 15, 0.1);
-            padding: 2px 10px;
-            border-radius: 20px;
+            padding: 2px 8px;
+            border-radius: 16px;
             border: 1px solid #f1c40f33;
         }
         .mic-test-btn {
             background: #2c3e50;
             border: 1px solid #3a5a7a;
-            border-radius: 40px;
-            padding: 6px 16px;
-            font-size: 0.8rem;
+            border-radius: 30px;
+            padding: 3px 12px;
+            font-size: 0.7rem;
             cursor: pointer;
             color: #fff;
             transition: 0.2s;
         }
-        .mic-test-btn.active {
-            background: #27ae60;
-            border-color: #2ecc71;
+        .room-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
         }
-        .mic-test-btn.error {
+        .room-card {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 8px 4px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .room-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .room-card .room-name {
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: #f1c40f;
+        }
+        .room-card .room-count {
+            font-size: 0.6rem;
+            color: #8ab4d6;
+        }
+        .room-card.active-room {
+            border-color: #f1c40f;
+            background: rgba(241, 196, 15, 0.15);
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 160px;
+            border: 1px solid #1f3347;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #0a1825;
+            margin-top: 6px;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 6px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-height: 100px;
+            max-height: 120px;
+        }
+        .chat-message {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            word-break: break-word;
+        }
+        .chat-message .msg-user {
+            font-weight: 600;
+            color: #8ab4d6;
+        }
+        .chat-message .msg-time {
+            font-size: 0.55rem;
+            color: #5a7a8a;
+            margin-left: 4px;
+        }
+        .chat-message.system {
+            background: rgba(241, 196, 15, 0.08);
+            border-right: 3px solid #f1c40f;
+            text-align: center;
+            color: #f1c40f;
+            font-size: 0.65rem;
+            padding: 6px 10px;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 4px;
+            padding: 6px 8px;
+            background: #0f1f30;
+            border-top: 1px solid #1f3347;
+        }
+        .chat-input-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: none;
+            background: #1c2f44;
+            color: #fff;
+            font-size: 0.8rem;
+            outline: 1px solid #3a5a7a;
+            min-height: 36px;
+        }
+        .chat-input-row input:focus {
+            outline: 2px solid #f1c40f;
+        }
+        .chat-input-row button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+            min-height: 36px;
+        }
+        .game-timer {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #f1c40f;
+            text-align: center;
+            padding: 4px 0;
+        }
+        .game-status {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8ab4d6;
+            margin-top: 2px;
+        }
+        .bet-input {
+            background: #1c2f44;
+            border: 1px solid #3a5a7a;
+            border-radius: 25px;
+            padding: 6px 12px;
+            color: #fff;
+            font-size: 0.85rem;
+            width: 100px;
+            text-align: center;
+            outline: none;
+        }
+        .bet-input:focus {
+            border-color: #f1c40f;
+            outline: 2px solid #f1c40f55;
+        }
+        .room-leave-btn {
             background: #c0392b;
+            border: none;
+            color: #fff;
+            border-radius: 25px;
+            padding: 3px 10px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+        .back-btn {
+            background: #34495e;
+            border: none;
+            color: #fff;
+            border-radius: 25px;
+            padding: 3px 12px;
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+        .game-tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .game-tutorial-overlay.show {
+            display: flex;
+        }
+        .game-tutorial-card {
+            background: linear-gradient(145deg, #1a2f44, #0e2238);
+            border-radius: 28px;
+            padding: 24px 20px;
+            max-width: 420px;
+            width: 100%;
+            border: 2px solid #f1c40f66;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .game-tutorial-card h2 {
+            color: #f1c40f;
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+        .game-tutorial-card .sub-title {
+            color: #8ab4d6;
+            text-align: center;
+            font-size: 0.8rem;
+            margin-bottom: 16px;
+        }
+        .game-tutorial-card .tutorial-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 12px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            border-right: 3px solid #f1c40f;
+        }
+        .game-tutorial-card .tutorial-item .icon {
+            font-size: 1.8rem;
+            min-width: 40px;
+            text-align: center;
+        }
+        .game-tutorial-card .tutorial-item .text {
+            font-size: 0.8rem;
+            color: #d4e6f1;
+            line-height: 1.4;
+        }
+        .game-tutorial-card .tutorial-item .text strong {
+            color: #f1c40f;
+        }
+        .game-tutorial-card .btn-close-tutorial {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.3s;
+        }
+        .game-tutorial-card .btn-close-tutorial:hover {
+            transform: scale(1.02);
+        }
+        .mic-push-btn {
+            background: #2c3e50;
+            border: 2px solid #f1c40f;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            user-select: none;
+            touch-action: none;
+        }
+        .mic-push-btn.active {
+            background: #e74c3c;
             border-color: #e74c3c;
+            transform: scale(0.95);
+        }
+        .mic-push-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
         @media (max-width: 420px) {
+            .room-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 3px;
+            }
             .tab-item .icon {
-                font-size: 1.3rem;
+                font-size: 1rem;
             }
             .tab-item {
-                font-size: 0.7rem;
-                padding: 10px 0 6px;
+                font-size: 0.55rem;
+                padding: 6px 0 4px;
             }
             .card .value {
+                font-size: 1.2rem;
+            }
+            .wheel-wrapper {
+                width: 200px;
+                height: 200px;
+            }
+            .wheel {
+                width: 200px;
+                height: 200px;
+            }
+            .bet-options {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 5px;
+            }
+            .bet-option {
+                min-height: 60px;
+                padding: 6px 4px;
+            }
+            .bet-option .emoji {
                 font-size: 1.5rem;
             }
-            .dice {
-                width: 110px;
-                height: 110px;
-                padding: 18px;
+            .chat-container {
+                height: 140px;
             }
-            .dot {
-                width: 22px;
-                height: 22px;
+            .chat-messages {
+                max-height: 100px;
             }
-            .num-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 1.2rem;
+            .bet-input {
+                width: 80px;
+                font-size: 0.75rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-
         <div class="tab-bar">
-            <button class="tab-item active" data-tab="tab-voice"><span class="icon">🎧</span><span>غرف صوتية</span></button>
-            <button class="tab-item" data-tab="tab-game"><span class="icon">🎲</span><span>النرد</span></button>
+            <button class="tab-item active" data-tab="tab-rooms"><span class="icon">🏠</span><span>غرف</span></button>
+            <button class="tab-item" data-tab="tab-game"><span class="icon">🎡</span><span>عجلة</span></button>
+            <button class="tab-item" data-tab="tab-wallet"><span class="icon">💳</span><span>محفظة</span></button>
             <button class="tab-item" data-tab="tab-settings"><span class="icon">⚙️</span><span>إعدادات</span></button>
-            <button class="tab-item" data-tab="tab-wallet"><span class="icon">💳</span><span>المحفظة</span></button>
         </div>
-
         <div class="tab-content">
-
-            <!-- غرفة الصوت -->
-            <div class="tab-pane active" id="tab-voice">
-                <div class="card">
-                    <div class="flex-between"><h3 style="margin:0;">🎧 غرفة "المدينة"</h3><span class="badge" id="roomStatus">🟢 مفتوحة</span></div>
-                    <div class="flex-between" style="margin:6px 0 10px;">
-                        <span class="label">👥 المشاركون الفعليون</span>
-                        <span id="participantCount" style="color:#f1c40f; font-weight:bold;">0</span>
-                        <span class="db-status" id="dbStatus">⏳ جاري الاتصال...</span>
+            <!-- تبويب الغرف -->
+            <div class="tab-pane active" id="tab-rooms">
+                <div class="card" id="roomsListCard">
+                    <div class="flex-between">
+                        <span class="label">🏛️ المحافظات السورية</span>
+                        <span class="db-status" id="dbStatusRooms">✅ 14 غرفة</span>
                     </div>
-                    <div class="participants" id="participantsList">
-                        <div class="participant"><span class="status online"></span> أنت</div>
-                    </div>
-                    <div class="peer-id-box" id="peerIdDisplay">معرفك: جاري التحميل...</div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; margin:4px 0;">
-                        <button class="mic-test-btn" id="micTestBtn" onclick="testMicrophone()">🎤 اختبار الميكروفون</button>
-                        <span id="micTestStatus" style="font-size:0.8rem; color:#8ab4d6; align-self:center;">غير مختبر</span>
+                    <div class="room-grid" id="roomsGrid"></div>
+                </div>
+                <div class="card" id="roomInterface" style="display:none;">
+                    <div class="flex-between">
+                        <span class="label">📍 الغرفة الحالية</span>
+                        <span id="currentRoomName" style="color:#f1c40f; font-weight:bold;">-</span>
+                        <div>
+                            <button class="back-btn" onclick="showRoomsList()">⬅️ غرف</button>
+                            <button class="room-leave-btn" onclick="leaveVoiceRoom()">🚪 مغادرة</button>
+                        </div>
                     </div>
                     <div class="room-controls">
-                        <button class="btn btn-primary" id="joinRoomBtn" onclick="joinVoiceRoom()">🔊 دخول الغرفة</button>
-                        <button class="btn btn-mic" id="muteBtn" onclick="toggleLocalMute()" disabled>🎤 كتم</button>
-                        <button class="btn btn-danger" onclick="leaveVoiceRoom()" id="leaveBtn" disabled>🚪 مغادرة</button>
+                        <button class="mic-push-btn" id="pushToTalkBtn" disabled onmousedown="startPushToTalk()" onmouseup="stopPushToTalk()" ontouchstart="startPushToTalk()" ontouchend="stopPushToTalk()">🎤 امسك لتتحدث</button>
+                        <span id="micStatusText" style="font-size:0.7rem; color:#8ab4d6;">الميكروفون غير نشط</span>
+                    </div>
+                    <div class="peer-id-box" id="peerIdDisplay">معرفك: جاري التحميل...</div>
+                    <div style="display:flex; gap:4px; flex-wrap:wrap; margin:3px 0;">
+                        <button class="mic-test-btn" onclick="testMicrophone()">🎤 اختبار الميكروفون</button>
+                        <span id="micTestStatus" style="font-size:0.65rem; color:#8ab4d6;">غير مختبر</span>
                     </div>
                     <div class="room-info" id="roomInfo">📡 غير متصل</div>
-                    <p class="small-text" style="margin-top:6px;">* يتم حساب وقت تواجدك في الغرفة لتوزيع أرباح المضيفين يومياً.</p>
+                    <div style="margin-top:6px;">
+                        <div class="flex-between">
+                            <span class="label">👥 المشاركون</span>
+                            <span id="participantCount" style="color:#f1c40f; font-weight:bold;">0</span>
+                            <span class="db-status" id="dbStatus">⏳ جاري الاتصال...</span>
+                        </div>
+                        <div class="participants" id="participantsList"></div>
+                    </div>
+                    <div style="margin-top:6px;">
+                        <div class="flex-between"><span class="label">💬 الدردشة</span></div>
+                        <div class="chat-container">
+                            <div class="chat-messages" id="chatMessages">
+                                <div class="chat-message system">📢 مرحباً! الدردشة هنا</div>
+                            </div>
+                            <div class="chat-input-row">
+                                <input type="text" id="chatInput" placeholder="اكتب رسالة..." maxlength="300" />
+                                <button onclick="sendChatMessage()">إرسال</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- اللعبة -->
+            <!-- تبويب العجلة -->
             <div class="tab-pane" id="tab-game">
                 <div class="card">
                     <div class="flex-between">
@@ -770,49 +949,111 @@
                     <div class="value gold" id="userBalance">100.00</div>
                     <div class="small-text" id="balanceUSD">≈ $0.00</div>
                 </div>
-                <div class="dice-container" onclick="onDiceClick()" title="اضغط للرمي">
-                    <div class="dice" id="diceElement"></div>
-                    <div style="font-size:1.2rem; font-weight:bold; color:#f1c40f; margin-top:6px;" id="diceResult">اختر رقمك</div>
-                    <div class="dice-hint">👆 اضغط على النرد للرمي</div>
-                </div>
-                <div class="number-selector">
-                    <button class="num-btn" data-num="1">1</button>
-                    <button class="num-btn" data-num="2">2</button>
-                    <button class="num-btn" data-num="3">3</button>
-                    <button class="num-btn" data-num="4">4</button>
-                    <button class="num-btn" data-num="5">5</button>
-                    <button class="num-btn" data-num="6">6</button>
-                </div>
-                <div class="result-box" id="resultBox"><span style="color:#8ab4d6;">🎯 اختر رقمًا ثم اضغط على النرد</span></div>
-                <div class="stats-row">
-                    <div class="card"><div class="label">🏆 فوز اليوم</div><div class="value green" id="winsToday">0</div></div>
-                    <div class="card"><div class="label">💀 خسارة اليوم</div><div class="value red" id="lossesToday">0</div></div>
-                </div>
-                <div>
-                    <div class="flex-between"><span><strong>📜 آخر الجولات</strong></span><span class="small-text">آخر 10</span></div>
-                    <div class="history" id="historyLog"><p style="color:#6a8aa8;">لا توجد جولات</p></div>
+                <div class="card" style="text-align:center;">
+                    <div class="game-timer" id="gameTimer">⏳ 30</div>
+                    <div class="game-status" id="gameStatus">🎯 اختر رهانك!</div>
+                    <div class="flex-between" style="margin:4px 0; justify-content:center;">
+                        <span class="badge" id="gamePool">💰 0 POL</span>
+                    </div>
+                    <div class="wheel-container">
+                        <div class="wheel-wrapper">
+                            <div class="wheel-pointer"></div>
+                            <div class="wheel" id="wheelElement"></div>
+                            <div class="wheel-center" id="wheelCenterEmoji">🎡</div>
+                        </div>
+                        <div style="font-size:1.3rem; font-weight:bold; color:#f1c40f; margin-top:8px;" id="diceResult">🎡 ?</div>
+                    </div>
+                    <div class="bet-options" id="betOptions">
+                        <div class="bet-option" data-item="0" onclick="selectBet(0)">
+                            <span class="emoji">🍒</span>
+                            <span class="label">كرزة</span>
+                            <span class="pool-amount" id="pool-0">0 POL</span>
+                        </div>
+                        <div class="bet-option" data-item="1" onclick="selectBet(1)">
+                            <span class="emoji">🥕</span>
+                            <span class="label">جزرة</span>
+                            <span class="pool-amount" id="pool-1">0 POL</span>
+                        </div>
+                        <div class="bet-option" data-item="2" onclick="selectBet(2)">
+                            <span class="emoji">🍎</span>
+                            <span class="label">تفاحة</span>
+                            <span class="pool-amount" id="pool-2">0 POL</span>
+                        </div>
+                        <div class="bet-option" data-item="3" onclick="selectBet(3)">
+                            <span class="emoji">🥚</span>
+                            <span class="label">بيضة</span>
+                            <span class="pool-amount" id="pool-3">0 POL</span>
+                        </div>
+                        <div class="bet-option" data-item="4" onclick="selectBet(4)">
+                            <span class="emoji">🐟</span>
+                            <span class="label">سمكة</span>
+                            <span class="pool-amount" id="pool-4">0 POL</span>
+                        </div>
+                        <div class="bet-option" data-item="5" onclick="selectBet(5)">
+                            <span class="emoji">🐄</span>
+                            <span class="label">بقرة</span>
+                            <span class="pool-amount" id="pool-5">0 POL</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:6px; justify-content:center; align-items:center; margin:4px 0; flex-wrap:wrap;">
+                        <input type="number" class="bet-input" id="betAmount" value="1" min="1" step="1" />
+                        <span style="color:#8ab4d6; font-size:0.7rem;">POL</span>
+                        <span id="betUsdDisplay" style="color:#8ab4d6; font-size:0.7rem;">≈ $0.00</span>
+                        <button class="btn btn-primary btn-sm" onclick="placeBet()" id="placeBetBtn">🎲 رهان</button>
+                    </div>
+                    <div class="result-box" id="resultBox"><span style="color:#8ab4d6;">🎯 اختر رهانك ثم اضغط "رهان"</span></div>
+                    <div class="stats-row" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
+                        <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">🏆 فوز اليوم</div><div class="value green" id="winsToday" style="font-size:1.1rem;">0</div></div>
+                        <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">💀 خسارة اليوم</div><div class="value red" id="lossesToday" style="font-size:1.1rem;">0</div></div>
+                        <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">🔄 تدويرات مجانية</div><div class="value gold" id="freeSpins" style="font-size:1.1rem;">0</div></div>
+                    </div>
+                    <div>
+                        <div class="flex-between"><span><strong>📜 آخر الجولات</strong></span><span class="small-text">آخر 10</span></div>
+                        <div class="history" id="historyLog"><p style="color:#6a8aa8;">لا توجد جولات</p></div>
+                    </div>
                 </div>
             </div>
-
-            <!-- الإعدادات -->
-            <div class="tab-pane" id="tab-settings">
-                <div class="card"><h3 style="margin:0 0 10px;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div></div>
-                <div class="card"><h3 style="margin:0 0 10px;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
-                <div class="card"><h3 style="margin:0 0 10px;">🔗 رابط الإحالة</h3><div class="referral-link-box"><span class="link-code">🔗 الرابط:</span><button class="copy-btn" onclick="copyReferral()">📋 نسخ</button><div class="link-display" id="referralLinkDisplay">https://app.example.com/ref/abc123</div></div><hr /><div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div></div>
-            </div>
-
-            <!-- المحفظة -->
+            <!-- تبويب المحفظة -->
             <div class="tab-pane" id="tab-wallet">
-                <div class="card"><div class="label">💳 عنوان محفظتك الداخلية (Polygon)</div><div class="wallet-address" id="walletAddressDisplay">0x...</div><div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"><button class="btn btn-secondary" onclick="copyWalletAddress()">📋 نسخ العنوان</button><button class="btn btn-primary" onclick="showQR()">📱 عرض QR للاستلام</button></div><div id="qrContainer" style="display:none; margin-top:12px;" class="qr-container"><div id="qrcode"></div></div></div>
-                <div class="card"><div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay">100.00</span></div><div class="small-text" id="walletBalanceUSD">≈ $0.00</div><div class="wallet-actions" style="margin-top:12px;"><button class="btn btn-success" onclick="deposit()" style="flex:1;">➕ إيداع</button><button class="btn btn-danger" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button></div><div id="withdrawFormContainer" style="display:none; margin-top:12px;"><div class="withdraw-form"><div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 100)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="100" step="1" /></div><div class="field-group"><label>📤 عنوان الاستلام (شبكة Polygon)</label><div class="input-with-btn"><input type="text" id="withdrawAddress" placeholder="0x..." /><button class="cam-btn" onclick="openScannerForWithdraw()" title="مسح QR">📷</button></div></div><button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button></div></div><p class="small-text" style="margin-top:6px;">* الإيداع والسحب عبر POL (شبكة Polygon). الحد الأدنى للسحب 100 POL.</p></div>
+                <div class="card"><div class="label">💳 عنوان محفظتك (Polygon)</div><div class="wallet-address" id="walletAddressDisplay">0x...</div><div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;"><button class="btn btn-secondary btn-sm" onclick="copyWalletAddress()">📋 نسخ</button><button class="btn btn-primary btn-sm" onclick="showQR()">📱 QR</button></div><div id="qrContainer" style="display:none; margin-top:6px;" class="qr-container"><div id="qrcode"></div></div></div>
+                <div class="card">
+                    <div class="flex-between"><span class="label">💰 الرصيد المتاح</span><span class="value gold" id="walletBalanceDisplay" style="font-size:1.4rem;">100.00</span></div>
+                    <div class="small-text" id="walletBalanceUSD">≈ $0.00</div>
+                    <div class="wallet-actions" style="margin-top:8px;">
+                        <button class="btn btn-danger btn-sm" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button>
+                    </div>
+                    <div id="withdrawFormContainer" style="display:none; margin-top:8px;">
+                        <div class="withdraw-form">
+                            <div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="1" step="1" /></div>
+                            <div class="field-group"><label>📤 عنوان الاستلام (Polygon)</label><input type="text" id="withdrawAddress" placeholder="0x..." /></div>
+                            <button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button>
+                        </div>
+                    </div>
+                    <p class="small-text" style="margin-top:3px;">* يمكنك سحب الرصيد المتاح فقط.</p>
+                </div>
+            </div>
+            <!-- تبويب الإعدادات -->
+            <div class="tab-pane" id="tab-settings">
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div><button class="btn btn-danger btn-sm" onclick="logoutUser()" style="margin-top:6px;">🚪 تسجيل الخروج</button></div>
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">🔗 رابط الإحالة</h3>
+                    <div class="referral-link-box">
+                        <span>🔗 الرابط:</span>
+                        <button class="btn btn-secondary btn-sm" onclick="copyReferral()">📋 نسخ</button>
+                        <div class="link-display" id="referralLinkDisplay" style="margin-top:4px;word-break:break-all;font-size:0.7rem;color:#f1c40f;">https://vaultline-evm.github.io/pos/pos/</div>
+                    </div>
+                    <hr style="border-color:#1f3347; margin:4px 0;" />
+                    <div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div>
+                    <div class="flex-between"><span>🔄 تدويرات مجانية من الإحالات:</span><span class="badge" id="referralSpins">0</span></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- شاشة الدخول -->
+    <!-- شاشة تسجيل الدخول -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-card">
-            <h2>🎲 مرحباً بك!</h2>
+            <h2>🎡 مرحباً بك!</h2>
             <div class="sub">سجل الدخول أو أنشئ حساباً جديداً</div>
             <div class="auth-tabs" id="authTabs">
                 <button class="auth-tab active" data-auth="login">تسجيل الدخول</button>
@@ -827,46 +1068,104 @@
                 <input type="text" id="registerUsername" placeholder="اسم المستخدم (فريد)" />
                 <input type="email" id="registerEmail" placeholder="البريد الإلكتروني" />
                 <input type="password" id="registerPassword" placeholder="كلمة المرور (6 أحرف على الأقل)" />
+                <input type="text" id="referralCode" placeholder="رمز الإحالة (اختياري)" />
                 <button class="btn btn-success btn-block" id="registerBtn">✅ إنشاء الحساب</button>
-                <p class="small-text" style="margin-top:6px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً.</p>
+                <p class="small-text" style="margin-top:4px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً. * كل إحالة = 3 تدويرات مجانية</p>
             </div>
         </div>
     </div>
 
-    <!-- ماسح QR -->
-    <div id="scannerModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:2000; padding:20px; align-items:center; justify-content:center;"><div style="background:#0e2238; border-radius:32px; padding:24px; max-width:400px; width:100%; border:1px solid #f1c40f44;"><h3 style="color:#f1c40f; margin-bottom:12px;">📷 امسح QR code</h3><video id="scannerVideo" autoplay playsinline style="width:100%; border-radius:16px; background:#000;"></video><div style="display:flex; gap:10px; margin-top:12px;"><button class="btn btn-secondary" onclick="stopScanner()">إلغاء</button><button class="btn btn-primary" onclick="captureQRForWithdraw()">📸 التقاط</button></div><p class="small-text" style="margin-top:8px;">ضع عنوان المحفظة في منتصف الإطار.</p></div></div>
+    <!-- نافذة التعريف باللعبة -->
+    <div class="game-tutorial-overlay" id="gameTutorial">
+        <div class="game-tutorial-card">
+            <h2>🎡 مرحباً في لعبة العجلة!</h2>
+            <div class="sub-title">استمتع واربح معنا</div>
+            <div class="tutorial-item">
+                <span class="icon">💰</span>
+                <div class="text"><strong>رصيدك:</strong> اربح من خلال اللعب، يمكنك سحب أرباحك الحقيقية.</div>
+            </div>
+            <div class="tutorial-item">
+                <span class="icon">🎯</span>
+                <div class="text"><strong>اختر رهانك:</strong> اختر أحد العناصر الستة (كرزة، جزرة، تفاحة، بيضة، سمكة، بقرة).</div>
+            </div>
+            <div class="tutorial-item">
+                <span class="icon">📊</span>
+                <div class="text"><strong>آلية الفوز:</strong> سيكون الفائز هو العنصر الذي <strong>أقل مبلغ راهن عليه اللاعبون</strong> في هذه الجولة.</div>
+            </div>
+            <div class="tutorial-item">
+                <span class="icon">🏆</span>
+                <div class="text"><strong>الأرباح:</strong> 70% من مجمل الرهانات توزع على الفائزين حسب نسبة رهانهم، و 30% تذهب للصندوق.</div>
+            </div>
+            <div class="tutorial-item">
+                <span class="icon">🔄</span>
+                <div class="text"><strong>تدويرات مجانية:</strong> احصل على 3 تدويرات مجانية لكل إحالة ناجحة!</div>
+            </div>
+            <button class="btn-close-tutorial" onclick="closeTutorial()">🎮 هيا نلعب!</button>
+        </div>
+    </div>
 
     <script>
-        // =============================================================
-        //  1. إعدادات Supabase (باستخدام اسم مختلف لتجنب التضارب)
-        // =============================================================
+        // ============================================================
+        // 1. إعدادات Supabase
+        // ============================================================
         const SUPABASE_URL = 'https://ozzrdraeirhdrxztmhfr.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialized');
 
-        // =============================================================
-        //  2. إعدادات الشبكة والمحافظ
-        // =============================================================
+        const ADMIN_EMAILS = ['alimahmoud001a@gmail.com', 'youcanuseoneold@gmail.com', 'alimahmoud001aa@gmail.com'];
+        const SYRIAN_CITIES = ['دمشق', 'حلب', 'حمص', 'حماة', 'اللاذقية', 'طرطوس', 'دير الزور', 'الحسكة', 'الرقة', 'إدلب', 'درعا',
+            'السويداء', 'القنيطرة', 'ريف دمشق'
+        ];
+        const WHEEL_ITEMS = [
+            { name: 'كرزة', emoji: '🍒', color: '#e74c3c' },
+            { name: 'جزرة', emoji: '🥕', color: '#f39c12' },
+            { name: 'تفاحة', emoji: '🍎', color: '#2ecc71' },
+            { name: 'بيضة', emoji: '🥚', color: '#3498db' },
+            { name: 'سمكة', emoji: '🐟', color: '#9b59b6' },
+            { name: 'بقرة', emoji: '🐄', color: '#1abc9c' }
+        ];
+
         const INFURA_URL = 'https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99';
         const VAULT_ADDRESS = '0xb77577772412d2784a077f7CaC95Fec3e90AB75b';
         const VAULT_PRIVATE_KEY = '0x48b535e9e7b8893d2757dceec8054564d404ba2a161f24e92243b652966dff9e';
         const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
         const vaultWallet = new ethers.Wallet(VAULT_PRIVATE_KEY, provider);
 
-        // =============================================================
-        //  3. جلب سعر POL
-        // =============================================================
+        function generateWallet24() {
+            const entropy = ethers.utils.randomBytes(32);
+            const mnemonic = ethers.utils.entropyToMnemonic(entropy);
+            const wallet = ethers.Wallet.fromMnemonic(mnemonic);
+            return { address: wallet.address, mnemonic, privateKey: wallet.privateKey };
+        }
+
+        function encrypt(text, password) { return btoa(password + '|' + text); }
+
+        function decrypt(encrypted, password) {
+            try { const d = atob(encrypted); const p = d.split('|'); if (p[0] === password) return p.slice(1).join('|'); } catch {}
+            return null;
+        }
+
+        async function getBalance(address) {
+            try { const b = await provider.getBalance(address); return parseFloat(ethers.utils.formatEther(b)); } catch { return 0; }
+        }
+
+        async function sendPOL(fromWallet, toAddress, amountPOL) {
+            if (amountPOL <= 0) return null;
+            const tx = { to: toAddress, value: ethers.utils.parseEther(amountPOL.toString()) };
+            const response = await fromWallet.sendTransaction(tx);
+            await response.wait();
+            return response.hash;
+        }
+
         let polPriceUSD = 0.5;
 
         async function fetchPolPrice() {
             try {
-                const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
+                const resp = await fetch(
+                    'https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
                 const data = await resp.json();
-                if (data && data['matic-network'] && data['matic-network'].usd) {
-                    polPriceUSD = data['matic-network'].usd;
-                }
-            } catch (e) { console.warn('تعذر جلب السعر:', e); }
+                if (data && data['matic-network'] && data['matic-network'].usd) polPriceUSD = data['matic-network'].usd;
+            } catch (e) { console.warn(e); }
             updatePriceDisplay();
         }
 
@@ -879,108 +1178,78 @@
         function updateUSDValues() {
             const balance = STATE.userBalance || 0;
             const usd = balance * polPriceUSD;
-            const el1 = document.getElementById('balanceUSD');
-            const el2 = document.getElementById('walletBalanceUSD');
-            if (el1) el1.textContent = `≈ $${usd.toFixed(2)}`;
-            if (el2) el2.textContent = `≈ $${usd.toFixed(2)}`;
+            document.getElementById('balanceUSD').textContent = `≈ $${usd.toFixed(2)}`;
+            document.getElementById('walletBalanceUSD').textContent = `≈ $${usd.toFixed(2)}`;
+            const betAmount = parseFloat(document.getElementById('betAmount').value) || 0;
+            document.getElementById('betUsdDisplay').textContent = `≈ $${(betAmount * polPriceUSD).toFixed(2)}`;
         }
         setInterval(fetchPolPrice, 30000);
 
-        // =============================================================
-        //  4. دوال blockchain
-        // =============================================================
-        async function getBalance(address) {
-            try {
-                const balance = await provider.getBalance(address);
-                return parseFloat(ethers.utils.formatEther(balance));
-            } catch (e) { return 0; }
-        }
-
-        async function sendPOL(fromWallet, toAddress, amountPOL) {
-            if (amountPOL <= 0) return null;
-            const tx = { to: toAddress, value: ethers.utils.parseEther(amountPOL.toString()) };
-            const response = await fromWallet.sendTransaction(tx);
-            await response.wait();
-            return response.hash;
-        }
-
-        // =============================================================
-        //  5. دوال مساعدة (المحفظة والتشفير)
-        // =============================================================
-        function generateWallet24() {
-            const entropy = ethers.utils.randomBytes(32);
-            const mnemonic = ethers.utils.entropyToMnemonic(entropy);
-            const wallet = ethers.Wallet.fromMnemonic(mnemonic);
-            return { address: wallet.address, mnemonic, privateKey: wallet.privateKey };
-        }
-
-        function encrypt(text, password) { return btoa(password + '|' + text); }
-
-        function decrypt(encrypted, password) {
-            try {
-                const decoded = atob(encrypted);
-                const parts = decoded.split('|');
-                if (parts[0] === password) return parts.slice(1).join('|');
-                return null;
-            } catch { return null; }
-        }
-
-        // =============================================================
-        //  6. حالة التطبيق
-        // =============================================================
+        // ============================================================
+        // 2. حالة التطبيق
+        // ============================================================
         const STATE = {
             userBalance: 100,
+            bonusBalance: 10, // وهمي، لا يظهر
+            withdrawableBalance: 0,
             winsToday: 0,
             lossesToday: 0,
+            freeSpins: 0,
             history: [],
             referralEarned: 0,
-            roundPool: 0,
+            referralSpins: 0,
             hostMarketingPool: 0,
-            platformPool: 0,
             inRoom: false,
             muted: false,
-            lastEntryTime: null,
             dailyPresenceSeconds: 0,
-            selectedNumber: null,
             username: '',
             walletAddress: '',
             privateKeyEncrypted: '',
             loggedIn: false,
             userId: null,
-            participantCount: 0,
-            isRolling: false,
+            userEmail: '',
             peer: null,
             myPeerId: null,
-            connections: {},
             localStream: null,
-            remoteStreams: {},
-            roomId: 'city-room',
-            channel: null,
-            myRecordId: null,
-            micTested: false,
-            micWorking: false,
+            roomName: null,
+            chatChannel: null,
+            canKick: false,
+            selectedRoomName: null,
+            gameTimer: 30,
+            gamePhase: 'betting',
+            gameResult: null,
+            gamePoolAmount: 0,
+            myBet: null,
+            myBetAmount: 0,
+            gameInterval: null,
+            guessClosed: false,
+            bets: {},
+            isSpinning: false,
+            selectedBet: null,
+            tutorialShown: false,
+            isPushToTalkActive: false,
+            currentSpeaker: null,
+            presenceChannel: null,
         };
 
-        // =============================================================
-        //  7. عناصر DOM
-        // =============================================================
+        // ============================================================
+        // 3. عناصر DOM
+        // ============================================================
         const elBalance = document.getElementById('userBalance');
         const elWins = document.getElementById('winsToday');
         const elLosses = document.getElementById('lossesToday');
+        const elFreeSpins = document.getElementById('freeSpins');
         const elResult = document.getElementById('resultBox');
-        const elDice = document.getElementById('diceElement');
+        const elWheel = document.getElementById('wheelElement');
         const elDiceResult = document.getElementById('diceResult');
         const elHistory = document.getElementById('historyLog');
         const elReferralEarned = document.getElementById('referralEarned');
+        const elReferralSpins = document.getElementById('referralSpins');
         const elWalletBalance = document.getElementById('walletBalanceDisplay');
         const elWalletAddress = document.getElementById('walletAddressDisplay');
         const elDisplayUsername = document.getElementById('displayUsername');
         const elParticipantCount = document.getElementById('participantCount');
-        const joinBtn = document.getElementById('joinRoomBtn');
-        const muteBtn = document.getElementById('muteBtn');
-        const leaveBtn = document.getElementById('leaveBtn');
         const roomInfo = document.getElementById('roomInfo');
-        const roomStatus = document.getElementById('roomStatus');
         const withdrawFormContainer = document.getElementById('withdrawFormContainer');
         const withdrawAmount = document.getElementById('withdrawAmount');
         const withdrawAddress = document.getElementById('withdrawAddress');
@@ -988,101 +1257,85 @@
         const elPeerIdDisplay = document.getElementById('peerIdDisplay');
         const elParticipantsList = document.getElementById('participantsList');
         const elDbStatus = document.getElementById('dbStatus');
+        const elDbStatusRooms = document.getElementById('dbStatusRooms');
         const elMicTestStatus = document.getElementById('micTestStatus');
-        const elMicTestBtn = document.getElementById('micTestBtn');
+        const elRoomsGrid = document.getElementById('roomsGrid');
+        const elCurrentRoomName = document.getElementById('currentRoomName');
+        const elChatMessages = document.getElementById('chatMessages');
+        const elChatInput = document.getElementById('chatInput');
+        const roomInterface = document.getElementById('roomInterface');
+        const roomsListCard = document.getElementById('roomsListCard');
+        const gameTimerEl = document.getElementById('gameTimer');
+        const gameStatusEl = document.getElementById('gameStatus');
+        const gamePoolEl = document.getElementById('gamePool');
+        const betOptions = document.querySelectorAll('.bet-option');
+        const betAmountInput = document.getElementById('betAmount');
+        const placeBetBtn = document.getElementById('placeBetBtn');
+        const tutorialOverlay = document.getElementById('gameTutorial');
+        const pushToTalkBtn = document.getElementById('pushToTalkBtn');
+        const micStatusText = document.getElementById('micStatusText');
 
-        // =============================================================
-        //  8. دوال المصادقة (مُصلحة بالكامل)
-        // =============================================================
+        // ============================================================
+        // 4. المصادقة
+        // ============================================================
         function initAuth() {
             console.log('🔐 تهيئة المصادقة...');
-
-            // ربط زر إنشاء الحساب
-            const registerBtn = document.getElementById('registerBtn');
-            if (registerBtn) {
-                registerBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('🖱️ زر إنشاء الحساب - تم الضغط');
-                    registerUser();
-                });
-                console.log('✅ زر إنشاء الحساب مربوط');
-            }
-
-            // ربط زر تسجيل الدخول
-            const loginBtn = document.getElementById('loginBtn');
-            if (loginBtn) {
-                loginBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('🖱️ زر تسجيل الدخول - تم الضغط');
-                    loginUser();
-                });
-                console.log('✅ زر تسجيل الدخول مربوط');
-            }
-
-            // تبديل التبويبات
+            document.getElementById('registerBtn').addEventListener('click', function(e) { e.preventDefault();
+                registerUser(); });
+            document.getElementById('loginBtn').addEventListener('click', function(e) { e.preventDefault();
+                loginUser(); });
             document.querySelectorAll('.auth-tab').forEach(tab => {
                 tab.addEventListener('click', function() {
                     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
                     const target = this.dataset.auth;
                     document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
-                    if (target === 'login') document.getElementById('authLogin').classList.add('active');
-                    else document.getElementById('authRegister').classList.add('active');
+                    document.getElementById(target === 'login' ? 'authLogin' : 'authRegister').classList.add('active');
                 });
             });
-
-            // التحقق من جلسة موجودة
             supabaseClient.auth.getSession().then(({ data }) => {
-                if (data.session) {
-                    console.log('🔐 جلسة موجودة مسبقاً');
-                    loadUserData(data.session.user);
-                }
+                if (data.session) { console.log('🔐 جلسة موجودة');
+                    loadUserData(data.session.user); }
             });
-
-            // الاستماع لتغييرات المصادقة
             supabaseClient.auth.onAuthStateChange((event, session) => {
-                console.log('🔐 حدث Auth:', event);
-                if (event === 'SIGNED_IN' && session) {
-                    loadUserData(session.user);
-                } else if (event === 'SIGNED_OUT') {
-                    logoutUser();
-                }
+                if (event === 'SIGNED_IN' && session) { loadUserData(session.user); } else if (event === 'SIGNED_OUT') {
+                    logoutUser(); }
             });
         }
 
-        // =============================================================
-        //  دالة التسجيل - المُصلحة
-        // =============================================================
         async function registerUser() {
-            console.log('🚀 بدء عملية التسجيل...');
-
             const username = document.getElementById('registerUsername').value.trim();
             const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value.trim();
-
+            const referralCode = document.getElementById('referralCode').value.trim();
             if (!username) { alert('⚠️ يرجى إدخال اسم مستخدم.'); return; }
             if (!email) { alert('⚠️ يرجى إدخال البريد الإلكتروني.'); return; }
             if (!password || password.length < 6) { alert('⚠️ كلمة المرور 6 أحرف على الأقل.'); return; }
-
             try {
-                // 1. إنشاء المستخدم في Auth
                 const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                     email,
                     password,
-                    options: { data: { username } }
+                    options: { data: { username, referral_code: referralCode } }
                 });
-                if (authError) {
-                    alert('❌ فشل إنشاء الحساب: ' + authError.message);
-                    return;
-                }
-
-                console.log('✅ تم إنشاء المستخدم في Auth:', authData.user.id);
-
-                // 2. توليد محفظة
+                if (authError) { alert('❌ فشل إنشاء الحساب: ' + authError.message); return; }
+                if (!authData.user) { alert('❌ لم يتم إنشاء المستخدم.'); return; }
                 const wallet = generateWallet24();
                 const encryptedKey = encrypt(wallet.privateKey, password);
-
-                // 3. إدراج البيانات في جدول profiles
+                let referralSpins = 0;
+                if (referralCode) {
+                    const { data: referrer } = await supabaseClient
+                        .from('profiles')
+                        .select('id')
+                        .eq('referral_code', referralCode)
+                        .maybeSingle();
+                    if (referrer) {
+                        referralSpins = 3;
+                        await supabaseClient.rpc('add_referral_spins', { user_id: referrer.id, spins: 3 });
+                        await supabaseClient
+                            .from('referrals')
+                            .insert([{ referrer_id: referrer.id, referred_id: authData.user.id, referred_email: email }]);
+                    }
+                }
                 const { error: profileError } = await supabaseClient
                     .from('profiles')
                     .insert([{
@@ -1090,214 +1343,703 @@
                         username: username,
                         wallet_address: wallet.address,
                         encrypted_private_key: encryptedKey,
+                        referral_code: generateReferralCode(username),
+                        free_spins: referralSpins,
+                        bonus_balance: 10,
+                        withdrawable_balance: 0,
                     }]);
-
                 if (profileError) {
-                    console.error('❌ خطأ في profiles:', profileError);
                     alert('⚠️ تم إنشاء الحساب لكن فشل حفظ البيانات: ' + profileError.message);
+                    await supabaseClient.auth.admin.deleteUser(authData.user.id);
                     return;
                 }
-
-                console.log('✅ تم حفظ الملف الشخصي');
                 alert('✅ تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...');
                 await loginUser(email, password);
-
-            } catch (err) {
-                console.error('❌ خطأ غير متوقع:', err);
-                alert('❌ خطأ غير متوقع: ' + err.message);
-            }
+            } catch (err) { alert('❌ خطأ غير متوقع: ' + err.message); }
         }
 
-        // =============================================================
-        //  دالة تسجيل الدخول
-        // =============================================================
+        function generateReferralCode(username) {
+            return username + '-' + Math.random().toString(36).substring(2, 6);
+        }
+
         async function loginUser(email, password) {
-            if (!email) {
-                email = document.getElementById('loginEmail').value.trim();
-                password = document.getElementById('loginPassword').value.trim();
-            }
-            if (!email || !password) {
-                alert('⚠️ أدخل البريد الإلكتروني وكلمة المرور.');
-                return;
-            }
-
+            if (!email) { email = document.getElementById('loginEmail').value.trim();
+                password = document.getElementById('loginPassword').value.trim(); }
+            if (!email || !password) { alert('⚠️ أدخل البريد الإلكتروني وكلمة المرور.'); return; }
             try {
-                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) {
-                    alert('❌ فشل تسجيل الدخول: ' + error.message);
-                    return;
-                }
-                console.log('✅ تم تسجيل الدخول بنجاح');
-                // loadUserData ستُستدعى تلقائياً عبر onAuthStateChange
-            } catch (err) {
-                alert('❌ خطأ: ' + err.message);
-            }
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) { alert('❌ فشل تسجيل الدخول: ' + error.message); return; }
+            } catch (err) { alert('❌ خطأ: ' + err.message); }
         }
 
-        // =============================================================
-        //  تحميل بيانات المستخدم
-        // =============================================================
         async function loadUserData(user) {
-            console.log('📥 جلب بيانات المستخدم...');
-            const { data: profile, error } = await supabaseClient
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-
-            if (error) {
-                console.error('❌ خطأ في جلب الملف الشخصي:', error);
-                alert('⚠️ تعذر تحميل بياناتك: ' + error.message);
-                return;
-            }
-
-            STATE.loggedIn = true;
-            STATE.userId = user.id;
-            STATE.username = profile.username;
-            STATE.walletAddress = profile.wallet_address;
-            STATE.privateKeyEncrypted = profile.encrypted_private_key;
-            STATE.userBalance = profile.balance || 100;
-            STATE.winsToday = profile.wins || 0;
-            STATE.lossesToday = profile.losses || 0;
-            STATE.referralEarned = profile.referral_earned || 0;
-            STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
-
-            document.getElementById('authOverlay').style.display = 'none';
-            updateUI();
-            renderDice(1);
-            fetchPolPrice();
-            initPeer();
-            console.log('✅ تم تحميل بيانات المستخدم:', profile.username);
+            try {
+                const { data: profile, error } = await supabaseClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .maybeSingle();
+                if (error) { alert('⚠️ تعذر تحميل بياناتك: ' + error.message); return; }
+                if (!profile) {
+                    const wallet = generateWallet24();
+                    const username = user.user_metadata?.username || user.email?.split('@')[0] || 'مستخدم';
+                    const encryptedKey = encrypt(wallet.privateKey, 'temporary_password_123');
+                    const { error: insertError } = await supabaseClient
+                        .from('profiles')
+                        .insert([{
+                            id: user.id,
+                            username: username,
+                            wallet_address: wallet.address,
+                            encrypted_private_key: encryptedKey,
+                            referral_code: generateReferralCode(username),
+                            bonus_balance: 10,
+                            withdrawable_balance: 0,
+                        }]);
+                    if (insertError) { alert('⚠️ فشل إنشاء ملفك الشخصي: ' + insertError.message); return; }
+                    return loadUserData(user);
+                }
+                if (profile.is_banned) {
+                    if (profile.ban_expires_at) {
+                        const now = new Date();
+                        const expires = new Date(profile.ban_expires_at);
+                        if (expires > now) {
+                            alert(`🚫 أنت محظور مؤقتاً حتى ${expires.toLocaleString()}`);
+                            await supabaseClient.auth.signOut();
+                            return;
+                        } else {
+                            await supabaseClient
+                                .from('profiles')
+                                .update({ is_banned: false, ban_expires_at: null })
+                                .eq('id', user.id);
+                        }
+                    } else {
+                        alert('🚫 حسابك محظور بشكل دائم من التطبيق.');
+                        await supabaseClient.auth.signOut();
+                        return;
+                    }
+                }
+                STATE.loggedIn = true;
+                STATE.userId = user.id;
+                STATE.userEmail = user.email;
+                STATE.username = profile.username;
+                STATE.walletAddress = profile.wallet_address;
+                STATE.privateKeyEncrypted = profile.encrypted_private_key;
+                STATE.userBalance = profile.balance || 0;
+                STATE.bonusBalance = profile.bonus_balance || 10;
+                STATE.withdrawableBalance = profile.withdrawable_balance || 0;
+                STATE.winsToday = profile.wins || 0;
+                STATE.lossesToday = profile.losses || 0;
+                STATE.referralEarned = profile.referral_earned || 0;
+                STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
+                STATE.freeSpins = profile.free_spins || 0;
+                STATE.referralSpins = profile.referral_spins || 0;
+                STATE.canKick = ADMIN_EMAILS.includes(user.email);
+                document.getElementById('authOverlay').style.display = 'none';
+                updateUI();
+                initWheel();
+                fetchPolPrice();
+                renderRooms();
+                startGameLoop();
+                if (!localStorage.getItem('tutorialShown')) {
+                    setTimeout(() => { tutorialOverlay.classList.add('show');
+                        localStorage.setItem('tutorialShown', 'true'); }, 1000);
+                }
+                const referralLink = `https://vaultline-evm.github.io/pos/pos/${profile.referral_code}`;
+                document.getElementById('referralLinkDisplay').textContent = referralLink;
+                if (profile.last_seen_room && SYRIAN_CITIES.includes(profile.last_seen_room)) {
+                    STATE.selectedRoomName = profile.last_seen_room;
+                    selectAndJoinRoom(profile.last_seen_room);
+                }
+            } catch (e) { console.error(e);
+                alert('❌ خطأ في تحميل البيانات: ' + e.message); }
         }
 
-        // =============================================================
-        //  تسجيل الخروج
-        // =============================================================
+        function closeTutorial() { tutorialOverlay.classList.remove('show'); }
+
         async function logoutUser() {
-            console.log('🚪 تسجيل الخروج...');
             if (STATE.inRoom) await leaveVoiceRoom();
+            await supabaseClient.auth.signOut();
             STATE.loggedIn = false;
             STATE.userId = null;
+            STATE.userEmail = '';
+            STATE.canKick = false;
             document.getElementById('authOverlay').style.display = 'flex';
             updateUI();
+            if (STATE.gameInterval) clearInterval(STATE.gameInterval);
             alert('تم تسجيل الخروج.');
         }
 
-        // =============================================================
-        //  حفظ الملف الشخصي
-        // =============================================================
-        async function saveProfile() {
-            if (!STATE.loggedIn) return;
-            try {
-                await supabaseClient
-                    .from('profiles')
-                    .update({
-                        balance: STATE.userBalance,
-                        wins: STATE.winsToday,
-                        losses: STATE.lossesToday,
-                        referral_earned: STATE.referralEarned,
-                        daily_presence_seconds: STATE.dailyPresenceSeconds,
-                    })
-                    .eq('id', STATE.userId);
-            } catch (e) { console.error(e); }
+        // ============================================================
+        // 5. الغرف
+        // ============================================================
+        function showRoomsList() {
+            roomsListCard.style.display = 'block';
+            roomInterface.style.display = 'none';
+            if (STATE.inRoom) leaveVoiceRoom();
         }
 
-        // =============================================================
-        //  9. النرد
-        // =============================================================
-        function renderDice(value) {
-            const dotsMap = {
-                1: [
-                    [0, 1]
-                ],
-                2: [
-                    [0, 0],
-                    [2, 2]
-                ],
-                3: [
-                    [0, 0],
-                    [1, 1],
-                    [2, 2]
-                ],
-                4: [
-                    [0, 0],
-                    [0, 2],
-                    [2, 0],
-                    [2, 2]
-                ],
-                5: [
-                    [0, 0],
-                    [0, 2],
-                    [1, 1],
-                    [2, 0],
-                    [2, 2]
-                ],
-                6: [
-                    [0, 0],
-                    [0, 2],
-                    [1, 0],
-                    [1, 2],
-                    [2, 0],
-                    [2, 2]
-                ]
-            };
-            const positions = dotsMap[value] || [];
+        function renderRooms() {
             let html = '';
-            for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 3; c++) {
-                    const isDot = positions.some(([rr, cc]) => rr === r && cc === c);
-                    html += `<div class="dot ${isDot ? '' : 'empty'}"></div>`;
+            for (const name of SYRIAN_CITIES) {
+                const isActive = STATE.selectedRoomName === name;
+                html += `
+                    <div class="room-card ${isActive ? 'active-room' : ''}" onclick="selectAndJoinRoom('${name}')">
+                        <div class="room-name">🏛️ ${name}</div>
+                        <div class="room-count" id="roomCount-${name}">👥 0</div>
+                        <div class="room-status active">🟢</div>
+                    </div>
+                `;
+            }
+            elRoomsGrid.innerHTML = html;
+            elDbStatusRooms.textContent = `✅ ${SYRIAN_CITIES.length} غرفة`;
+            elDbStatusRooms.style.color = '#2ecc71';
+        }
+
+        function selectAndJoinRoom(roomName) {
+            if (STATE.inRoom && STATE.roomName === roomName) return;
+            STATE.selectedRoomName = roomName;
+            elCurrentRoomName.textContent = roomName;
+            roomsListCard.style.display = 'none';
+            roomInterface.style.display = 'block';
+            renderRooms();
+            elParticipantsList.innerHTML = '';
+            elChatMessages.innerHTML = '<div class="chat-message system">📢 مرحباً! الدردشة هنا</div>';
+            elParticipantCount.textContent = '0';
+            pushToTalkBtn.disabled = true;
+            roomInfo.textContent = '📡 جاري الاتصال...';
+            elDbStatus.textContent = '⏳ جاري الاتصال...';
+            elDbStatus.style.color = '#f1c40f';
+            micStatusText.textContent = 'الميكروفون غير نشط';
+            setTimeout(() => joinSelectedRoom(), 500);
+        }
+
+        // ============================================================
+        // 6. الاتصال بالغرفة
+        // ============================================================
+        async function joinSelectedRoom() {
+            const roomName = STATE.selectedRoomName;
+            if (!roomName) return;
+            if (STATE.presenceChannel) {
+                await supabaseClient.removeChannel(STATE.presenceChannel);
+                STATE.presenceChannel = null;
+            }
+            if (STATE.chatChannel) {
+                await supabaseClient.removeChannel(STATE.chatChannel);
+                STATE.chatChannel = null;
+            }
+            const channelName = `room:${roomName}`;
+            const channel = supabaseClient.channel(channelName, {
+                config: { presence: { key: STATE.userId }, broadcast: { self: true } }
+            });
+
+            channel.on('presence', { event: 'sync' }, () => {
+                const state = channel.presenceState();
+                const participants = Object.values(state).flat();
+                renderParticipants(participants);
+                document.getElementById(`roomCount-${roomName}`).textContent = `👥 ${participants.length}`;
+                elParticipantCount.textContent = participants.length;
+            });
+            channel.on('presence', { event: 'join' }, ({ key, newPresences }) => {
+                const names = newPresences.map(p => p.username).join(', ');
+                addChatMessage('system', `👋 ${names} انضم إلى الغرفة`);
+            });
+            channel.on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+                const names = leftPresences.map(p => p.username).join(', ');
+                addChatMessage('system', `👋 ${names} غادر الغرفة`);
+            });
+
+            channel.on('broadcast', { event: 'chat' }, (payload) => {
+                const { user, message, time } = payload.payload;
+                addChatMessage('user', message, user, time);
+            });
+            channel.on('broadcast', { event: 'mic-status' }, (payload) => {
+                const { userId, active } = payload.payload;
+                updateMicStatus(userId, active);
+            });
+            channel.on('broadcast', { event: 'bet' }, (payload) => {
+                const { userId, bet, amount, username } = payload.payload;
+                if (!STATE.bets[roomName]) STATE.bets[roomName] = {};
+                STATE.bets[roomName][userId] = { bet, amount, username };
+                updatePoolDisplay();
+                elResult.innerHTML = `📩 ${username} راهن على ${WHEEL_ITEMS[bet].emoji} ${WHEEL_ITEMS[bet].name} بمبلغ ${amount} POL`;
+            });
+            channel.on('broadcast', { event: 'game-result' }, (payload) => {
+                const { winningIndex, poolPerItem, winners, totalPool } = payload.payload;
+                applyGameResult(winningIndex, poolPerItem, winners, totalPool);
+            });
+
+            try {
+                await channel.subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        STATE.inRoom = true;
+                        STATE.roomName = roomName;
+                        STATE.presenceChannel = channel;
+                        STATE.chatChannel = channel;
+                        await channel.track({ user_id: STATE.userId, username: STATE.username, online: true });
+                        pushToTalkBtn.disabled = false;
+                        roomInfo.textContent = `📡 متصل بـ ${roomName}`;
+                        elDbStatus.textContent = '✅ متصل';
+                        elDbStatus.style.color = '#2ecc71';
+                        addChatMessage('system', `📢 مرحباً بالجميع في غرفة ${roomName}!`);
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+                alert('❌ تعذر الاتصال بالغرفة.');
+                showRoomsList();
+            }
+            const state = channel.presenceState();
+            const participants = Object.values(state).flat();
+            document.getElementById(`roomCount-${roomName}`).textContent = `👥 ${participants.length}`;
+            renderParticipants(participants);
+        }
+
+        // ============================================================
+        // 7. المشاركون والميكروفون
+        // ============================================================
+        function renderParticipants(participants) {
+            const list = document.getElementById('participantsList');
+            list.innerHTML = '';
+            if (!participants || participants.length === 0) {
+                list.innerHTML = '<div class="participant"><span class="status online"></span> أنت</div>';
+                return;
+            }
+            participants.forEach(p => {
+                const isSelf = p.user_id === STATE.userId;
+                const isSpeaker = STATE.currentSpeaker === p.user_id;
+                const div = document.createElement('div');
+                div.className = 'participant';
+                div.innerHTML = `
+                    <span class="status ${isSpeaker ? 'online' : 'muted'}"></span>
+                    ${p.username} ${isSelf ? '(أنت)' : ''}
+                    ${isSpeaker ? '🎤' : ''}
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function updateMicStatus(userId, active) {
+            if (active) STATE.currentSpeaker = userId;
+            else if (STATE.currentSpeaker === userId) STATE.currentSpeaker = null;
+            const channel = STATE.presenceChannel;
+            if (channel) {
+                const state = channel.presenceState();
+                const participants = Object.values(state).flat();
+                renderParticipants(participants);
+            }
+            if (userId === STATE.userId) {
+                micStatusText.textContent = active ? '🎤 أنت تتحدث الآن' : '🔇 أنت مكتوم';
+            } else {
+                const channel = STATE.presenceChannel;
+                if (channel) {
+                    const state = channel.presenceState();
+                    const participants = Object.values(state).flat();
+                    const name = participants.find(p => p.user_id === userId)?.username || 'مستخدم';
+                    micStatusText.textContent = active ? `🎤 ${name} يتحدث` : '🔇 لا أحد يتحدث';
                 }
             }
-            elDice.innerHTML = html;
         }
 
-        document.querySelectorAll('.num-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (STATE.isRolling) return;
-                document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                STATE.selectedNumber = parseInt(this.dataset.num);
-                elDiceResult.textContent = `🔢 رقمك: ${STATE.selectedNumber}`;
-                elResult.innerHTML = `<span style="color:#8ab4d6;">🎯 رهان على رقم ${STATE.selectedNumber} — اضغط النرد</span>`;
+        // ============================================================
+        // 8. Push-to-Talk
+        // ============================================================
+        function startPushToTalk() {
+            if (!STATE.inRoom || !STATE.presenceChannel) return;
+            if (STATE.currentSpeaker && STATE.currentSpeaker !== STATE.userId) {
+                alert('⛔ هناك شخص آخر يتحدث حالياً. انتظر حتى يحرر الميكروفون.');
+                return;
+            }
+            STATE.isPushToTalkActive = true;
+            if (!STATE.localStream) {
+                navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                    .then(stream => {
+                        STATE.localStream = stream;
+                        STATE.localStream.getAudioTracks().forEach(t => t.enabled = true);
+                        STATE.presenceChannel.send({
+                            type: 'broadcast',
+                            event: 'mic-status',
+                            payload: { userId: STATE.userId, active: true }
+                        });
+                        pushToTalkBtn.classList.add('active');
+                        pushToTalkBtn.textContent = '🎤 تتحدث ... حرر للإيقاف';
+                        micStatusText.textContent = '🎤 أنت تتحدث الآن';
+                    })
+                    .catch(() => alert('⚠️ تعذر الوصول إلى الميكروفون.'));
+            } else {
+                STATE.localStream.getAudioTracks().forEach(t => t.enabled = true);
+                STATE.presenceChannel.send({
+                    type: 'broadcast',
+                    event: 'mic-status',
+                    payload: { userId: STATE.userId, active: true }
+                });
+                pushToTalkBtn.classList.add('active');
+                pushToTalkBtn.textContent = '🎤 تتحدث ... حرر للإيقاف';
+                micStatusText.textContent = '🎤 أنت تتحدث الآن';
+            }
+        }
+
+        function stopPushToTalk() {
+            if (!STATE.inRoom || !STATE.presenceChannel || !STATE.isPushToTalkActive) return;
+            STATE.isPushToTalkActive = false;
+            if (STATE.localStream) STATE.localStream.getAudioTracks().forEach(t => t.enabled = false);
+            STATE.presenceChannel.send({
+                type: 'broadcast',
+                event: 'mic-status',
+                payload: { userId: STATE.userId, active: false }
             });
-        });
-
-        function onDiceClick() {
-            if (STATE.isRolling) return;
-            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
-            if (STATE.selectedNumber === null) { alert('⚠️ اختر رقمًا أولاً.'); return; }
-            rollDice();
+            pushToTalkBtn.classList.remove('active');
+            pushToTalkBtn.textContent = '🎤 امسك لتتحدث';
+            micStatusText.textContent = '🔇 أنت مكتوم';
         }
 
-        // =============================================================
-        //  10. تحديث الواجهة
-        // =============================================================
+        // ============================================================
+        // 9. الدردشة
+        // ============================================================
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const msg = input.value.trim();
+            if (!msg || !STATE.chatChannel) return;
+            const time = new Date().toLocaleTimeString();
+            STATE.chatChannel.send({
+                type: 'broadcast',
+                event: 'chat',
+                payload: { user: STATE.username, message: msg, time: time }
+            });
+            addChatMessage('user', msg, STATE.username, time);
+            input.value = '';
+        }
+
+        function addChatMessage(type, message, user = '', time = '') {
+            const messages = document.getElementById('chatMessages');
+            if (type === 'system') {
+                messages.innerHTML += `<div class="chat-message system">${message}</div>`;
+            } else {
+                const displayTime = time || new Date().toLocaleTimeString();
+                messages.innerHTML +=
+                    `<div class="chat-message"><span class="msg-user">${user}</span><span class="msg-time">${displayTime}</span> ${message}</div>`;
+            }
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // ============================================================
+        // 10. اختبار الميكروفون
+        // ============================================================
+        function testMicrophone() {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                .then(stream => {
+                    const audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                    const source = audioContext.createMediaStreamSource(stream);
+                    const analyser = audioContext.createAnalyser();
+                    source.connect(analyser);
+                    const dataArray = new Uint8Array(analyser.fftSize);
+                    let detected = false;
+                    const checkAudio = setInterval(() => {
+                        analyser.getByteTimeDomainData(dataArray);
+                        let max = 0;
+                        for (let i = 0; i < dataArray.length; i++) {
+                            const value = Math.abs(dataArray[i] - 128);
+                            if (value > max) max = value;
+                        }
+                        if (max > 20) {
+                            detected = true;
+                            clearInterval(checkAudio);
+                            elMicTestStatus.textContent = '✅ يعمل';
+                            elMicTestStatus.style.color = '#2ecc71';
+                            stream.getTracks().forEach(t => t.stop());
+                            audioContext.close();
+                        }
+                    }, 100);
+                    setTimeout(() => {
+                        if (!detected) {
+                            clearInterval(checkAudio);
+                            elMicTestStatus.textContent = '⚠️ لا يوجد صوت';
+                            elMicTestStatus.style.color = '#e74c3c';
+                            stream.getTracks().forEach(t => t.stop());
+                            audioContext.close();
+                        }
+                    }, 3000);
+                })
+                .catch(() => {
+                    elMicTestStatus.textContent = '❌ خطأ في الميكروفون';
+                    elMicTestStatus.style.color = '#e74c3c';
+                });
+        }
+
+        // ============================================================
+        // 11. مغادرة الغرفة
+        // ============================================================
+        async function leaveVoiceRoom() {
+            if (STATE.presenceChannel) {
+                await STATE.presenceChannel.untrack();
+                await supabaseClient.removeChannel(STATE.presenceChannel);
+                STATE.presenceChannel = null;
+                STATE.chatChannel = null;
+            }
+            STATE.inRoom = false;
+            STATE.roomName = null;
+            pushToTalkBtn.disabled = true;
+            roomInfo.textContent = '📡 غير متصل';
+            elDbStatus.textContent = '⏳ غير متصل';
+            elDbStatus.style.color = '#7f8c8d';
+            elParticipantsList.innerHTML = '';
+            elParticipantCount.textContent = '0';
+            if (STATE.localStream) { STATE.localStream.getTracks().forEach(t => t.stop());
+                STATE.localStream = null; }
+            STATE.currentSpeaker = null;
+            micStatusText.textContent = 'الميكروفون غير نشط';
+            pushToTalkBtn.classList.remove('active');
+            pushToTalkBtn.textContent = '🎤 امسك لتتحدث';
+        }
+
+        // ============================================================
+        // 12. العجلة
+        // ============================================================
+        function initWheel() { renderWheelItems();
+            updatePoolDisplay(); }
+
+        function renderWheelItems() {
+            const colors = WHEEL_ITEMS.map(item => item.color);
+            const grad = colors.map((c, i) => {
+                const start = (i / colors.length) * 100;
+                const end = ((i + 1) / colors.length) * 100;
+                return `${c} ${start}% ${end}%`;
+            }).join(', ');
+            elWheel.style.background = `conic-gradient(${grad})`;
+        }
+
+        function selectBet(index) {
+            if (STATE.gamePhase !== 'betting' || STATE.guessClosed) { alert('⚠️ فترة الرهان انتهت.'); return; }
+            STATE.selectedBet = index;
+            betOptions.forEach((el, i) => el.classList.toggle('selected', i === index));
+        }
+
+        async function placeBet() {
+            if (STATE.gamePhase !== 'betting' || STATE.guessClosed) { alert('⚠️ فترة الرهان انتهت.'); return; }
+            if (STATE.selectedBet === null) { alert('⚠️ اختر عنصراً أولاً.'); return; }
+            if (!STATE.inRoom || !STATE.chatChannel) { alert('⚠️ يجب أن تكون في غرفة للمشاركة.'); return; }
+            const amount = parseFloat(betAmountInput.value) || 0;
+            if (amount <= 0) { alert('⚠️ أدخل كمية رهان صحيحة.'); return; }
+            const totalBalance = STATE.userBalance + STATE.bonusBalance;
+            if (amount > totalBalance) { alert('❌ رصيد غير كافٍ.'); return; }
+            if (STATE.userBalance >= amount) STATE.userBalance -= amount;
+            else { const remaining = amount - STATE.userBalance;
+                STATE.userBalance = 0;
+                STATE.bonusBalance -= remaining; }
+            STATE.gamePoolAmount += amount;
+            STATE.myBet = STATE.selectedBet;
+            STATE.myBetAmount = amount;
+            const room = STATE.roomName;
+            if (!STATE.bets[room]) STATE.bets[room] = {};
+            STATE.bets[room][STATE.userId] = { bet: STATE.selectedBet, amount, username: STATE.username };
+            STATE.chatChannel.send({
+                type: 'broadcast',
+                event: 'bet',
+                payload: { userId: STATE.userId, bet: STATE.selectedBet, amount, username: STATE.username }
+            });
+            betOptions.forEach(el => el.disabled = true);
+            placeBetBtn.disabled = true;
+            elResult.innerHTML =
+                `✅ رهان ${WHEEL_ITEMS[STATE.selectedBet].emoji} ${WHEEL_ITEMS[STATE.selectedBet].name} بمبلغ ${amount} POL`;
+            updateUI();
+            updateGameUI();
+            updatePoolDisplay();
+        }
+
+        function spinWheel() {
+            if (STATE.isSpinning) return;
+            STATE.isSpinning = true;
+            const room = STATE.roomName;
+            if (!room) { STATE.isSpinning = false; return; }
+            const roomBets = STATE.bets[room] || {};
+            const poolPerItem = new Array(WHEEL_ITEMS.length).fill(0);
+            for (const [userId, betData] of Object.entries(roomBets)) poolPerItem[betData.bet] += betData.amount;
+            let minAmount = Infinity,
+                resultIndex = 0;
+            for (let i = 0; i < poolPerItem.length; i++) {
+                if (poolPerItem[i] < minAmount && poolPerItem[i] > 0) { minAmount = poolPerItem[i];
+                    resultIndex = i; }
+            }
+            if (minAmount === Infinity || minAmount === 0) resultIndex = Math.floor(Math.random() * WHEEL_ITEMS.length);
+            const resultItem = WHEEL_ITEMS[resultIndex];
+            const totalPool = Object.values(roomBets).reduce((sum, b) => sum + b.amount, 0);
+            const winners = {};
+            for (const [userId, betData] of Object.entries(roomBets)) {
+                if (betData.bet === resultIndex) winners[userId] = betData.amount;
+            }
+            let winnerPayouts = {};
+            if (Object.keys(winners).length > 0 && totalPool > 0) {
+                const winPool = totalPool * 0.7;
+                const totalWinnerBets = Object.values(winners).reduce((a, b) => a + b, 0);
+                const multiplier = winPool / totalWinnerBets;
+                for (const [userId, amt] of Object.entries(winners)) winnerPayouts[userId] = amt * multiplier;
+            }
+            if (STATE.chatChannel) {
+                STATE.chatChannel.send({
+                    type: 'broadcast',
+                    event: 'game-result',
+                    payload: { winningIndex: resultIndex, poolPerItem, winners: winnerPayouts, totalPool }
+                });
+            }
+            applyGameResult(resultIndex, poolPerItem, winnerPayouts, totalPool);
+            const segmentAngle = 360 / WHEEL_ITEMS.length;
+            const targetAngle = 360 - (resultIndex * segmentAngle + segmentAngle / 2);
+            const spins = 6 + Math.random() * 4;
+            const finalAngle = spins * 360 + targetAngle;
+            elWheel.style.transition = 'transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
+            elWheel.style.transform = `rotate(${finalAngle}deg)`;
+            document.getElementById('wheelCenterEmoji').textContent = '🎡';
+            setTimeout(() => {
+                STATE.isSpinning = false;
+                STATE.gamePhase = 'result';
+                elDiceResult.textContent = `${resultItem.emoji} ${resultItem.name}`;
+                document.getElementById('wheelCenterEmoji').textContent = resultItem.emoji;
+                updateGameUI();
+            }, 4000);
+            setTimeout(() => {
+                delete STATE.bets[room];
+                STATE.gamePoolAmount = 0;
+                STATE.myBet = null;
+                STATE.myBetAmount = 0;
+                betOptions.forEach(el => el.disabled = false);
+                betOptions.forEach(el => el.classList.remove('selected'));
+                placeBetBtn.disabled = false;
+                STATE.selectedBet = null;
+                updateUI();
+                updateGameUI();
+                updatePoolDisplay();
+                saveProfile();
+            }, 5000);
+        }
+
+        function applyGameResult(winningIndex, poolPerItem, winners, totalPool) {
+            const resultItem = WHEEL_ITEMS[winningIndex];
+            let resultText = '';
+            if (Object.keys(winners).length === 0 || totalPool === 0) {
+                STATE.hostMarketingPool += totalPool;
+                resultText = `😞 ${resultItem.emoji} ${resultItem.name} - لم يفز أحد.`;
+                addHistory('lose', `${resultItem.emoji} ${resultItem.name} - لا فائزين`);
+                STATE.lossesToday += Object.keys(STATE.bets[STATE.roomName] || {}).length;
+            } else {
+                let totalWon = 0;
+                for (const [userId, amount] of Object.entries(winners)) {
+                    if (userId === STATE.userId) { STATE.userBalance += amount;
+                        STATE.winsToday += 1;
+                        totalWon += amount; } else {
+                        supabaseClient.from('profiles').select('balance').eq('id', userId).single().then(({ data }) => {
+                            if (data) {
+                                const newBalance = (data.balance || 0) + amount;
+                                supabaseClient.from('profiles').update({ balance: newBalance }).eq('id', userId);
+                            }
+                        });
+                    }
+                }
+                STATE.hostMarketingPool += totalPool * 0.3;
+                resultText = `🎉 ${resultItem.emoji} ${resultItem.name} - فوز ${Object.keys(winners).length} لاعب`;
+                addHistory('win', `${resultItem.emoji} ${resultItem.name} - فوز ${Object.keys(winners).length} لاعب`);
+                STATE.winsToday += Object.keys(winners).filter(id => id !== STATE.userId).length;
+            }
+            const poolDetails = poolPerItem.map((amount, i) => `${WHEEL_ITEMS[i].emoji} ${amount.toFixed(0)} POL`).join(' | ');
+            elResult.innerHTML = `${resultText}<br><small style="color:#8ab4d6;">📊 الرهانات: ${poolDetails}</small>`;
+            updateUI();
+            updateGameUI();
+            updatePoolDisplay();
+            saveProfile();
+        }
+
+        function updatePoolDisplay() {
+            const room = STATE.roomName;
+            if (!room) return;
+            const bets = STATE.bets[room] || {};
+            const poolPerItem = new Array(WHEEL_ITEMS.length).fill(0);
+            for (const [userId, betData] of Object.entries(bets)) poolPerItem[betData.bet] += betData.amount;
+            for (let i = 0; i < WHEEL_ITEMS.length; i++) {
+                const el = document.getElementById(`pool-${i}`);
+                if (el) el.textContent = `${poolPerItem[i].toFixed(0)} POL`;
+            }
+        }
+
+        // ============================================================
+        // 13. دورة اللعبة
+        // ============================================================
+        function startGameLoop() {
+            if (STATE.gameInterval) clearInterval(STATE.gameInterval);
+            const now = new Date();
+            const seconds = now.getSeconds();
+            const waitTime = 60 - seconds;
+            setTimeout(() => startGameLoopActual(), (waitTime < 60 ? waitTime : 0) * 1000 + 100);
+        }
+
+        function startGameLoopActual() {
+            STATE.gamePhase = 'betting';
+            STATE.gameTimer = 30;
+            STATE.gamePoolAmount = 0;
+            STATE.myBet = null;
+            STATE.myBetAmount = 0;
+            STATE.guessClosed = false;
+            STATE.bets = {};
+            STATE.isSpinning = false;
+            STATE.gameResult = null;
+            betOptions.forEach(el => el.disabled = false);
+            betOptions.forEach(el => el.classList.remove('selected'));
+            placeBetBtn.disabled = false;
+            STATE.selectedBet = null;
+            elWheel.style.transition = 'none';
+            elWheel.style.transform = 'rotate(0deg)';
+            elDiceResult.textContent = '🎡 ?';
+            document.getElementById('wheelCenterEmoji').textContent = '🎡';
+            elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رهانك خلال 30 ثانية!</span>';
+            updateGameUI();
+            updatePoolDisplay();
+            if (STATE.gameInterval) clearInterval(STATE.gameInterval);
+            STATE.gameInterval = setInterval(() => {
+                STATE.gameTimer--;
+                if (STATE.gameTimer <= 0) {
+                    if (STATE.gamePhase === 'betting') {
+                        STATE.gamePhase = 'spinning';
+                        STATE.guessClosed = true;
+                        betOptions.forEach(el => el.disabled = true);
+                        placeBetBtn.disabled = true;
+                        elResult.innerHTML = '🌀 جاري الدوران... انتظر النتيجة';
+                        spinWheel();
+                        setTimeout(() => startGameLoopActual(), 30000);
+                    }
+                }
+                updateGameUI();
+            }, 1000);
+        }
+
+        function updateGameUI() {
+            gameTimerEl.textContent = `⏳ ${STATE.gameTimer}`;
+            if (STATE.gamePhase === 'betting') gameStatusEl.textContent = `🎯 اختر رهانك! (${STATE.gameTimer}ث)`;
+            else if (STATE.gamePhase === 'spinning') gameStatusEl.textContent = '🌀 جاري الدوران...';
+            else if (STATE.gamePhase === 'result') gameStatusEl.textContent = `✅ النتيجة: ${WHEEL_ITEMS[STATE.gameResult]?.emoji || '?'}`;
+            gamePoolEl.textContent = `💰 ${STATE.gamePoolAmount.toFixed(2)} POL`;
+        }
+
+        // ============================================================
+        // 14. تحديث الواجهة
+        // ============================================================
         function updateUI() {
-            elBalance.textContent = STATE.userBalance.toFixed(2);
+            const totalBalance = STATE.userBalance;
+            elBalance.textContent = totalBalance.toFixed(2);
             elWins.textContent = STATE.winsToday;
             elLosses.textContent = STATE.lossesToday;
+            elFreeSpins.textContent = STATE.freeSpins;
             elReferralEarned.textContent = STATE.referralEarned.toFixed(2);
-            elWalletBalance.textContent = STATE.userBalance.toFixed(2);
+            elReferralSpins.textContent = STATE.referralSpins;
+            elWalletBalance.textContent = totalBalance.toFixed(2);
             elWalletAddress.textContent = STATE.walletAddress || '0x...';
             elDisplayUsername.textContent = STATE.username || '-';
-            elParticipantCount.textContent = STATE.participantCount;
-
             const minutes = Math.floor(STATE.dailyPresenceSeconds / 60);
             const seconds = Math.floor(STATE.dailyPresenceSeconds % 60);
             elDailyPresence.textContent = `${minutes} دقيقة و ${seconds} ثانية`;
-
             updateHistory();
-            updateRoomUI();
             updateUSDValues();
             if (STATE.loggedIn) saveProfile();
         }
 
         function updateHistory() {
-            if (STATE.history.length === 0) {
-                elHistory.innerHTML = `<p style="color:#6a8aa8;">لا توجد جولات</p>`;
-                return;
-            }
+            if (STATE.history.length === 0) { elHistory.innerHTML = '<p style="color:#6a8aa8;">لا توجد جولات</p>'; return; }
             const items = STATE.history.slice(-10).reverse();
             elHistory.innerHTML = items.map(h => {
                 let cls = '',
@@ -1311,362 +2053,51 @@
             }).join('');
         }
 
-        function updateRoomUI() {
-            if (STATE.inRoom) {
-                joinBtn.textContent = '🔊 في الغرفة';
-                joinBtn.disabled = true;
-                leaveBtn.disabled = false;
-                muteBtn.disabled = false;
-                roomInfo.textContent = '📡 متصل';
-                roomStatus.textContent = '🟢 متصل';
-            } else {
-                joinBtn.textContent = '🔊 دخول الغرفة';
-                joinBtn.disabled = false;
-                leaveBtn.disabled = true;
-                muteBtn.disabled = true;
-                roomInfo.textContent = '📡 غير متصل';
-                roomStatus.textContent = '🟢 مفتوحة';
-                STATE.muted = false;
-                muteBtn.textContent = '🎤 كتم';
-                muteBtn.classList.remove('active');
-            }
-        }
-
-        // =============================================================
-        //  11. اختبار الميكروفون
-        // =============================================================
-        async function testMicrophone() {
-            elMicTestBtn.textContent = '⏳ جاري...';
-            elMicTestBtn.disabled = true;
+        async function saveProfile() {
+            if (!STATE.loggedIn) return;
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                STATE.micTested = true;
-                STATE.micWorking = true;
-                if (STATE.localStream) STATE.localStream.getTracks().forEach(t => t.stop());
-                STATE.localStream = stream;
-                elMicTestBtn.textContent = '✅ يعمل';
-                elMicTestBtn.className = 'mic-test-btn active';
-                elMicTestStatus.textContent = '✅ الميكروفون يعمل';
-                elMicTestStatus.style.color = '#2ecc71';
-            } catch (err) {
-                STATE.micTested = true;
-                STATE.micWorking = false;
-                elMicTestBtn.textContent = '❌ فشل';
-                elMicTestBtn.className = 'mic-test-btn error';
-                elMicTestStatus.textContent = `❌ ${err.message}`;
-                elMicTestStatus.style.color = '#e74c3c';
-            } finally {
-                elMicTestBtn.disabled = false;
-            }
+                await supabaseClient
+                    .from('profiles')
+                    .update({
+                        balance: STATE.userBalance,
+                        bonus_balance: STATE.bonusBalance,
+                        withdrawable_balance: STATE.withdrawableBalance,
+                        wins: STATE.winsToday,
+                        losses: STATE.lossesToday,
+                        referral_earned: STATE.referralEarned,
+                        daily_presence_seconds: STATE.dailyPresenceSeconds,
+                        free_spins: STATE.freeSpins,
+                        referral_spins: STATE.referralSpins,
+                        last_seen_room: STATE.roomName || STATE.selectedRoomName,
+                    })
+                    .eq('id', STATE.userId);
+            } catch (e) { console.error(e); }
         }
 
-        // =============================================================
-        //  12. دوال الغرفة الصوتية
-        // =============================================================
-        let peerInitialized = false;
+        function addHistory(type, detail) { STATE.history.push({ type, detail }); if (STATE.history.length > 50) STATE.history
+                .shift();
+            updateHistory(); }
 
-        function initPeer() {
-            if (peerInitialized) return;
-            const peer = new Peer(undefined, {
-                host: '0.peerjs.com',
-                port: 443,
-                secure: true,
-                debug: 2,
-            });
-
-            peer.on('open', (id) => {
-                STATE.myPeerId = id;
-                elPeerIdDisplay.textContent = `معرفك: ${id}`;
-                if (STATE.loggedIn && STATE.inRoom) joinVoiceRoomActual();
-                elDbStatus.textContent = '✅ جاهز';
-                elDbStatus.style.color = '#2ecc71';
-            });
-
-            peer.on('error', (err) => {
-                elPeerIdDisplay.textContent = `⚠️ خطأ: ${err.message}`;
-                elDbStatus.textContent = '❌ خطأ';
-                elDbStatus.style.color = '#e74c3c';
-            });
-
-            peer.on('call', (call) => {
-                if (!STATE.localStream) return;
-                call.answer(STATE.localStream);
-                call.on('stream', (remoteStream) => addRemoteStream(call.peer, remoteStream));
-                call.on('close', () => removeRemoteStream(call.peer));
-                STATE.connections[call.peer] = call;
-                updatePeerListFromConnections();
-            });
-
-            STATE.peer = peer;
-            peerInitialized = true;
-        }
-
-        async function joinVoiceRoom() {
-            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
-            if (STATE.inRoom) { alert('أنت بالفعل في الغرفة.'); return; }
-
-            if (!STATE.micTested) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                    STATE.localStream = stream;
-                    STATE.micTested = true;
-                    STATE.micWorking = true;
-                } catch (e) {
-                    alert('⚠️ تعذر الوصول إلى الميكروفون: ' + e.message);
-                    return;
-                }
-            } else if (!STATE.micWorking) {
-                alert('⚠️ الميكروفون لا يعمل. يرجى اختباره أولاً.');
-                return;
-            } else if (!STATE.localStream) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                    STATE.localStream = stream;
-                } catch (e) {
-                    alert('⚠️ تعذر الوصول إلى الميكروفون: ' + e.message);
-                    return;
-                }
-            }
-
-            if (!STATE.peer || !STATE.myPeerId) {
-                await new Promise((resolve) => {
-                    const check = () => {
-                        if (STATE.peer && STATE.myPeerId) resolve();
-                        else setTimeout(check, 300);
-                    };
-                    check();
-                });
-            }
-
-            joinVoiceRoomActual();
-        }
-
-        async function joinVoiceRoomActual() {
-            if (STATE.inRoom) return;
-            STATE.inRoom = true;
-            STATE.lastEntryTime = Date.now();
-            updateUI();
-
-            const { data, error } = await supabaseClient
-                .from('room_participants')
-                .insert([{
-                    room_id: STATE.roomId,
-                    peer_id: STATE.myPeerId,
-                    user_id: STATE.userId,
-                    username: STATE.username,
-                }])
-                .select('id')
-                .single();
-
-            if (error) {
-                alert('⚠️ فشل الاتصال بقاعدة البيانات.');
-                STATE.inRoom = false;
-                updateUI();
-                return;
-            }
-
-            STATE.myRecordId = data.id;
-            elDbStatus.textContent = '✅ في الغرفة';
-            elDbStatus.style.color = '#2ecc71';
-
-            if (STATE.channel) STATE.channel.unsubscribe();
-            STATE.channel = supabaseClient.channel(`room:${STATE.roomId}`)
-                .on('postgres_changes', {
-                    event: '*',
-                    schema: 'public',
-                    table: 'room_participants',
-                    filter: `room_id=eq.${STATE.roomId}`,
-                }, () => refreshParticipants())
-                .subscribe();
-
-            await refreshParticipants();
-            alert('✅ دخلت الغرفة الصوتية.');
-        }
-
-        async function refreshParticipants() {
-            const { data, error } = await supabaseClient
-                .from('room_participants')
-                .select('*')
-                .eq('room_id', STATE.roomId);
-
-            if (error) return;
-
-            const allPeers = data.filter(row => row.peer_id !== STATE.myPeerId);
-            const peerIds = allPeers.map(row => row.peer_id);
-
-            updatePeerList(peerIds);
-            STATE.participantCount = peerIds.length + 1;
-            elParticipantCount.textContent = STATE.participantCount;
-
-            for (const pid of peerIds) {
-                if (!STATE.connections[pid]) {
-                    callPeerWithRetry(pid);
-                }
-            }
-        }
-
-        function callPeerWithRetry(peerId, attempt = 0) {
-            if (!STATE.localStream) return;
-            if (STATE.connections[peerId]) return;
-            if (attempt >= 5) return;
-
-            const call = STATE.peer.call(peerId, STATE.localStream);
-            const timeout = setTimeout(() => {
-                if (!STATE.connections[peerId]) {
-                    setTimeout(() => {
-                        if (!STATE.connections[peerId] && STATE.inRoom) {
-                            callPeerWithRetry(peerId, attempt + 1);
-                        }
-                    }, 3000);
-                }
-            }, 10000);
-
-            call.on('stream', (remoteStream) => {
-                clearTimeout(timeout);
-                addRemoteStream(peerId, remoteStream);
-            });
-
-            call.on('close', () => {
-                clearTimeout(timeout);
-                removeRemoteStream(peerId);
-            });
-
-            call.on('error', () => {
-                clearTimeout(timeout);
-                setTimeout(() => {
-                    if (!STATE.connections[peerId] && STATE.inRoom) {
-                        callPeerWithRetry(peerId, attempt + 1);
-                    }
-                }, 3000);
-            });
-
-            STATE.connections[peerId] = call;
-        }
-
-        function addRemoteStream(peerId, stream) {
-            STATE.remoteStreams[peerId] = stream;
-            const audio = new Audio();
-            audio.srcObject = stream;
-            audio.autoplay = true;
-            audio.dataset.peerId = peerId;
-            document.body.appendChild(audio);
-            updatePeerListFromConnections();
-        }
-
-        function removeRemoteStream(peerId) {
-            delete STATE.remoteStreams[peerId];
-            delete STATE.connections[peerId];
-            document.querySelectorAll(`audio[data-peer-id="${peerId}"]`).forEach(el => el.remove());
-            updatePeerListFromConnections();
-        }
-
-        function updatePeerListFromConnections() {
-            const peers = Object.keys(STATE.connections);
-            updatePeerList(peers);
-            STATE.participantCount = peers.length + 1;
-            elParticipantCount.textContent = STATE.participantCount;
-        }
-
-        function updatePeerList(peers) {
-            const list = document.getElementById('participantsList');
-            list.innerHTML = '';
-            const me = document.createElement('div');
-            me.className = 'participant';
-            me.innerHTML = `<span class="status online"></span> أنت`;
-            list.appendChild(me);
-            for (const pid of peers) {
-                const isConnected = STATE.connections[pid] ? true : false;
-                const statusClass = isConnected ? 'online' : 'offline';
-                const div = document.createElement('div');
-                div.className = 'participant';
-                div.innerHTML = `<span class="status ${statusClass}"></span> ${pid.substring(0,8)}`;
-                list.appendChild(div);
-            }
-        }
-
-        function toggleLocalMute() {
-            if (!STATE.inRoom) return;
-            STATE.muted = !STATE.muted;
-            if (STATE.localStream) {
-                STATE.localStream.getAudioTracks().forEach(track => track.enabled = !STATE.muted);
-            }
-            muteBtn.textContent = STATE.muted ? '🔇 مكتوم' : '🎤 كتم';
-            muteBtn.classList.toggle('active', STATE.muted);
-        }
-
-        async function leaveVoiceRoom() {
-            if (!STATE.inRoom) return;
-
-            if (STATE.myRecordId) {
-                await supabaseClient.from('room_participants').delete().eq('id', STATE.myRecordId);
-                STATE.myRecordId = null;
-            }
-
-            if (STATE.channel) {
-                STATE.channel.unsubscribe();
-                STATE.channel = null;
-            }
-
-            for (const pid in STATE.connections) {
-                STATE.connections[pid].close();
-                delete STATE.connections[pid];
-            }
-            for (const pid in STATE.remoteStreams) {
-                removeRemoteStream(pid);
-            }
-
-            if (STATE.localStream) {
-                STATE.localStream.getTracks().forEach(t => t.stop());
-                STATE.localStream = null;
-            }
-
-            if (STATE.lastEntryTime) {
-                const now = Date.now();
-                const diffSeconds = (now - STATE.lastEntryTime) / 1000;
-                STATE.dailyPresenceSeconds += diffSeconds;
-                STATE.lastEntryTime = null;
-            }
-
-            STATE.inRoom = false;
-            STATE.muted = false;
-            updateUI();
-            elDbStatus.textContent = '⏳ غير متصل';
-            elDbStatus.style.color = '#f1c40f';
-            alert('🚪 غادرت الغرفة.');
-        }
-
-        // =============================================================
-        //  13. نموذج السحب والإيداع
-        // =============================================================
-        function toggleWithdrawForm() {
-            withdrawFormContainer.style.display = withdrawFormContainer.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function deposit() {
-            STATE.userBalance += 20;
-            addHistory('info', 'إيداع 20 POL');
-            updateUI();
-            alert('✅ تم إيداع 20 POL.');
-        }
+        // ============================================================
+        // 15. المحفظة والإحالات
+        // ============================================================
+        function toggleWithdrawForm() { withdrawFormContainer.style.display = withdrawFormContainer.style.display === 'none' ?
+                'block' : 'none'; }
 
         async function executeWithdraw() {
             if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
             const amount = parseFloat(withdrawAmount.value);
             const address = withdrawAddress.value.trim();
-            if (isNaN(amount) || amount < 100) { alert('الحد الأدنى 100 POL'); return; }
-            if (amount > STATE.userBalance) { alert('رصيد غير كافٍ'); return; }
+            if (isNaN(amount) || amount < 1) { alert('الحد الأدنى 1 POL'); return; }
+            if (amount > STATE.userBalance) { alert('رصيد غير كافٍ للسحب'); return; }
             if (!address || !address.startsWith('0x')) { alert('عنوان غير صحيح'); return; }
-
             const password = prompt('أدخل كلمة المرور:');
             if (!password) return;
-
             const privateKey = decrypt(STATE.privateKeyEncrypted, password);
             if (!privateKey) { alert('❌ كلمة المرور غير صحيحة.'); return; }
-
             const userWallet = new ethers.Wallet(privateKey, provider);
             const balance = await getBalance(userWallet.address);
             if (balance < amount) { alert(`❌ رصيد المحفظة ${balance.toFixed(2)} POL`); return; }
-
             try {
                 const txHash = await sendPOL(userWallet, address, amount);
                 STATE.userBalance -= amount;
@@ -1676,191 +2107,69 @@
                 withdrawFormContainer.style.display = 'none';
                 withdrawAmount.value = '';
                 withdrawAddress.value = '';
-            } catch (e) {
-                alert('❌ فشل السحب: ' + e.message);
-            }
+            } catch (e) { alert('❌ فشل السحب: ' + e.message); }
         }
 
-        function copyWalletAddress() {
-            navigator.clipboard.writeText(STATE.walletAddress).then(() => alert('📋 تم النسخ!'));
-        }
+        function copyWalletAddress() { navigator.clipboard.writeText(STATE.walletAddress).then(() => alert('📋 تم النسخ!')); }
 
-        // =============================================================
-        //  14. QR Code
-        // =============================================================
         let qrCodeInstance = null;
 
         function showQR() {
             const container = document.getElementById('qrContainer');
-            if (container.style.display === 'block') {
-                container.style.display = 'none';
-                return;
-            }
+            if (container.style.display === 'block') { container.style.display = 'none'; return; }
             container.style.display = 'block';
             const qrDiv = document.getElementById('qrcode');
             qrDiv.innerHTML = '';
             qrCodeInstance = new QRCode(qrDiv, {
                 text: STATE.walletAddress || '0x...',
-                width: 180,
-                height: 180,
+                width: 140,
+                height: 140,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.H
             });
         }
 
-        // =============================================================
-        //  15. QR Scanner
-        // =============================================================
-        let scannerStream = null;
-
-        function openScannerForWithdraw() {
-            document.getElementById('scannerModal').style.display = 'flex';
-            const video = document.getElementById('scannerVideo');
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then(stream => {
-                    scannerStream = stream;
-                    video.srcObject = stream;
-                    video.play();
-                })
-                .catch(() => alert('⚠️ تعذر الوصول إلى الكاميرا.'));
-        }
-
-        function stopScanner() {
-            if (scannerStream) {
-                scannerStream.getTracks().forEach(t => t.stop());
-                scannerStream = null;
-            }
-            document.getElementById('scannerModal').style.display = 'none';
-        }
-
-        function captureQRForWithdraw() {
-            alert('📷 تم التقاط الصورة. أدخل العنوان يدوياً.');
-            stopScanner();
-            document.getElementById('withdrawAddress').focus();
-        }
-
-        // =============================================================
-        //  16. اللعبة الأساسية
-        // =============================================================
-        const BET_AMOUNT = 10;
-
-        async function rollDice() {
-            if (STATE.isRolling) return;
-            if (!STATE.loggedIn) { alert('يرجى تسجيل الدخول أولاً.'); return; }
-            if (STATE.selectedNumber === null) { alert('⚠️ اختر رقمًا.'); return; }
-            if (STATE.userBalance < BET_AMOUNT) { alert('❌ رصيد غير كافٍ.'); return; }
-
-            STATE.isRolling = true;
-            elDice.style.pointerEvents = 'none';
-
-            STATE.userBalance -= BET_AMOUNT;
-            STATE.roundPool += BET_AMOUNT;
-
-            elDice.classList.add('rolling');
-            elDice.classList.add('bounce');
-
-            let interval = setInterval(() => {
-                renderDice(Math.floor(Math.random() * 6) + 1);
-            }, 200);
-
-            await new Promise(resolve => setTimeout(resolve, 2500));
-            clearInterval(interval);
-            elDice.classList.remove('rolling');
-            elDice.classList.remove('bounce');
-
-            const diceValue = Math.floor(Math.random() * 6) + 1;
-            renderDice(diceValue);
-            elDiceResult.textContent = `🎲 النتيجة: ${diceValue}`;
-
-            let isWin = false;
-            if (STATE.selectedNumber === diceValue) {
-                const winAmount = STATE.roundPool * 0.7;
-                const hostAmount = STATE.roundPool * 0.24;
-                const platformAmount = STATE.roundPool * 0.06;
-
-                STATE.userBalance += winAmount;
-                STATE.winsToday += 1;
-                isWin = true;
-                STATE.hostMarketingPool += hostAmount;
-                STATE.platformPool += platformAmount;
-                STATE.roundPool = 0;
-                elResult.innerHTML = `🎉 فوز! ربحت ${winAmount.toFixed(2)} POL`;
-                addHistory('win', `فوز! النرد ${diceValue}`);
-            } else {
-                STATE.lossesToday += 1;
-                elResult.innerHTML = `💀 خسارة! النرد ${diceValue}`;
-                addHistory('lose', `خسارة! النرد ${diceValue}`);
-            }
-
-            updateUI();
-            STATE.isRolling = false;
-            elDice.style.pointerEvents = 'auto';
-        }
-
-        function addHistory(type, detail) {
-            STATE.history.push({ type, detail });
-            if (STATE.history.length > 50) STATE.history.shift();
-            updateHistory();
-        }
-
-        // =============================================================
-        //  17. الإحالات
-        // =============================================================
         function copyReferral() {
             const link = document.getElementById('referralLinkDisplay').textContent;
             navigator.clipboard.writeText(link).then(() => alert('📋 تم نسخ الرابط!'));
         }
 
-        // =============================================================
-        //  18. التوزيع الليلي
-        // =============================================================
+        // ============================================================
+        // 16. التوزيع الليلي
+        // ============================================================
         async function distributeDaily() {
             if (STATE.hostMarketingPool <= 0) return;
-
             const { data: users, error } = await supabaseClient
                 .from('profiles')
-                .select('id, username, wallet_address, daily_presence_seconds');
-
+                .select('id, username, wallet_address, daily_presence_seconds')
+                .eq('is_banned', false);
             if (error || !users) return;
-
             let totalPresence = users.reduce((sum, u) => sum + (u.daily_presence_seconds || 0), 0);
             if (totalPresence === 0) return;
-
             const pool = STATE.hostMarketingPool;
             for (const u of users) {
                 const ratio = (u.daily_presence_seconds || 0) / totalPresence;
                 const amount = pool * ratio;
-                if (amount < 0.01) continue;
-                if (!u.wallet_address || !u.wallet_address.startsWith('0x')) continue;
-
+                if (amount < 0.01 || !u.wallet_address || !u.wallet_address.startsWith('0x')) continue;
                 try {
                     await sendPOL(vaultWallet, u.wallet_address, amount);
                     addHistory('dist', `تم إرسال ${amount.toFixed(2)} POL إلى ${u.username}`);
-                } catch (e) {
-                    console.error(e);
-                }
+                } catch (e) { console.error(e); }
             }
-
             STATE.hostMarketingPool = 0;
-            for (const u of users) {
-                await supabaseClient.from('profiles').update({ daily_presence_seconds: 0 }).eq('id', u.id);
-            }
+            for (const u of users) { await supabaseClient.from('profiles').update({ daily_presence_seconds: 0 }).eq('id', u.id); }
             if (STATE.loggedIn) STATE.dailyPresenceSeconds = 0;
             updateUI();
             alert(`🎁 تم توزيع ${pool.toFixed(2)} POL على الحاضرين.`);
         }
+        setInterval(() => { const now = new Date(); if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() ===
+                0) distributeDaily(); }, 1000);
 
-        setInterval(() => {
-            const now = new Date();
-            if (now.getHours() === 0 && now.getMinutes() === 0 && now.getSeconds() === 0) {
-                distributeDaily();
-            }
-        }, 1000);
-
-        // =============================================================
-        //  19. التبويبات والتهيئة
-        // =============================================================
+        // ============================================================
+        // 17. التهيئة النهائية
+        // ============================================================
+        betAmountInput.addEventListener('input', updateUSDValues);
         document.querySelectorAll('.tab-item').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
@@ -1870,36 +2179,37 @@
                 if (this.dataset.tab === 'tab-game') updateUSDValues();
             });
         });
-
+        elChatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault();
+                sendChatMessage(); } });
         window.onload = function() {
-            console.log('🚀 بدء تشغيل التطبيق...');
+            console.log('🚀 بدء التطبيق...');
+            renderRooms();
+            initWheel();
             initAuth();
-            renderDice(1);
             updateUI();
             fetchPolPrice();
-            console.log('✅ التطبيق جاهز مع Supabase Auth');
+            pushToTalkBtn.addEventListener('mousedown', startPushToTalk);
+            pushToTalkBtn.addEventListener('mouseup', stopPushToTalk);
+            pushToTalkBtn.addEventListener('touchstart', startPushToTalk);
+            pushToTalkBtn.addEventListener('touchend', stopPushToTalk);
         };
-
-        // جعل جميع الدوال عامة لاستخدامها في HTML
-        window.testMicrophone = testMicrophone;
-        window.joinVoiceRoom = joinVoiceRoom;
+        window.showRoomsList = showRoomsList;
+        window.selectAndJoinRoom = selectAndJoinRoom;
         window.leaveVoiceRoom = leaveVoiceRoom;
-        window.toggleLocalMute = toggleLocalMute;
-        window.onDiceClick = onDiceClick;
-        window.deposit = deposit;
         window.executeWithdraw = executeWithdraw;
         window.toggleWithdrawForm = toggleWithdrawForm;
         window.copyWalletAddress = copyWalletAddress;
         window.showQR = showQR;
-        window.openScannerForWithdraw = openScannerForWithdraw;
-        window.stopScanner = stopScanner;
-        window.captureQRForWithdraw = captureQRForWithdraw;
         window.copyReferral = copyReferral;
-        // جعل دوال المصادقة عامة أيضاً
-        window.registerUser = registerUser;
-        window.loginUser = loginUser;
         window.logoutUser = logoutUser;
-        console.log('✅ جميع الدوال العامة جاهزة');
+        window.sendChatMessage = sendChatMessage;
+        window.testMicrophone = testMicrophone;
+        window.selectBet = selectBet;
+        window.placeBet = placeBet;
+        window.closeTutorial = closeTutorial;
+        window.startPushToTalk = startPushToTalk;
+        window.stopPushToTalk = stopPushToTalk;
+        console.log('✅ التطبيق جاهز');
     </script>
 </body>
 </html>
