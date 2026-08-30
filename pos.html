@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#10233e">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co wss://*.supabase.co; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://meet.jit.si; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://meet.jit.si wss://meet.jit.si; frame-src https://meet.jit.si; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:;">
   <title>غرف المحافظات السورية</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://meet.jit.si/external_api.js"></script>
   <style>
     :root {
       --bg: #081526;
@@ -136,6 +137,9 @@
     .room-count { color: var(--muted); margin-top: .7rem; font-size: .8rem; }
     .live { display: inline-flex; align-items: center; gap: .35rem; color: var(--success); font-size: .75rem; }
     .live::before { content: ''; width: .45rem; height: .45rem; border-radius: 99px; background: currentColor; }
+    .jitsi-wrap { min-height: 420px; border-radius: 18px; overflow: hidden; background: #101923; border: 1px solid rgba(255,255,255,.12); }
+    .jitsi-wrap iframe { display: block; width: 100%; min-height: 420px; border: 0; }
+    .jitsi-placeholder { min-height: 420px; display: grid; place-items: center; color: #aebdca; text-align: center; padding: 1.5rem; }
     .room-interface { margin-top: 1rem; display: none; }
     .room-interface.visible { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .72fr); gap: 1rem; }
     .room-meta { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
@@ -320,8 +324,8 @@
               <button id="leaveRoomBtn" class="btn btn-danger" type="button">مغادرة الغرفة</button>
             </div>
             <div id="membersList" class="members" aria-label="المشاركون"></div>
-            <button id="pushToTalkBtn" class="btn btn-voice" type="button" disabled>اضغط باستمرار للتحدث</button>
-            <p id="voiceStatus" class="voice-note">يُفعَّل الصوت عند الضغط على الزر. امنح إذن الميكروفون عندما يطلبه المتصفح.</p>
+            <p id="voiceStatus" class="voice-note">الصوت الجماعي يعمل داخل نافذة Jitsi. اسمح بالميكروفون عند الطلب.</p>
+            <div id="jitsiContainer" class="jitsi-wrap"><div class="jitsi-placeholder">اختر غرفة لبدء المحادثة الصوتية.</div></div>
           </section>
 
           <section class="card">
@@ -477,6 +481,7 @@
       speakerId: null,
       localStream: null,
       peerConnections: new Map(),
+      jitsiApi: null,
       pendingCandidates: new Map(),
       presenceTimer: null,
       gameTimer: null,
@@ -491,7 +496,7 @@
     const els = {
       headerUsername: $('#headerUsername'), connectionStatus: $('#connectionStatus'), roomsGrid: $('#roomsGrid'),
       roomInterface: $('#roomInterface'), currentRoomTitle: $('#currentRoomTitle'), roomPresenceStatus: $('#roomPresenceStatus'),
-      membersList: $('#membersList'), leaveRoomBtn: $('#leaveRoomBtn'), pushToTalkBtn: $('#pushToTalkBtn'), voiceStatus: $('#voiceStatus'),
+      membersList: $('#membersList'), leaveRoomBtn: $('#leaveRoomBtn'), pushToTalkBtn: $('#pushToTalkBtn'), voiceStatus: $('#voiceStatus'), jitsiContainer: $('#jitsiContainer'),
       chatLog: $('#chatLog'), chatForm: $('#chatForm'), chatInput: $('#chatInput'), sendChatBtn: $('#sendChatBtn'), chatStatus: $('#chatStatus'),
       gameRoomLabel: $('#gameRoomLabel'), gameNoRoom: $('#gameNoRoom'), gameContent: $('#gameContent'), gameBalance: $('#gameBalance'),
       winsToday: $('#winsToday'), lossesToday: $('#lossesToday'), wheel: $('#wheel'), wheelLabels: $('#wheelLabels'), wheelCenter: $('#wheelCenter'),
@@ -823,6 +828,52 @@
       return channel;
     }
 
+    function destroyJitsi() {
+      if (state.jitsiApi) {
+        try { state.jitsiApi.dispose(); } catch (_) { /* no-op */ }
+        state.jitsiApi = null;
+      }
+      if (els.jitsiContainer) els.jitsiContainer.innerHTML = '<div class="jitsi-placeholder">اختر غرفة لبدء المحادثة الصوتية.</div>';
+    }
+
+    function startJitsi(roomName) {
+      destroyJitsi();
+      if (!window.JitsiMeetExternalAPI || !els.jitsiContainer || !state.user) {
+        els.voiceStatus.textContent = 'تعذر تحميل خدمة الصوت. أعد تحميل الصفحة وحاول مرة أخرى.';
+        return;
+      }
+      const safeRoom = `VaultlineVoice-${String(roomName).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+      els.jitsiContainer.replaceChildren();
+      state.jitsiApi = new JitsiMeetExternalAPI('meet.jit.si', {
+        roomName: safeRoom,
+        parentNode: els.jitsiContainer,
+        width: '100%',
+        height: 420,
+        lang: 'ar',
+        userInfo: { displayName: state.profile?.username || state.user.email || 'مستخدم' },
+        configOverwrite: {
+          prejoinPageEnabled: false,
+          startWithAudioMuted: false,
+          startWithVideoMuted: true,
+          disableAP: true,
+          disableDeepLinking: true
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: ['microphone', 'hangup', 'chat', 'raisehand', 'settings'],
+          VIDEO_LAYOUT_FIT: 'both',
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_WATERMARK_FOR_GUESTS: false
+        }
+      });
+      state.jitsiApi.addEventListener('audioMuteStatusChanged', ({ muted }) => {
+        els.voiceStatus.textContent = muted ? 'الميكروفون مكتوم داخل الغرفة.' : 'الميكروفون يعمل داخل غرفة Jitsi.';
+      });
+      state.jitsiApi.addEventListener('videoConferenceJoined', () => {
+        els.voiceStatus.textContent = 'تم الاتصال بالصوت. استخدم زر الميكروفون داخل الغرفة.';
+      });
+      state.jitsiApi.addEventListener('readyToClose', destroyJitsi);
+    }
+
     async function joinRoom(roomName) {
       const validRoom = escapeRoomName(roomName);
       if (!validRoom || !state.user || !state.profile) {
@@ -858,7 +909,9 @@
           els.chatStatus.className = 'status online';
           els.chatInput.disabled = false;
           els.sendChatBtn.disabled = false;
-          els.pushToTalkBtn.disabled = false;
+          els.pushToTalkBtn.disabled = true;
+          els.pushToTalkBtn.hidden = true;
+          startJitsi(validRoom);
           await loadChatHistory();
           startPresenceTicker();
           startGameTicker();
@@ -874,6 +927,7 @@
       stopPresenceTicker();
       stopGameTicker();
       stopSpeaking();
+      destroyJitsi();
       closePeerConnections();
       if (state.roomChannel) {
         try { await state.roomChannel.untrack(); } catch (_) { /* no-op */ }
@@ -1138,6 +1192,7 @@
     }
 
     function setPushToTalkEvents() {
+      if (!els.pushToTalkBtn) return;
       const start = (event) => { event.preventDefault(); startSpeaking(); };
       const stop = (event) => { event.preventDefault(); stopSpeaking(); };
       els.pushToTalkBtn.addEventListener('pointerdown', start);
