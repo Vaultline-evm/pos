@@ -388,14 +388,13 @@
         <div class="card balance-card">
           <div class="balance-label">الرصيد المتاح</div>
           <div class="balance"><span id="balanceDisplay">0</span> <span>نقطة</span></div>
-          <p class="balance-caption">هذه النقاط مخصصة للعبة داخل التطبيق فقط. لا يوجد ربط بمحفظة، ولا تحويلات، ولا احتفاظ بمفاتيح خاصة في المتصفح.</p>
+          <p class="balance-caption">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت القاهرة حسب نسبة التواجد والاستحقاق.</p>
         </div>
         <div class="card history">
           <h3>ملخص الحساب</h3>
           <div class="history-item"><span>الجولات الفائزة</span><strong id="summaryWins">0</strong></div>
           <div class="history-item"><span>الجولات الخاسرة</span><strong id="summaryLosses">0</strong></div>
           <div class="history-item"><span>وقت التواجد اليوم</span><strong id="presenceTime">0 دقيقة</strong></div>
-          <div class="history-item"><span>التدويرات المجانية</span><strong id="freeSpins">0</strong></div>
         </div>
       </section>
 
@@ -415,12 +414,11 @@
           </section>
           <section class="card settings-card">
             <h3>رابط الإحالة</h3>
-            <p class="auth-help">عند إنشاء حساب برابطك، يحصل صاحب الدعوة على 3 تدويرات مجانية.</p>
+            <p class="auth-help">يُحتسب رصيد الإحالة وفق قواعد الحساب وتُضاف المكافأة بعد تحقق النظام من الاستحقاق.</p>
             <div class="referral">
               <input id="referralLink" type="text" readonly value="">
               <button id="copyReferralBtn" class="btn" type="button">نسخ</button>
             </div>
-            <div class="profile-line" style="margin-top: .6rem;"><span>تدويرات الإحالة</span><strong id="referralSpins">0</strong></div>
           </section>
         </div>
       </section>
@@ -499,8 +497,8 @@
       winsToday: $('#winsToday'), lossesToday: $('#lossesToday'), wheel: $('#wheel'), wheelLabels: $('#wheelLabels'), wheelCenter: $('#wheelCenter'),
       gameTimer: $('#gameTimer'), gameStatus: $('#gameStatus'), choices: $('#choices'), betAmount: $('#betAmount'), placeBetBtn: $('#placeBetBtn'),
       poolTotal: $('#poolTotal'), roundDetail: $('#roundDetail'), balanceDisplay: $('#balanceDisplay'), summaryWins: $('#summaryWins'),
-      summaryLosses: $('#summaryLosses'), presenceTime: $('#presenceTime'), freeSpins: $('#freeSpins'), profileUsername: $('#profileUsername'),
-      profileEmail: $('#profileEmail'), referralLink: $('#referralLink'), copyReferralBtn: $('#copyReferralBtn'), referralSpins: $('#referralSpins'),
+      summaryLosses: $('#summaryLosses'), presenceTime: $('#presenceTime'), profileUsername: $('#profileUsername'),
+      profileEmail: $('#profileEmail'), referralLink: $('#referralLink'), copyReferralBtn: $('#copyReferralBtn'),
       logoutBtn: $('#logoutBtn'), authOverlay: $('#authOverlay'), loginForm: $('#loginForm'), registerForm: $('#registerForm'),
       loginEmail: $('#loginEmail'), loginPassword: $('#loginPassword'), registerUsername: $('#registerUsername'), registerEmail: $('#registerEmail'),
       registerPassword: $('#registerPassword'), registerReferral: $('#registerReferral'), toastStack: $('#toastStack')
@@ -633,10 +631,8 @@
       els.summaryWins.textContent = formatPoints(profile.wins);
       els.summaryLosses.textContent = formatPoints(profile.losses);
       els.presenceTime.textContent = formatTime(profile.daily_presence_seconds);
-      els.freeSpins.textContent = formatPoints(profile.free_spins);
       els.profileUsername.textContent = profile.username || '—';
       els.profileEmail.textContent = state.user?.email || '—';
-      els.referralSpins.textContent = formatPoints(profile.referral_spins);
       if (profile.referral_code) {
         const link = new URL(window.location.href);
         link.hash = `ref=${encodeURIComponent(profile.referral_code)}`;
@@ -939,7 +935,7 @@
         }
         if (state.gameState?.status === 'resolved' && Number.isInteger(state.gameState.winning_index)) animateResult(state.gameState);
         renderGame();
-        const latest = await client.from('profiles').select('balance,wins,losses,daily_presence_seconds,free_spins,referral_spins').eq('id', state.user.id).single();
+        const latest = await client.from('profiles').select('balance,wins,losses,daily_presence_seconds').eq('id', state.user.id).single();
         if (!latest.error && state.profile) {
           Object.assign(state.profile, latest.data);
           renderProfile();
