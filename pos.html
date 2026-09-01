@@ -311,7 +311,7 @@
           </div>
           <span id="connectionStatus" class="status">جاري التهيئة</span>
         </div>
-        <div class="notice info">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت القاهرة حسب نسبة التواجد والاستحقاق.</div>
+        <div class="notice info">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت دمشق حسب نسبة التواجد والاستحقاق.</div>
         <div class="grid rooms-grid" id="roomsGrid"></div>
 
         <div id="roomInterface" class="room-interface">
@@ -392,7 +392,7 @@
         <div class="card balance-card">
           <div class="balance-label">الرصيد المتاح</div>
           <div class="balance"><span id="balanceDisplay">0</span> <span>نقطة</span></div>
-          <p class="balance-caption">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت القاهرة حسب نسبة التواجد والاستحقاق.</p>
+          <p class="balance-caption">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت دمشق حسب نسبة التواجد والاستحقاق.</p>
         </div>
         <div class="card history">
           <h3>ملخص الحساب</h3>
@@ -415,6 +415,14 @@
             <div class="profile-line"><span>اسم المستخدم</span><strong id="profileUsername">—</strong></div>
             <div class="profile-line"><span>البريد الإلكتروني</span><strong id="profileEmail">—</strong></div>
             <button id="logoutBtn" class="btn btn-danger" type="button" style="margin-top: 1rem;">تسجيل الخروج</button>
+          </section>
+          <section class="card settings-card">
+            <h3>تغيير كلمة المرور</h3>
+            <form id="passwordForm" class="auth-form active" style="margin-top: .8rem;">
+              <input id="newPassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)" autocomplete="new-password" required>
+              <input id="confirmPassword" type="password" minlength="6" placeholder="تأكيد كلمة المرور الجديدة" autocomplete="new-password" required>
+              <button class="btn btn-primary" type="submit">حفظ كلمة المرور</button>
+            </form>
           </section>
           <section class="card settings-card">
             <h3>رابط الإحالة</h3>
@@ -486,6 +494,7 @@
       presenceTimer: null,
       gameTimer: null,
       gameState: null,
+      pendingRoom: null,
       selectedBet: null,
       currentRotation: 0,
       animatedRound: null,
@@ -504,7 +513,7 @@
       poolTotal: $('#poolTotal'), roundDetail: $('#roundDetail'), balanceDisplay: $('#balanceDisplay'), summaryWins: $('#summaryWins'),
       summaryLosses: $('#summaryLosses'), presenceTime: $('#presenceTime'), profileUsername: $('#profileUsername'),
       profileEmail: $('#profileEmail'), referralLink: $('#referralLink'), copyReferralBtn: $('#copyReferralBtn'),
-      logoutBtn: $('#logoutBtn'), authOverlay: $('#authOverlay'), loginForm: $('#loginForm'), registerForm: $('#registerForm'),
+      logoutBtn: $('#logoutBtn'), passwordForm: $('#passwordForm'), newPassword: $('#newPassword'), confirmPassword: $('#confirmPassword'), authOverlay: $('#authOverlay'), loginForm: $('#loginForm'), registerForm: $('#registerForm'),
       loginEmail: $('#loginEmail'), loginPassword: $('#loginPassword'), registerUsername: $('#registerUsername'), registerEmail: $('#registerEmail'),
       registerPassword: $('#registerPassword'), registerReferral: $('#registerReferral'), toastStack: $('#toastStack')
     };
@@ -532,6 +541,8 @@
       els.connectionStatus.textContent = text;
       els.connectionStatus.className = `status ${tone}`;
     }
+
+    const APP_TIMEZONE = 'Asia/Damascus';
 
     function escapeRoomName(room) {
       return ROOMS.includes(room) ? room : null;
@@ -669,6 +680,9 @@
         els.authOverlay.classList.add('hidden');
         renderProfile();
         setConnection('متصل بالحساب', 'online');
+        const pendingRoom = state.pendingRoom;
+        state.pendingRoom = null;
+        if (pendingRoom) window.setTimeout(() => joinRoom(pendingRoom), 0);
       } catch (error) {
         console.error(error);
         showToast(`تعذر تحميل الحساب: ${error.message || 'خطأ غير معروف'}`, 'error');
@@ -701,6 +715,27 @@
         showToast('تم تسجيل الدخول بنجاح.', 'success');
       } catch (error) {
         showToast(error.message || 'فشل تسجيل الدخول.', 'error');
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    async function handleChangePassword(event) {
+      event.preventDefault();
+      const nextPassword = els.newPassword.value;
+      if (nextPassword !== els.confirmPassword.value) {
+        showToast('كلمتا المرور غير متطابقتين.', 'error');
+        return;
+      }
+      const submit = event.submitter || els.passwordForm.querySelector('button[type="submit"]');
+      submit.disabled = true;
+      try {
+        const { error } = await client.auth.updateUser({ password: nextPassword });
+        if (error) throw error;
+        els.passwordForm.reset();
+        showToast('تم تغيير كلمة المرور بنجاح.', 'success');
+      } catch (error) {
+        showToast(error.message || 'تعذر تغيير كلمة المرور.', 'error');
       } finally {
         submit.disabled = false;
       }
@@ -758,7 +793,7 @@
       name.textContent = system ? 'النظام' : (username || 'مستخدم');
       const time = document.createElement('span');
       time.className = 'message-time';
-      time.textContent = created_at ? new Date(created_at).toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' }) : '';
+      time.textContent = created_at ? new Date(created_at).toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit', timeZone: APP_TIMEZONE }) : '';
       const text = document.createElement('div');
       text.className = 'message-text';
       text.textContent = message;
@@ -876,8 +911,12 @@
 
     async function joinRoom(roomName) {
       const validRoom = escapeRoomName(roomName);
-      if (!validRoom || !state.user || !state.profile) {
-        showToast('سجّل الدخول أولاً ثم اختر غرفة صالحة.', 'error');
+      if (!validRoom) return;
+      if (!state.user || !state.profile) {
+        state.pendingRoom = validRoom;
+        activateAuthTab('login');
+        els.authOverlay.classList.remove('hidden');
+        showToast('سجّل الدخول، وسندخلك إلى الغرفة تلقائياً.', 'info');
         return;
       }
       if (state.roomName === validRoom) return;
@@ -1212,6 +1251,7 @@
       document.querySelectorAll('.auth-tab').forEach((tab) => tab.addEventListener('click', () => activateAuthTab(tab.dataset.auth)));
       els.loginForm.addEventListener('submit', handleLogin);
       els.registerForm.addEventListener('submit', handleRegister);
+      els.passwordForm.addEventListener('submit', handleChangePassword);
       els.roomsGrid.addEventListener('click', (event) => {
         const room = event.target.closest('[data-room]')?.dataset.room;
         if (room) joinRoom(room);
