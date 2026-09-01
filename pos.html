@@ -292,6 +292,7 @@
       <div class="user-chip" title="الحساب الحالي">
         <span class="user-dot" aria-hidden="true"></span>
         <span id="headerUsername">غير مسجّل</span>
+        <button id="loginBtn" class="btn btn-small" type="button">تسجيل الدخول</button>
       </div>
     </header>
 
@@ -437,7 +438,7 @@
     </main>
   </div>
 
-  <div id="authOverlay" class="overlay">
+  <div id="authOverlay" class="overlay hidden">
     <section class="auth-card" aria-labelledby="authTitle">
       <h2 id="authTitle">مرحباً بك</h2>
       <p>سجّل الدخول للانضمام إلى غرف المحافظات واستخدام نقاط حسابك.</p>
@@ -513,7 +514,7 @@
       poolTotal: $('#poolTotal'), roundDetail: $('#roundDetail'), balanceDisplay: $('#balanceDisplay'), summaryWins: $('#summaryWins'),
       summaryLosses: $('#summaryLosses'), presenceTime: $('#presenceTime'), profileUsername: $('#profileUsername'),
       profileEmail: $('#profileEmail'), referralLink: $('#referralLink'), copyReferralBtn: $('#copyReferralBtn'),
-      logoutBtn: $('#logoutBtn'), passwordForm: $('#passwordForm'), newPassword: $('#newPassword'), confirmPassword: $('#confirmPassword'), authOverlay: $('#authOverlay'), loginForm: $('#loginForm'), registerForm: $('#registerForm'),
+      logoutBtn: $('#logoutBtn'), loginBtn: $('#loginBtn'), passwordForm: $('#passwordForm'), newPassword: $('#newPassword'), confirmPassword: $('#confirmPassword'), authOverlay: $('#authOverlay'), loginForm: $('#loginForm'), registerForm: $('#registerForm'),
       loginEmail: $('#loginEmail'), loginPassword: $('#loginPassword'), registerUsername: $('#registerUsername'), registerEmail: $('#registerEmail'),
       registerPassword: $('#registerPassword'), registerReferral: $('#registerReferral'), toastStack: $('#toastStack')
     };
@@ -557,6 +558,12 @@
         room.dataset.room = roomName;
         const count = state.roomName === roomName ? state.roomMembers.length : 0;
         room.innerHTML = `<span class="room-top"><span class="room-name">🏛️ ${roomName}</span><span class="live">مفتوحة</span></span><span class="room-count">👥 ${count} متصل</span>`;
+        room.addEventListener('click', () => {
+          void joinRoom(roomName).catch((error) => {
+            console.error('room join failed', error);
+            showToast(error.message || 'تعذر فتح الغرفة.', 'error');
+          });
+        });
         els.roomsGrid.appendChild(room);
       }
     }
@@ -1163,9 +1170,11 @@
         state.roomChannel.send({ type: 'broadcast', event: 'speaker', payload: { userId: state.user.id, active: false } });
       }
       if (wasSpeaking) state.speakerId = null;
-      els.pushToTalkBtn.classList.remove('active');
-      els.pushToTalkBtn.textContent = 'اضغط باستمرار للتحدث';
-      els.voiceStatus.textContent = 'اضغط باستمرار للتحدث. سيتوقف الصوت فور تحرير الزر.';
+      if (els.pushToTalkBtn) {
+        els.pushToTalkBtn.classList.remove('active');
+        els.pushToTalkBtn.textContent = 'اضغط باستمرار للتحدث';
+      }
+      if (!state.jitsiApi) els.voiceStatus.textContent = 'الصوت غير متصل حالياً.';
       renderMembers();
     }
 
@@ -1254,9 +1263,10 @@
       els.loginForm.addEventListener('submit', handleLogin);
       els.registerForm.addEventListener('submit', handleRegister);
       els.passwordForm.addEventListener('submit', handleChangePassword);
-      els.roomsGrid.addEventListener('click', (event) => {
-        const room = event.target.closest('[data-room]')?.dataset.room;
-        if (room) joinRoom(room);
+      els.loginBtn.addEventListener('click', () => {
+        activateAuthTab('login');
+        els.authOverlay.classList.remove('hidden');
+        els.loginEmail.focus();
       });
       els.leaveRoomBtn.addEventListener('click', () => leaveRoom());
       els.chatForm.addEventListener('submit', sendChat);
