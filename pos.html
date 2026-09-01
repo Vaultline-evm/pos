@@ -873,7 +873,7 @@
 
     function startJitsi(roomName) {
       destroyJitsi();
-      if (!window.JitsiMeetExternalAPI || !els.jitsiContainer || !state.user) {
+      if (!window.JitsiMeetExternalAPI || !els.jitsiContainer) {
         els.voiceStatus.textContent = 'تعذر تحميل خدمة الصوت. أعد تحميل الصفحة وحاول مرة أخرى.';
         return;
       }
@@ -885,7 +885,7 @@
         width: '100%',
         height: 420,
         lang: 'ar',
-        userInfo: { displayName: state.profile?.username || state.user.email || 'مستخدم' },
+        userInfo: { displayName: state.profile?.username || state.user?.email || 'زائر' },
         configOverwrite: {
           prejoinPageEnabled: false,
           startWithAudioMuted: false,
@@ -912,13 +912,6 @@
     async function joinRoom(roomName) {
       const validRoom = escapeRoomName(roomName);
       if (!validRoom) return;
-      if (!state.user || !state.profile) {
-        state.pendingRoom = validRoom;
-        activateAuthTab('login');
-        els.authOverlay.classList.remove('hidden');
-        showToast('سجّل الدخول، وسندخلك إلى الغرفة تلقائياً.', 'info');
-        return;
-      }
       if (state.roomName === validRoom) return;
       await leaveRoom(true);
       state.roomName = validRoom;
@@ -926,13 +919,22 @@
       state.speakerId = null;
       els.currentRoomTitle.textContent = `غرفة ${validRoom}`;
       els.roomInterface.classList.add('visible');
-      els.roomPresenceStatus.textContent = 'جاري الاتصال…';
+      els.roomsGrid.classList.add('hidden');
+      els.roomPresenceStatus.textContent = state.user ? 'جاري الاتصال…' : 'غرفة صوتية للزوار…';
       els.chatStatus.textContent = 'جاري التحميل…';
       els.chatInput.disabled = true;
       els.sendChatBtn.disabled = true;
-      els.pushToTalkBtn.disabled = true;
+
       renderRooms();
       renderGame();
+
+      if (!state.user || !state.profile) {
+        els.chatStatus.textContent = 'سجّل الدخول للدردشة';
+        els.voiceStatus.textContent = 'تم فتح الغرفة الصوتية. اسمح بالميكروفون داخل Jitsi.';
+        startJitsi(validRoom);
+        showToast(`تم فتح غرفة ${validRoom}.`, 'success');
+        return;
+      }
 
       const channel = configureChannel(validRoom);
       state.roomChannel = channel;
@@ -948,8 +950,7 @@
           els.chatStatus.className = 'status online';
           els.chatInput.disabled = false;
           els.sendChatBtn.disabled = false;
-          els.pushToTalkBtn.disabled = true;
-          els.pushToTalkBtn.hidden = true;
+
           startJitsi(validRoom);
           await loadChatHistory();
           startPresenceTicker();
@@ -979,6 +980,7 @@
       state.gameState = null;
       state.selectedBet = null;
       els.roomInterface.classList.remove('visible');
+      els.roomsGrid.classList.remove('hidden');
       els.chatLog.replaceChildren();
       els.chatLog.append(Object.assign(document.createElement('div'), { className: 'chat-empty', textContent: 'اختر غرفة لعرض المحادثة.' }));
       els.roomPresenceStatus.textContent = 'غير متصل';
@@ -987,7 +989,7 @@
       els.chatStatus.className = 'status';
       els.chatInput.disabled = true;
       els.sendChatBtn.disabled = true;
-      els.pushToTalkBtn.disabled = true;
+
       renderRooms();
       renderGame();
       if (!silent && state.user) showToast('تمت مغادرة الغرفة.');
