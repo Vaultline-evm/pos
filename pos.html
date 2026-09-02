@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>غرف المحافظات - بلوكشين</title>
+  <title>غرف المحافظات السورية</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -38,16 +37,13 @@
     .btn {
       border: none; border-radius: 11px; padding: 0.5rem 1rem;
       font-weight: 700; background: #294869; color: white; cursor: pointer;
-      transition: .2s;
     }
-    .btn:hover:not(:disabled) { opacity: .85; }
     .btn-primary { background: linear-gradient(135deg, #ffcf67, #eaa333); color: #1d2430; }
     .btn-danger { background: #a33e4d; }
     .btn-secondary { background: #3a5a7a; }
-    .btn-success { background: #27ae60; }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
     .tabs {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem;
       padding: 0.7rem 0; border-bottom: 1px solid rgba(164,202,242,.16);
     }
     .tab {
@@ -67,7 +63,6 @@
     .section-head p { color: #a9bed5; font-size: .88rem; }
     .status { color: #a9bed5; font-size: .82rem; }
     .status.online { color: #32c47a; }
-    .status.warning { color: #f8c66c; }
     .rooms-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem;
     }
@@ -83,7 +78,7 @@
     .members { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
     .member { border: 1px solid rgba(164,202,242,.16); border-radius: 999px; padding: 0.3rem 0.7rem; color: #a9bed5; font-size: .8rem; }
     .chat-log {
-      height: 400px; overflow: auto; background: rgba(0,0,0,.2);
+      height: 350px; overflow: auto; background: rgba(0,0,0,.2);
       border: 1px solid rgba(164,202,242,.16); border-radius: 14px; padding: 0.5rem;
     }
     .message { padding: 0.5rem 0; border-bottom: 1px solid rgba(164,202,242,.09); }
@@ -149,17 +144,15 @@
 <!-- ===== التطبيق ===== -->
 <div class="app" id="app" style="display:none;">
   <header class="topbar">
-    <div class="brand"><div class="brand-mark">◈</div><div><h1>غرف المحافظات</h1><p>دردشة + عجلة + بلوكشين</p></div></div>
+    <div class="brand"><div class="brand-mark">◈</div><div><h1>غرف المحافظات</h1><p>دردشة + عجلة</p></div></div>
     <div class="user-chip"><span class="user-dot"></span><span id="headerUsername">...</span><button id="logoutBtn" class="btn btn-danger" style="padding:.2rem .8rem;">خروج</button></div>
   </header>
   <nav class="tabs">
     <button class="tab active" data-tab="rooms">الغرف</button>
     <button class="tab" data-tab="game">العجلة</button>
-    <button class="tab" data-tab="wallet">المحفظة</button>
     <button class="tab" data-tab="settings">الإعدادات</button>
   </nav>
   <main>
-
     <!-- ===== غرف ===== -->
     <section class="pane active" id="pane-rooms">
       <div class="section-head"><div><h2>اختر غرفتك</h2><p>دردشة كتابية مع المشاركين</p></div><span id="connectionStatus" class="status">جاري التحميل...</span></div>
@@ -182,59 +175,24 @@
 
     <!-- ===== عجلة ===== -->
     <section class="pane" id="pane-game">
-      <div class="section-head"><div><h2>لعبة العجلة</h2><p>اختر رهانك ودور</p></div><span id="gameRoomLabel" class="status warning">اختر غرفة أولاً</span></div>
-      <div id="gameNoRoom" class="card" style="border-color:rgba(240,184,75,.3);background:rgba(240,184,75,.09);color:#ffe5ad;">للمشاركة، ادخل إحدى الغرف أولاً.</div>
-      <div id="gameContent" style="display:none;">
-        <div class="card" style="text-align:center;">
-          <div class="wheel-box"><div class="wheel-pointer"></div><div id="wheel" class="wheel"></div><div id="wheelCenter" class="wheel-center">🎡</div></div>
-          <div id="gameTimer" class="status" style="font-size:1.2rem;color:#f1c40f;">—</div>
-          <div id="gameStatus" style="margin:0.5rem 0;color:#a9bed5;">جاري المزامنة...</div>
-          <div id="choices" style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin:1rem 0;"></div>
-          <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;">
-            <input id="betAmount" type="number" min="1" step="1" value="1" style="width:100px;background:rgba(4,14,26,.6);border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;text-align:center;">
-            <button id="placeBetBtn" class="btn btn-primary">رهان</button>
-          </div>
-          <div id="roundDetail" style="margin-top:0.5rem;color:#a9bed5;">اختر رمزاً ثم المبلغ</div>
-          <div id="betHistory" style="margin-top:1rem;max-height:150px;overflow-y:auto;border-top:1px solid rgba(164,202,242,.1);padding-top:0.5rem;"></div>
+      <div class="section-head"><div><h2>لعبة العجلة</h2><p>اضغط للدوران</p></div></div>
+      <div class="card" style="text-align:center;">
+        <div class="wheel-box">
+          <div class="wheel-pointer"></div>
+          <div id="wheel" class="wheel"></div>
+          <div id="wheelCenter" class="wheel-center">🎡</div>
         </div>
-      </div>
-    </section>
-
-    <!-- ===== محفظة ===== -->
-    <section class="pane" id="pane-wallet">
-      <div class="section-head"><div><h2>محفظتك</h2><p>رصيد اللعبة والبلوكشين</p></div></div>
-      <div class="card">
-        <div style="color:#a9bed5;">💳 عنوان محفظتك (Polygon)</div>
-        <div style="background:#0a1825;padding:0.5rem;border-radius:12px;font-family:monospace;word-break:break-all;font-size:.8rem;border:1px solid rgba(164,202,242,.16);" id="walletAddressDisplay">0x...</div>
-        <div style="margin-top:0.5rem;color:#a9bed5;">رصيدك الفعلي: <strong id="walletActualBalance" style="color:#f1c40f;">0</strong> POL</div>
-        <button class="btn btn-secondary" onclick="checkBalance()" style="margin-top:0.3rem;">🔄 تحديث الرصيد</button>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
-          <span style="color:#a9bed5;">💰 رصيد اللعبة</span>
-          <span style="color:#f1c40f;font-size:1.8rem;font-weight:bold;" id="walletGameBalance">0</span>
-        </div>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">
-          <button class="btn btn-success" onclick="deposit()">📥 إيداع (أرسل POL للصندوق)</button>
-          <button class="btn btn-danger" onclick="toggleWithdraw()">➖ سحب</button>
-        </div>
-        <div id="withdrawForm" style="display:none;margin-top:0.5rem;">
-          <div style="display:flex;flex-direction:column;gap:0.5rem;">
-            <input type="number" id="withdrawAmount" min="1" step="1" placeholder="الكمية (POL)" style="padding:0.5rem;background:rgba(4,14,26,.6);border:1px solid rgba(164,202,242,.16);border-radius:11px;color:white;">
-            <input type="text" id="withdrawAddress" placeholder="عنوان المستلم (0x...)" style="padding:0.5rem;background:rgba(4,14,26,.6);border:1px solid rgba(164,202,242,.16);border-radius:11px;color:white;">
-            <button class="btn btn-primary" onclick="executeWithdraw()">✅ تأكيد السحب</button>
-          </div>
-        </div>
-        <p style="color:#a9bed5;font-size:.7rem;margin-top:0.3rem;">الحد الأدنى للإيداع والسحب: 100 POL</p>
+        <button id="spinBtn" class="btn btn-primary" style="margin-top:1rem;">🎲 دوران</button>
+        <div id="resultDisplay" style="margin-top:1rem;font-size:1.2rem;color:#f1c40f;">—</div>
       </div>
     </section>
 
     <!-- ===== إعدادات ===== -->
     <section class="pane" id="pane-settings">
-      <div class="section-head"><div><h2>الإعدادات</h2><p>إدارة الحساب والإحالات</p></div></div>
-      <div class="card"><h3>👤 حسابي</h3><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">اسم المستخدم</span><strong id="profileUsername">—</strong></div><div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:#a9bed5;">البريد</span><strong id="profileEmail">—</strong></div><div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:#a9bed5;">عدد الإحالات</span><strong id="referralCount">0</strong></div></div>
-      <div class="card"><h3>🔗 رابط الإحالة</h3><p style="color:#a9bed5;font-size:.8rem;">كل إحالة تمنحك 3 POL من الصندوق فوراً</p><div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><input id="referralLink" type="text" readonly style="flex:1;background:#0a1825;border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;"><button id="copyReferralBtn" class="btn">نسخ</button></div></div>
-      <div class="card"><h3>🔑 تغيير كلمة المرور</h3><form id="passwordForm" style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;"><input id="newPassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة (6 أحرف)" required><input id="confirmPassword" type="password" minlength="6" placeholder="تأكيد كلمة المرور" required><button class="btn btn-primary" type="submit">حفظ</button></form></div>
+      <div class="section-head"><div><h2>الإعدادات</h2><p>إدارة الحساب</p></div></div>
+      <div class="card"><h3>👤 حسابي</h3><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">اسم المستخدم</span><strong id="profileUsername">—</strong></div><div style="display:flex;justify-content:space-between;padding:0.3rem 0;"><span style="color:#a9bed5;">البريد</span><strong id="profileEmail">—</strong></div><button id="changePassBtn" class="btn btn-secondary" style="margin-top:0.5rem;">تغيير كلمة المرور</button></div>
+      <div class="card"><h3>🔗 رابط الإحالة</h3><div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><input id="referralLink" type="text" readonly style="flex:1;background:#0a1825;border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;"><button id="copyReferralBtn" class="btn">نسخ</button></div></div>
+      <!-- لوحة المدير -->
       <div id="adminPanel" class="card admin-section" style="display:none;">
         <h4>🔧 لوحة المدير</h4>
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.5rem 0;">
@@ -244,15 +202,8 @@
           <button class="btn btn-warning" onclick="muteUser()">🔇 كتم (24 ساعة)</button>
           <button class="btn btn-success" onclick="addRoom()">➕ إضافة غرفة</button>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin:0.5rem 0;">
-          <input id="adminWithdrawAmount" type="number" min="1" step="1" placeholder="المبلغ" style="width:100px;background:rgba(4,14,26,.6);border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;">
-          <input id="adminWithdrawAddress" type="text" placeholder="عنوان المستلم" style="flex:1;min-width:150px;background:rgba(4,14,26,.6);border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;">
-          <button class="btn btn-primary" onclick="adminWithdraw()">💰 سحب من الصندوق</button>
-        </div>
-        <div><span style="color:#a9bed5;">رصيد الصندوق: </span><strong id="vaultBalanceDisplay" style="color:#f1c40f;">0</strong> POL</div>
       </div>
     </section>
-
   </main>
 </div>
 
@@ -260,7 +211,7 @@
 <div id="authOverlay" class="overlay">
   <div class="auth-card">
     <h2>🔐 مرحباً</h2>
-    <p>سجّل الدخول للانضمام إلى الغرف والرهان.</p>
+    <p>سجّل الدخول للانضمام إلى الغرف.</p>
     <div class="auth-tabs">
       <button class="auth-tab active" data-auth="login">تسجيل الدخول</button>
       <button class="auth-tab" data-auth="register">إنشاء حساب</button>
@@ -283,32 +234,20 @@
 <div id="toastStack" class="toast-stack"></div>
 
 <script>
-'use strict';
+// ============================================================
+// 1. إعداد Supabase (استخدم اسم مختلف لتجنب التعارض)
+// ============================================================
+const supabaseClient = window.supabase.createClient(
+  'https://ozzrdraeirhdrxztmhfr.supabase.co',
+  'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np'
+);
 
-// ============================================================
-// 1. إعداد Supabase
-// ============================================================
-const SUPABASE_URL = 'https://ozzrdraeirhdrxztmhfr.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// ============================================================
-// 2. إعداد البلوكشين
-// ============================================================
-const VAULT_ADDRESS = '0xb77577772412d2784a077f7CaC95Fec3e90AB75b';
-const VAULT_PRIVATE_KEY = '0x48b535e9e7b8893d2757dceec8054564d404ba2a161f24e92243b652966dff9e';
-const provider = new ethers.providers.JsonRpcProvider('https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99');
-const vaultWallet = new ethers.Wallet(VAULT_PRIVATE_KEY, provider);
-
-// ============================================================
-// 3. الثوابت
-// ============================================================
 const ROOMS = ['دمشق','حلب','حمص','حماة','اللاذقية','طرطوس','دير الزور','الحسكة','الرقة','إدلب','درعا','السويداء','القنيطرة','ريف دمشق'];
-const WHEEL_ITEMS = ['🍒','🥕','🍎','🥚','🐟','🐄'];
+const WHEEL_ITEMS = ['🍒', '🥕', '🍎', '🥚', '🐟', '🐄'];
 const ADMIN_EMAIL = 'youcanuseoneold@gmail.com';
 
 // ============================================================
-// 4. الحالة
+// 2. الحالة العامة
 // ============================================================
 const state = {
   user: null,
@@ -316,23 +255,14 @@ const state = {
   roomName: null,
   roomChannel: null,
   roomMembers: [],
-  gameState: null,
-  selectedBet: null,
-  currentRotation: 0,
-  animatedRound: null,
-  loadingProfile: false,
-  presenceTimer: null,
-  gameTimer: null,
-  walletAddress: '',
-  privateKeyEncrypted: '',
   loggedIn: false,
+  loadingProfile: false,
   isAdmin: false,
   lastChatTime: 0,
-  betHistory: [],
 };
 
 // ============================================================
-// 5. دوال مساعدة
+// 3. دوال مساعدة
 // ============================================================
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
@@ -346,10 +276,6 @@ function showToast(msg, type='info') {
   setTimeout(() => t.remove(), 4000);
 }
 
-function formatPoints(v) {
-  return Number(v || 0).toLocaleString('ar-SY', { maximumFractionDigits: 2 });
-}
-
 function setStatus(id, text, cls='') {
   const el = document.getElementById(id);
   if (el) { el.textContent = text; el.className = `status ${cls}`; }
@@ -359,34 +285,8 @@ function generateReferralCode(username) {
   return username + '-' + Math.random().toString(36).substring(2, 6);
 }
 
-function encrypt(text, pw) { return btoa(pw + '|' + text); }
-function decrypt(enc, pw) {
-  try { const d = atob(enc); const parts = d.split('|'); if (parts[0] === pw) return parts.slice(1).join('|'); return null; } catch { return null; }
-}
-function generateWallet() {
-  const w = ethers.Wallet.createRandom();
-  return { address: w.address, privateKey: w.privateKey };
-}
-
 // ============================================================
-// 6. دوال البلوكشين
-// ============================================================
-async function getVaultBalance() {
-  try { const bal = await provider.getBalance(VAULT_ADDRESS); return parseFloat(ethers.utils.formatEther(bal)); } catch { return 0; }
-}
-async function getUserBalance(address) {
-  try { const bal = await provider.getBalance(address); return parseFloat(ethers.utils.formatEther(bal)); } catch { return 0; }
-}
-async function sendPOL(fromWallet, toAddress, amountPOL) {
-  if (amountPOL <= 0) return null;
-  const tx = { to: toAddress, value: ethers.utils.parseEther(amountPOL.toString()) };
-  const response = await fromWallet.sendTransaction(tx);
-  await response.wait();
-  return response.hash;
-}
-
-// ============================================================
-// 7. عرض الغرف والمشاركين
+// 4. عرض الغرف والمشاركين
 // ============================================================
 function renderRooms() {
   const grid = $('#roomsGrid');
@@ -417,14 +317,8 @@ function renderMembers() {
 function renderProfile() {
   const p = state.profile || {};
   $('#headerUsername').textContent = p.username || '...';
-  $('#walletAddressDisplay').textContent = state.walletAddress || '0x...';
-  $('#walletGameBalance').textContent = formatPoints(p.balance || 0);
   $('#profileUsername').textContent = p.username || '—';
   $('#profileEmail').textContent = state.user?.email || '—';
-  // عدد الإحالات
-  supabase.from('referrals').select('*', { count: 'exact' }).eq('referrer_id', state.user?.id).then(({ count }) => {
-    $('#referralCount').textContent = count || 0;
-  });
   if (p.referral_code) {
     const link = new URL(window.location.href);
     link.hash = `ref=${encodeURIComponent(p.referral_code)}`;
@@ -433,17 +327,28 @@ function renderProfile() {
   // لوحة المدير
   state.isAdmin = state.user?.email === ADMIN_EMAIL;
   $('#adminPanel').style.display = state.isAdmin ? 'block' : 'none';
-  updateVaultDisplay();
-  renderGame();
-}
-
-async function updateVaultDisplay() {
-  const bal = await getVaultBalance();
-  $('#vaultBalanceDisplay').textContent = formatPoints(bal) + ' POL';
 }
 
 // ============================================================
-// 8. الدردشة
+// 5. العجلة
+// ============================================================
+function initWheel() {
+  const colors = ['#e96a62','#efaa3d','#4fc18f','#5e9fd5','#9c75c8','#48b3b5'];
+  const grad = colors.map((c,i) => `${c} ${i*16.666}% ${(i+1)*16.666}%`).join(', ');
+  $('#wheel').style.background = `conic-gradient(${grad})`;
+}
+let rotation = 0;
+function spinWheel() {
+  const result = Math.floor(Math.random() * 6);
+  const target = 360 - (result * 60 + 30);
+  rotation += 6 * 360 + target - (rotation % 360);
+  $('#wheel').style.transform = `rotate(${rotation}deg)`;
+  $('#wheelCenter').textContent = WHEEL_ITEMS[result];
+  $('#resultDisplay').textContent = `🎉 النتيجة: ${WHEEL_ITEMS[result]}`;
+}
+
+// ============================================================
+// 6. الدردشة
 // ============================================================
 function appendChat({ username, message, created_at, system=false }) {
   const log = $('#chatLog');
@@ -471,7 +376,7 @@ async function loadChat() {
   if (!state.roomName) return;
   const log = $('#chatLog');
   log.replaceChildren();
-  const { data, error } = await supabase.from('chat_history').select('username,message,created_at').eq('room_name', state.roomName).order('created_at', { ascending: false }).limit(30);
+  const { data, error } = await supabaseClient.from('chat_history').select('username,message,created_at').eq('room_name', state.roomName).order('created_at', { ascending: false }).limit(30);
   if (error) { appendChat({ system:true, message:'تعذر تحميل الرسائل.' }); return; }
   const msgs = (data || []).reverse();
   if (!msgs.length) { log.innerHTML = '<div style="color:#a9bed5;text-align:center;padding-top:2rem;">ابدأ المحادثة</div>'; }
@@ -488,7 +393,7 @@ async function sendChat(e) {
   $('#sendChatBtn').disabled = true;
   const payload = { username: state.profile.username, message: msg, created_at: new Date().toISOString() };
   try {
-    const { error } = await supabase.from('chat_history').insert({ room_name: state.roomName, user_id: state.user.id, username: payload.username, message: msg });
+    const { error } = await supabaseClient.from('chat_history').insert({ room_name: state.roomName, user_id: state.user.id, username: payload.username, message: msg });
     if (error) throw error;
     appendChat(payload);
     await state.roomChannel.send({ type: 'broadcast', event: 'chat', payload });
@@ -498,10 +403,10 @@ async function sendChat(e) {
 }
 
 // ============================================================
-// 9. الغرفة (Presence + Broadcast)
+// 7. الغرفة (Presence + Broadcast)
 // ============================================================
 function configureChannel(room) {
-  const ch = supabase.channel(`room:${room}`, { config: { presence: { key: state.user.id }, broadcast: { self: false } } });
+  const ch = supabaseClient.channel(`room:${room}`, { config: { presence: { key: state.user.id }, broadcast: { self: false } } });
   ch.on('presence', { event: 'sync' }, () => {
     state.roomMembers = Object.values(ch.presenceState()).flat();
     renderMembers();
@@ -550,8 +455,6 @@ async function joinRoom(room) {
       $('#chatInput').disabled = false;
       $('#sendChatBtn').disabled = false;
       await loadChat();
-      startPresenceTicker();
-      startGameTicker();
       showToast(`دخلت غرفة ${room}.`, 'success');
     } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
       showToast('تعذر الاتصال بالغرفة.', 'error');
@@ -561,17 +464,13 @@ async function joinRoom(room) {
 }
 
 async function leaveRoom(silent=false) {
-  stopPresenceTicker();
-  stopGameTicker();
   if (state.roomChannel) {
     try { await state.roomChannel.untrack(); } catch(_) {}
-    try { await supabase.removeChannel(state.roomChannel); } catch(_) {}
+    try { await supabaseClient.removeChannel(state.roomChannel); } catch(_) {}
   }
   state.roomChannel = null;
   state.roomName = null;
   state.roomMembers = [];
-  state.gameState = null;
-  state.selectedBet = null;
   $('#roomInterface').classList.remove('visible');
   const log = $('#chatLog');
   log.replaceChildren();
@@ -581,278 +480,41 @@ async function leaveRoom(silent=false) {
   $('#chatInput').disabled = true;
   $('#sendChatBtn').disabled = true;
   renderRooms();
-  renderGame();
   if (!silent && state.user) showToast('غادرت الغرفة.');
 }
 
 // ============================================================
-// 10. عدّاد التواجد
-// ============================================================
-function startPresenceTicker() {
-  stopPresenceTicker();
-  state.presenceTimer = setInterval(async () => {
-    if (!state.roomName || !state.user) return;
-    const { data, error } = await supabase.rpc('record_presence', { p_seconds: 30 });
-    if (!error && state.profile) {
-      state.profile.daily_presence_seconds = Number(data || state.profile.daily_presence_seconds || 0);
-    }
-  }, 30000);
-}
-function stopPresenceTicker() { if (state.presenceTimer) clearInterval(state.presenceTimer); state.presenceTimer = null; }
-
-// ============================================================
-// 11. العجلة والمزامنة
-// ============================================================
-function initWheel() {
-  const colors = ['#e96a62','#efaa3d','#4fc18f','#5e9fd5','#9c75c8','#48b3b5'];
-  const grad = colors.map((c,i) => `${c} ${i*16.666}% ${(i+1)*16.666}%`).join(', ');
-  $('#wheel').style.background = `conic-gradient(${grad})`;
-}
-
-function renderChoices() {
-  const container = $('#choices');
-  container.replaceChildren();
-  if (!state.gameState) return;
-  const pools = state.gameState.pools || {};
-  const betClosed = !state.roomName || !isBettingOpen() || Boolean(state.gameState?.my_bet);
-  WHEEL_ITEMS.forEach((emoji, i) => {
-    const btn = document.createElement('button');
-    btn.className = `btn ${state.selectedBet === i ? 'btn-primary' : 'btn-secondary'}`;
-    btn.textContent = `${emoji} ${formatPoints(pools[i] || 0)} POL`;
-    btn.disabled = betClosed;
-    btn.dataset.bet = i;
-    btn.style.margin = '0.2rem';
-    btn.addEventListener('click', () => {
-      state.selectedBet = i;
-      renderChoices();
-    });
-    container.appendChild(btn);
-  });
-}
-
-function isBettingOpen() {
-  if (!state.gameState) return new Date().getSeconds() < 30;
-  return state.gameState.status === 'betting' && new Date().getSeconds() < 30;
-}
-
-function renderGame() {
-  const game = state.gameState;
-  const hasRoom = Boolean(state.roomName);
-  $('#gameNoRoom').style.display = hasRoom ? 'none' : 'block';
-  $('#gameContent').style.display = hasRoom ? 'block' : 'none';
-  const label = $('#gameRoomLabel');
-  if (hasRoom) { label.textContent = `غرفة ${state.roomName}`; label.className = 'status online'; }
-  else { label.textContent = 'اختر غرفة أولاً'; label.className = 'status warning'; }
-
-  const sec = new Date().getSeconds();
-  const remain = sec < 30 ? 30 - sec : 60 - sec;
-  $('#gameTimer').textContent = sec < 30 ? `⏳ يغلق الرهان خلال ${remain} ثانية` : `⏳ النتيجة خلال ${remain} ثانية`;
-
-  if (!hasRoom) {
-    $('#gameStatus').textContent = 'اختر غرفة لتبدأ.';
-    $('#roundDetail').textContent = 'لا توجد جولة نشطة خارج الغرف.';
-  } else if (game?.status === 'resolved' && Number.isInteger(game.winning_index)) {
-    const winner = WHEEL_ITEMS[game.winning_index];
-    $('#gameStatus').textContent = `✅ النتيجة: ${winner}`;
-    $('#roundDetail').textContent = `إجمالي الجولة: ${formatPoints(game.total_pool)} POL. تبدأ جولة جديدة مع الدقيقة التالية.`;
-  } else if (sec < 30) {
-    $('#gameStatus').textContent = game?.my_bet ? '✅ تم تسجيل رهانك.' : '🎯 اختر رمزاً وسجّل رهانك.';
-    $('#roundDetail').textContent = game?.my_bet ? `رهانك: ${WHEEL_ITEMS[game.my_bet.bet_index]} بمبلغ ${formatPoints(game.my_bet.amount)} POL.` : 'الاختيار الأقل مجموعاً هو الفائز.';
-  } else {
-    $('#gameStatus').textContent = 'جاري تثبيت النتيجة...';
-    $('#roundDetail').textContent = 'لا يمكن قبول رهانات جديدة.';
-  }
-  $('#placeBetBtn').disabled = !hasRoom || !isBettingOpen() || state.selectedBet === null || Boolean(game?.my_bet);
-  renderChoices();
-  renderBetHistory();
-}
-
-function renderBetHistory() {
-  const container = $('#betHistory');
-  if (!state.betHistory.length) { container.innerHTML = '<div style="color:#a9bed5;">لا توجد رهانات</div>'; return; }
-  container.innerHTML = state.betHistory.map(h => `<div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.08);font-size:.85rem;"><span>${h.username} راهن ${h.amount} POL على ${WHEEL_ITEMS[h.bet]}</span><span class="${h.status === 'win' ? 'success' : 'error'}" style="color:${h.status === 'win' ? '#32c47a' : '#ef6461'}">${h.status === 'win' ? '🏆 ربح' : '💀 خسارة'}</span></div>`).join('');
-}
-
-async function refreshGame() {
-  if (!state.roomName || !state.user) return;
-  try {
-    const { data, error } = await supabase.rpc('get_game_state', { p_room_name: state.roomName });
-    if (error) throw error;
-    state.gameState = data;
-    if (new Date().getSeconds() >= 30 && data.status === 'betting') {
-      const resolved = await supabase.rpc('resolve_game_round', { p_room_name: state.roomName });
-      if (!resolved.error) {
-        state.gameState = { ...data, ...resolved.data };
-        await distributeRewards(resolved.data);
-      }
-    }
-    if (state.gameState?.status === 'resolved' && Number.isInteger(state.gameState.winning_index)) {
-      animateResult(state.gameState);
-    }
-    renderGame();
-    // تحديث الرصيد المحلي
-    const latest = await supabase.from('profiles').select('balance,wins,losses').eq('id', state.user.id).single();
-    if (!latest.error && state.profile) {
-      Object.assign(state.profile, latest.data);
-      renderProfile();
-    }
-  } catch (err) { console.error(err); $('#gameStatus').textContent = 'تعذر المزامنة. إعادة المحاولة...'; }
-}
-
-async function distributeRewards(result) {
-  const winners = result.winners || {};
-  for (const [userId, amount] of Object.entries(winners)) {
-    if (amount <= 0) continue;
-    const { data: profile } = await supabase.from('profiles').select('wallet_address').eq('id', userId).single();
-    if (!profile || !profile.wallet_address) continue;
-    try {
-      const txHash = await sendPOL(vaultWallet, profile.wallet_address, amount);
-      showToast(`🎉 تم إرسال ${amount} POL للفائز`, 'success');
-    } catch (e) { console.error('فشل توزيع الأرباح:', e); }
-  }
-}
-
-function startGameTicker() {
-  stopGameTicker();
-  refreshGame();
-  state.gameTimer = setInterval(refreshGame, 3000);
-}
-function stopGameTicker() { if (state.gameTimer) clearInterval(state.gameTimer); state.gameTimer = null; }
-
-function animateResult(game) {
-  const id = game.round_start || `${new Date().toISOString().slice(0,16)}-${game.winning_index}`;
-  if (state.animatedRound === id) return;
-  state.animatedRound = id;
-  const target = 360 - (game.winning_index * 60 + 30);
-  state.currentRotation += 6 * 360 + target - (state.currentRotation % 360);
-  $('#wheel').style.transform = `rotate(${state.currentRotation}deg)`;
-  $('#wheelCenter').textContent = WHEEL_ITEMS[game.winning_index];
-  setTimeout(() => { $('#wheelCenter').textContent = '🎡'; }, 3800);
-}
-
-// ============================================================
-// 12. الرهان (عبر البلوكشين)
-// ============================================================
-async function placeBet() {
-  if (!state.roomName || state.selectedBet === null || !isBettingOpen()) return;
-  const amount = Number($('#betAmount').value);
-  if (!Number.isFinite(amount) || amount < 1) { showToast('أدخل مبلغاً صحيحاً (≥1).', 'error'); return; }
-  // التحقق من الرصيد الفعلي
-  const userBal = await getUserBalance(state.walletAddress);
-  if (userBal < amount) { showToast(`⚠️ رصيدك ${userBal.toFixed(2)} POL غير كافٍ.`, 'error'); return; }
-  // طلب كلمة المرور لفك التشفير
-  let privKey = state._decryptedKey;
-  if (!privKey) {
-    const pw = prompt('أدخل كلمة المرور لتأكيد الرهان:');
-    if (!pw) return;
-    privKey = decrypt(state.privateKeyEncrypted, pw);
-    if (!privKey) { showToast('❌ كلمة المرور غير صحيحة.', 'error'); return; }
-    state._decryptedKey = privKey;
-  }
-  const userWallet = new ethers.Wallet(privKey, provider);
-  try {
-    $('#placeBetBtn').disabled = true;
-    $('#gameStatus').textContent = '⏳ جاري إرسال الرهان إلى البلوكشين...';
-    const txHash = await sendPOL(userWallet, VAULT_ADDRESS, amount);
-    showToast(`✅ تم إرسال الرهان. التجزئة: ${txHash.slice(0,10)}...`, 'success');
-    // تسجيل الرهان في قاعدة البيانات
-    const { data, error } = await supabase.rpc('place_game_bet', { p_room_name: state.roomName, p_bet_index: state.selectedBet, p_amount: amount });
-    if (error) throw error;
-    if (state.profile) state.profile.balance = Number(data.balance);
-    state.betHistory.push({ username: state.profile.username, bet: state.selectedBet, amount: amount, status: 'pending' });
-    renderBetHistory();
-    await refreshGame();
-  } catch (err) { showToast('❌ فشل الرهان: ' + err.message, 'error'); }
-  $('#placeBetBtn').disabled = false;
-  $('#gameStatus').textContent = 'جاري المزامنة...';
-}
-
-// ============================================================
-// 13. المحفظة والإيداع والسحب
-// ============================================================
-async function deposit() {
-  showToast(`📥 أرسل POL إلى عنوان الصندوق: ${VAULT_ADDRESS}`, 'info');
-}
-
-function toggleWithdraw() {
-  const form = $('#withdrawForm');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
-}
-
-async function executeWithdraw() {
-  if (!state.loggedIn) { alert('سجّل الدخول أولاً.'); return; }
-  const amount = parseFloat($('#withdrawAmount').value);
-  const address = $('#withdrawAddress').value.trim();
-  if (isNaN(amount) || amount < 100) { alert('الحد الأدنى 100 POL'); return; }
-  if (amount > (state.profile?.balance || 0)) { alert('رصيد غير كافٍ في اللعبة.'); return; }
-  if (!address || !address.startsWith('0x')) { alert('عنوان غير صحيح'); return; }
-  const userBal = await getUserBalance(state.walletAddress);
-  if (userBal < amount) { alert(`رصيدك الفعلي ${userBal.toFixed(2)} POL غير كافٍ.`); return; }
-  const pw = prompt('أدخل كلمة المرور:');
-  if (!pw) return;
-  const privKey = decrypt(state.privateKeyEncrypted, pw);
-  if (!privKey) { alert('❌ كلمة المرور غير صحيحة.'); return; }
-  const userWallet = new ethers.Wallet(privKey, provider);
-  try {
-    const txHash = await sendPOL(userWallet, address, amount);
-    state.profile.balance -= amount;
-    await supabase.from('profiles').update({ balance: state.profile.balance }).eq('id', state.user.id);
-    renderProfile();
-    alert(`✅ تم السحب بنجاح.\nالتجزئة: ${txHash}`);
-    $('#withdrawForm').style.display = 'none';
-    $('#withdrawAmount').value = '';
-    $('#withdrawAddress').value = '';
-  } catch (e) { alert('❌ فشل السحب: ' + e.message); }
-}
-
-async function checkBalance() {
-  const bal = await getUserBalance(state.walletAddress);
-  $('#walletActualBalance').textContent = formatPoints(bal) + ' POL';
-}
-
-// ============================================================
-// 14. المصادقة
+// 8. المصادقة
 // ============================================================
 async function loadProfile() {
   if (!state.user || state.loadingProfile) return;
   state.loadingProfile = true;
   try {
-    const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
+    const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
     if (error) throw error;
     if (!profile) {
       const meta = state.user.user_metadata || {};
       const username = meta.username || state.user.email?.split('@')[0] || 'مستخدم';
       const referral = meta.referral_code || '';
-      const wallet = generateWallet();
-      const enc = encrypt(wallet.privateKey, 'temporary_password_123');
-      const { error: ins } = await supabase.from('profiles').insert([{
+      const { error: ins } = await supabaseClient.from('profiles').insert([{
         id: state.user.id,
         username: username,
-        wallet_address: wallet.address,
-        encrypted_private_key: enc,
+        wallet_address: '0x' + Math.random().toString(36).substring(2, 10),
+        encrypted_private_key: 'temp',
         referral_code: generateReferralCode(username),
         balance: 0,
       }]);
       if (ins) throw ins;
       // معالجة الإحالة
       if (referral) {
-        const { data: referrer } = await supabase.from('profiles').select('id, wallet_address').eq('referral_code', referral).single();
-        if (referrer) {
-          try {
-            await sendPOL(vaultWallet, referrer.wallet_address, 3);
-            showToast(`🎉 تم إرسال 3 POL للمحيل ${referrer.wallet_address.slice(0,6)}...`, 'success');
-          } catch (e) { console.error('فشل إرسال مكافأة الإحالة:', e); }
-        }
+        // هنا يمكن إرسال 3 POL للمحيل (سنضيفها لاحقاً)
+        showToast('🎉 تم تفعيل الإحالة!', 'success');
       }
-      const retry = await supabase.from('profiles').select('*').eq('id', state.user.id).single();
+      const retry = await supabaseClient.from('profiles').select('*').eq('id', state.user.id).single();
       if (retry.error) throw retry.error;
       state.profile = retry.data;
-      state.walletAddress = retry.data.wallet_address;
-      state.privateKeyEncrypted = retry.data.encrypted_private_key;
     } else {
       state.profile = profile;
-      state.walletAddress = profile.wallet_address;
-      state.privateKeyEncrypted = profile.encrypted_private_key;
     }
     state.loggedIn = true;
     $('#authOverlay').classList.add('hidden');
@@ -866,7 +528,6 @@ async function loadProfile() {
 
 function resetUI() {
   state.user = null; state.profile = null; state.loggedIn = false; state.isAdmin = false;
-  state.selectedBet = null; state.gameState = null; state._decryptedKey = null;
   leaveRoom(true);
   $('#app').style.display = 'none';
   $('#authOverlay').classList.remove('hidden');
@@ -881,7 +542,7 @@ async function handleLogin(e) {
   const btn = e.submitter || $('#loginForm').querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
     showToast('تم تسجيل الدخول.', 'success');
   } catch (err) { showToast(err.message, 'error'); }
@@ -898,7 +559,7 @@ async function handleRegister(e) {
   const btn = e.submitter || $('#registerForm').querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { data: { username, referral_code: referral || null } } });
+    const { data, error } = await supabaseClient.auth.signUp({ email, password: pw, options: { data: { username, referral_code: referral || null } } });
     if (error) throw error;
     $('#registerPassword').value = '';
     if (data.session) showToast('تم إنشاء الحساب وتسجيل الدخول.', 'success');
@@ -914,37 +575,37 @@ function activateAuthTab(mode) {
 }
 
 async function logout() {
-  try { await supabase.auth.signOut(); showToast('تم تسجيل الخروج.', 'success'); } catch(e) { showToast(e.message, 'error'); }
+  try { await supabaseClient.auth.signOut(); showToast('تم تسجيل الخروج.', 'success'); } catch(e) { showToast(e.message, 'error'); }
 }
 
 // ============================================================
-// 15. دوال المدير
+// 9. دوال المدير
 // ============================================================
 async function banUser() {
   const target = $('#adminTarget').value.trim();
   if (!target) { alert('أدخل بريد المستخدم'); return; }
-  const { data } = await supabase.from('profiles').select('id').eq('email', target).single();
+  const { data } = await supabaseClient.from('profiles').select('id').eq('email', target).single();
   if (!data) { alert('المستخدم غير موجود'); return; }
-  await supabase.from('profiles').update({ is_banned: true, ban_expires_at: null }).eq('id', data.id);
+  await supabaseClient.from('profiles').update({ is_banned: true, ban_expires_at: null }).eq('id', data.id);
   showToast('✅ تم حظر المستخدم.', 'success');
 }
 
 async function unbanUser() {
   const target = $('#adminTarget').value.trim();
   if (!target) { alert('أدخل بريد المستخدم'); return; }
-  const { data } = await supabase.from('profiles').select('id').eq('email', target).single();
+  const { data } = await supabaseClient.from('profiles').select('id').eq('email', target).single();
   if (!data) { alert('المستخدم غير موجود'); return; }
-  await supabase.from('profiles').update({ is_banned: false, ban_expires_at: null }).eq('id', data.id);
+  await supabaseClient.from('profiles').update({ is_banned: false, ban_expires_at: null }).eq('id', data.id);
   showToast('✅ تم إلغاء الحظر.', 'success');
 }
 
 async function muteUser() {
   const target = $('#adminTarget').value.trim();
   if (!target) { alert('أدخل بريد المستخدم'); return; }
-  const { data } = await supabase.from('profiles').select('id').eq('email', target).single();
+  const { data } = await supabaseClient.from('profiles').select('id').eq('email', target).single();
   if (!data) { alert('المستخدم غير موجود'); return; }
   const expires = new Date(); expires.setDate(expires.getDate() + 1);
-  await supabase.from('profiles').update({ is_banned: true, ban_expires_at: expires.toISOString() }).eq('id', data.id);
+  await supabaseClient.from('profiles').update({ is_banned: true, ban_expires_at: expires.toISOString() }).eq('id', data.id);
   showToast('🔇 تم كتم المستخدم لمدة 24 ساعة.', 'success');
 }
 
@@ -956,66 +617,27 @@ async function addRoom() {
   showToast(`✅ تم إضافة غرفة ${roomName}`, 'success');
 }
 
-async function adminWithdraw() {
-  const amount = parseFloat($('#adminWithdrawAmount').value);
-  const address = $('#adminWithdrawAddress').value.trim();
-  if (!amount || amount <= 0) { alert('أدخل مبلغاً صحيحاً'); return; }
-  if (!address || !address.startsWith('0x')) { alert('أدخل عنواناً صحيحاً'); return; }
+// ============================================================
+// 10. تغيير كلمة المرور
+// ============================================================
+async function changePassword() {
+  const newPw = prompt('أدخل كلمة المرور الجديدة (6 أحرف على الأقل):');
+  if (!newPw || newPw.length < 6) { showToast('كلمة المرور يجب أن تكون 6 أحرف.', 'error'); return; }
   try {
-    const txHash = await sendPOL(vaultWallet, address, amount);
-    showToast(`✅ تم سحب ${amount} POL من الصندوق. التجزئة: ${txHash.slice(0,10)}...`, 'success');
-    await updateVaultDisplay();
-  } catch (e) { alert('❌ فشل السحب: ' + e.message); }
+    const { error } = await supabaseClient.auth.updateUser({ password: newPw });
+    if (error) throw error;
+    showToast('تم تغيير كلمة المرور.', 'success');
+  } catch (err) { showToast(err.message, 'error'); }
 }
 
 // ============================================================
-// 16. التوزيع الليلي (الساعة 12)
-// ============================================================
-async function nightlyDistribution() {
-  const { data: users } = await supabase.from('profiles').select('id, wallet_address, daily_presence_seconds').eq('is_banned', false);
-  if (!users || !users.length) return;
-  const vaultBal = await getVaultBalance();
-  if (vaultBal < 1) return;
-  const totalPresence = users.reduce((sum, u) => sum + (u.daily_presence_seconds || 0), 0);
-  if (totalPresence === 0) return;
-  let remaining = vaultBal;
-  // 3 POL لكل محيل
-  for (const u of users) {
-    const { count } = await supabase.from('referrals').select('*', { count: 'exact' }).eq('referrer_id', u.id);
-    if (count > 0 && remaining >= 3) {
-      await sendPOL(vaultWallet, u.wallet_address, 3);
-      remaining -= 3;
-    }
-  }
-  // توزيع الباقي حسب التواجد
-  for (const u of users) {
-    if (u.daily_presence_seconds <= 0 || !u.wallet_address) continue;
-    const ratio = u.daily_presence_seconds / totalPresence;
-    const amount = remaining * ratio;
-    if (amount < 0.01) continue;
-    await sendPOL(vaultWallet, u.wallet_address, amount);
-  }
-  await supabase.from('profiles').update({ daily_presence_seconds: 0 }).neq('id', '');
-  showToast('🎁 تم التوزيع الليلي بنجاح!', 'success');
-}
-
-function scheduleNightly() {
-  const now = new Date();
-  let target = new Date(); target.setHours(0,0,0,0);
-  if (now > target) target.setDate(target.getDate() + 1);
-  const delay = target.getTime() - now.getTime();
-  setTimeout(() => { nightlyDistribution(); scheduleNightly(); }, delay);
-}
-
-// ============================================================
-// 17. ربط الأحداث
+// 11. ربط الأحداث والتهيئة
 // ============================================================
 function initEvents() {
   $$('.tab').forEach(tab => tab.addEventListener('click', () => {
     const name = tab.dataset.tab;
     $$('.tab').forEach(b => b.classList.toggle('active', b === tab));
     $$('.pane').forEach(p => p.classList.toggle('active', p.id === `pane-${name}`));
-    if (name === 'game' && state.roomName) refreshGame();
   }));
 
   $$('.auth-tab').forEach(t => t.addEventListener('click', () => activateAuthTab(t.dataset.auth)));
@@ -1024,39 +646,22 @@ function initEvents() {
   $('#logoutBtn').addEventListener('click', logout);
   $('#leaveRoomBtn').addEventListener('click', () => leaveRoom());
   $('#chatForm').addEventListener('submit', sendChat);
-  $('#placeBetBtn').addEventListener('click', placeBet);
+  $('#spinBtn').addEventListener('click', spinWheel);
+  $('#changePassBtn').addEventListener('click', changePassword);
   $('#copyReferralBtn').addEventListener('click', () => {
     const link = $('#referralLink').value;
     if (link) navigator.clipboard.writeText(link).then(() => alert('📋 تم النسخ!'));
   });
-  $('#passwordForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const newPw = $('#newPassword').value;
-    if (newPw !== $('#confirmPassword').value) { showToast('كلمتا المرور غير متطابقتين.', 'error'); return; }
-    const btn = e.submitter || $('#passwordForm').querySelector('button[type="submit"]');
-    btn.disabled = true;
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPw });
-      if (error) throw error;
-      $('#passwordForm').reset();
-      showToast('تم تغيير كلمة المرور.', 'success');
-    } catch (err) { showToast(err.message, 'error'); }
-    btn.disabled = false;
-  });
   window.addEventListener('beforeunload', () => leaveRoom(true));
 }
 
-// ============================================================
-// 18. التهيئة
-// ============================================================
 async function init() {
   initWheel();
   renderRooms();
   renderProfile();
   initEvents();
-  scheduleNightly();
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session?.user) {
     state.user = session.user;
     await loadProfile();
@@ -1066,7 +671,7 @@ async function init() {
     setStatus('connectionStatus', 'غير مسجّل');
   }
 
-  supabase.auth.onAuthStateChange((event, session) => {
+  supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
       state.user = session.user;
       setTimeout(loadProfile, 0);
@@ -1077,8 +682,6 @@ async function init() {
 
   const ref = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('ref');
   if (ref) { $('#registerReferral').value = ref; activateAuthTab('register'); }
-
-  setInterval(updateVaultDisplay, 30000);
 }
 
 init().catch(e => { console.error(e); showToast('تعذر بدء التطبيق.', 'error'); });
