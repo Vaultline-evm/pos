@@ -1295,44 +1295,6 @@
                 if (authError) { alert('❌ فشل إنشاء الحساب: ' + authError.message); return; }
                 if (!authData.user) { alert('❌ لم يتم إنشاء المستخدم.'); return; }
 
-                const wallet = generateWallet24();
-                const encryptedKey = encrypt(wallet.privateKey, password);
-
-                let referralSpins = 0;
-                if (referralCode) {
-                    const { data: referrer } = await supabaseClient
-                        .from('profiles')
-                        .select('id')
-                        .eq('referral_code', referralCode)
-                        .maybeSingle();
-                    if (referrer) {
-                        referralSpins = 3;
-                        await supabaseClient.rpc('add_referral_spins', { user_id: referrer.id, spins: 3 });
-                        await supabaseClient
-                            .from('referrals')
-                            .insert([{ referrer_id: referrer.id, referred_id: authData.user.id, referred_email: email }]);
-                    }
-                }
-
-                const { error: profileError } = await supabaseClient
-                    .from('profiles')
-                    .insert([{
-                        id: authData.user.id,
-                        username: username,
-                        wallet_address: wallet.address,
-                        encrypted_private_key: encryptedKey,
-                        referral_code: generateReferralCode(username),
-                        free_spins: referralSpins,
-                        bonus_balance: 10,
-                        withdrawable_balance: 0,
-                    }]);
-
-                if (profileError) {
-                    alert('⚠️ تم إنشاء الحساب لكن فشل حفظ البيانات: ' + profileError.message);
-                    await supabaseClient.auth.admin.deleteUser(authData.user.id);
-                    return;
-                }
-
                 alert('✅ تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...');
                 await loginUser(email, password);
             } catch (err) { alert('❌ خطأ غير متوقع: ' + err.message); }
@@ -1357,79 +1319,14 @@
 
         async function loadUserData(user) {
             try {
-                const { data: profile, error } = await supabaseClient
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .maybeSingle();
-
-                if (error) {
-                    alert('⚠️ تعذر تحميل بياناتك: ' + error.message);
-                    return;
-                }
-
-                if (!profile) {
-                    const wallet = generateWallet24();
-                    const username = user.user_metadata?.username || user.email?.split('@')[0] || 'مستخدم';
-                    const encryptedKey = encrypt(wallet.privateKey, 'temporary_password_123');
-
-                    const { error: insertError } = await supabaseClient
-                        .from('profiles')
-                        .insert([{
-                            id: user.id,
-                            username: username,
-                            wallet_address: wallet.address,
-                            encrypted_private_key: encryptedKey,
-                            referral_code: generateReferralCode(username),
-                            bonus_balance: 10,
-                            withdrawable_balance: 0,
-                        }]);
-
-                    if (insertError) {
-                        alert('⚠️ فشل إنشاء ملفك الشخصي: ' + insertError.message);
-                        return;
-                    }
-
-                    return loadUserData(user);
-                }
-
-                if (profile.is_banned) {
-                    if (profile.ban_expires_at) {
-                        const now = new Date();
-                        const expires = new Date(profile.ban_expires_at);
-                        if (expires > now) {
-                            alert(`🚫 أنت محظور مؤقتاً حتى ${expires.toLocaleString()}`);
-                            await supabaseClient.auth.signOut();
-                            return;
-                        } else {
-                            await supabaseClient
-                                .from('profiles')
-                                .update({ is_banned: false, ban_expires_at: null })
-                                .eq('id', user.id);
-                        }
-                    } else {
-                        alert('🚫 حسابك محظور بشكل دائم من التطبيق.');
-                        await supabaseClient.auth.signOut();
-                        return;
-                    }
-                }
+                const metadata = user.user_metadata || {};
+                const username = metadata.username || user.email?.split('@')[0] || 'مستخدم';
 
                 STATE.loggedIn = true;
                 STATE.userId = user.id;
-                STATE.userEmail = user.email;
-                STATE.username = profile.username;
-                STATE.walletAddress = profile.wallet_address;
-                STATE.privateKeyEncrypted = profile.encrypted_private_key;
-                STATE.userBalance = profile.balance || 0;
-                STATE.bonusBalance = profile.bonus_balance || 10;
-                STATE.withdrawableBalance = profile.withdrawable_balance || 0;
-                STATE.winsToday = profile.wins || 0;
-                STATE.lossesToday = profile.losses || 0;
-                STATE.referralEarned = profile.referral_earned || 0;
-                STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
-                STATE.freeSpins = profile.free_spins || 0;
-                STATE.referralSpins = profile.referral_spins || 0;
-                STATE.canKick = ADMIN_EMAILS.includes(user.email);
+                STATE.userEmail = user.email || '';
+                STATE.username = username;
+                STATE.canKick = ADMIN_EMAILS.includes(STATE.userEmail);
 
                 document.getElementById('authOverlay').style.display = 'none';
                 updateUI();
@@ -1445,16 +1342,12 @@
                     }, 1000);
                 }
 
-                const referralLink = `https://vaultline-evm.github.io/pos/pos/${profile.referral_code}`;
+                const referralCode = metadata.referral_code || '';
+                const referralLink = `https://vaultline-evm.github.io/pos/pos/${referralCode}`;
                 document.getElementById('referralLinkDisplay').textContent = referralLink;
-
-                if (profile.last_seen_room && SYRIAN_CITIES.includes(profile.last_seen_room)) {
-                    STATE.selectedRoomName = profile.last_seen_room;
-                    selectAndJoinRoom(profile.last_seen_room);
-                }
             } catch (e) {
                 console.error(e);
-                alert('❌ خطأ في تحميل البيانات: ' + e.message);
+                alert('❌ خطأ في تحميل بيانات المحادثة: ' + e.message);
             }
         }
 
@@ -1541,7 +1434,7 @@
                     presence: {
                         key: STATE.userId,
                     },
-                    broadcast: { self: true },
+                    broadcast: { self: false },
                 }
             });
 
@@ -1570,19 +1463,7 @@
                 addChatMessage('user', message, user, time);
             });
 
-            // أحداث اللعبة (رهانات، نتائج)
-            channel.on('broadcast', { event: 'bet' }, (payload) => {
-                const { userId, bet, amount, username } = payload.payload;
-                if (!STATE.bets[roomName]) STATE.bets[roomName] = {};
-                STATE.bets[roomName][userId] = { bet, amount, username };
-                updatePoolDisplay();
-                elResult.innerHTML = `📩 ${username} راهن على ${WHEEL_ITEMS[bet].emoji} ${WHEEL_ITEMS[bet].name} بمبلغ ${amount} POL`;
-            });
-
-            channel.on('broadcast', { event: 'game-result' }, (payload) => {
-                const { winningIndex, poolPerItem, winners, totalPool } = payload.payload;
-                applyGameResult(winningIndex, poolPerItem, winners, totalPool);
-            });
+            // هذه القناة مخصصة للحضور ورسائل المحادثة فقط؛ اللعبة محلية ولا تُحفظ أو تُبث عبر Supabase.
 
             // الاشتراك في القناة مع Presence
             try {
@@ -1599,6 +1480,8 @@
                             username: STATE.username,
                             online: true,
                         });
+
+                        await loadChatHistory();
 
                         roomInfo.textContent = `📡 متصل بـ ${roomName}`;
                         elDbStatus.textContent = '✅ متصل';
@@ -1644,34 +1527,118 @@
         // ============================================================
         // 10. الدردشة الكتابية
         // ============================================================
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if (!msg || !STATE.chatChannel) return;
+        async function loadChatHistory() {
+            if (!STATE.roomName) return;
 
-            const time = new Date().toLocaleTimeString();
-            STATE.chatChannel.send({
-                type: 'broadcast',
-                event: 'chat',
-                payload: {
-                    user: STATE.username,
-                    message: msg,
-                    time: time
-                }
+            const messages = document.getElementById('chatMessages');
+            messages.innerHTML = '';
+
+            const { data, error } = await supabaseClient
+                .from('chat_history')
+                .select('username, message, created_at')
+                .eq('room_name', STATE.roomName)
+                .order('created_at', { ascending: false })
+                .limit(30);
+
+            if (error) {
+                console.error('تعذر تحميل سجل المحادثة:', error);
+                addChatMessage('system', '⚠️ تعذر تحميل الرسائل السابقة.');
+                return;
+            }
+
+            const history = (data || []).reverse();
+            if (history.length === 0) {
+                addChatMessage('system', '📢 ابدأ المحادثة برسالة لطيفة.');
+                return;
+            }
+
+            history.forEach((item) => {
+                addChatMessage('user', item.message, item.username, item.created_at);
             });
+        }
 
-            addChatMessage('user', msg, STATE.username, time);
-            input.value = '';
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const sendButton = document.querySelector('.chat-input-row button');
+            const msg = input.value.trim();
+            if (!msg || !STATE.chatChannel || !STATE.userId || !STATE.roomName) return;
+
+            input.disabled = true;
+            if (sendButton) sendButton.disabled = true;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('chat_history')
+                    .insert({
+                        room_name: STATE.roomName,
+                        user_id: STATE.userId,
+                        username: STATE.username,
+                        message: msg,
+                    })
+                    .select('username, message, created_at')
+                    .single();
+
+                if (error) throw error;
+
+                const savedMessage = data || {
+                    username: STATE.username,
+                    message: msg,
+                    created_at: new Date().toISOString(),
+                };
+
+                addChatMessage('user', savedMessage.message, savedMessage.username, savedMessage.created_at);
+                input.value = '';
+
+                try {
+                    await STATE.chatChannel.send({
+                        type: 'broadcast',
+                        event: 'chat',
+                        payload: {
+                            user: savedMessage.username,
+                            message: savedMessage.message,
+                            time: savedMessage.created_at,
+                        },
+                    });
+                } catch (broadcastError) {
+                    console.warn('تم حفظ الرسالة وتعذر بثها لحظياً:', broadcastError);
+                }
+            } catch (error) {
+                console.error('تعذر حفظ الرسالة:', error);
+                alert('❌ تعذر إرسال الرسالة: ' + (error.message || 'خطأ غير معروف'));
+            } finally {
+                input.disabled = false;
+                if (sendButton) sendButton.disabled = false;
+                input.focus();
+            }
+        }
+
+        function formatChatTime(time) {
+            if (!time) return new Date().toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' });
+            const date = new Date(time);
+            if (Number.isNaN(date.getTime())) return String(time);
+            return date.toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit' });
         }
 
         function addChatMessage(type, message, user = '', time = '') {
             const messages = document.getElementById('chatMessages');
+            const item = document.createElement('div');
+            item.className = type === 'system' ? 'chat-message system' : 'chat-message';
+
             if (type === 'system') {
-                messages.innerHTML += `<div class="chat-message system">${message}</div>`;
+                item.textContent = message;
             } else {
-                const displayTime = time || new Date().toLocaleTimeString();
-                messages.innerHTML += `<div class="chat-message"><span class="msg-user">${user}</span><span class="msg-time">${displayTime}</span> ${message}</div>`;
+                const userElement = document.createElement('span');
+                userElement.className = 'msg-user';
+                userElement.textContent = user || 'مستخدم';
+
+                const timeElement = document.createElement('span');
+                timeElement.className = 'msg-time';
+                timeElement.textContent = formatChatTime(time);
+
+                item.append(userElement, timeElement, document.createTextNode(` ${message}`));
             }
+
+            messages.appendChild(item);
             messages.scrollTop = messages.scrollHeight;
         }
 
@@ -1769,17 +1736,6 @@
                 username: STATE.username,
             };
 
-            STATE.chatChannel.send({
-                type: 'broadcast',
-                event: 'bet',
-                payload: {
-                    userId: STATE.userId,
-                    bet: STATE.selectedBet,
-                    amount: amount,
-                    username: STATE.username
-                }
-            });
-
             betOptions.forEach(el => el.disabled = true);
             placeBetBtn.disabled = true;
             elResult.innerHTML = `✅ رهان ${WHEEL_ITEMS[STATE.selectedBet].emoji} ${WHEEL_ITEMS[STATE.selectedBet].name} بمبلغ ${amount} POL`;
@@ -1838,19 +1794,6 @@
                 }
             }
 
-            if (STATE.chatChannel) {
-                STATE.chatChannel.send({
-                    type: 'broadcast',
-                    event: 'game-result',
-                    payload: {
-                        winningIndex: resultIndex,
-                        poolPerItem: poolPerItem,
-                        winners: winnerPayouts,
-                        totalPool: totalPool,
-                    }
-                });
-            }
-
             applyGameResult(resultIndex, poolPerItem, winnerPayouts, totalPool);
 
             const segmentAngle = 360 / WHEEL_ITEMS.length;
@@ -1882,7 +1825,6 @@
                 updateUI();
                 updateGameUI();
                 updatePoolDisplay();
-                saveProfile();
             }, 5000);
         }
 
@@ -1906,20 +1848,7 @@
                         STATE.winsToday += 1;
                         totalWon += amount;
                     } else {
-                        supabaseClient
-                            .from('profiles')
-                            .select('balance')
-                            .eq('id', userId)
-                            .single()
-                            .then(({ data }) => {
-                                if (data) {
-                                    const newBalance = (data.balance || 0) + amount;
-                                    supabaseClient
-                                        .from('profiles')
-                                        .update({ balance: newBalance })
-                                        .eq('id', userId);
-                                }
-                            });
+                        // تبقى نتيجة اللاعبين الآخرين محلية؛ لا يتم تحديث أرصدة اللعبة في Supabase.
                     }
                 }
                 STATE.hostMarketingPool += totalPool * 0.3;
@@ -1936,7 +1865,6 @@
             updateUI();
             updateGameUI();
             updatePoolDisplay();
-            saveProfile();
         }
 
         // ============================================================
@@ -2043,7 +1971,6 @@
 
             updateHistory();
             updateUSDValues();
-            if (STATE.loggedIn) saveProfile();
         }
 
         function updateHistory() {
@@ -2062,27 +1989,6 @@
                     label = '🎁 توزيع'; }
                 return `<p class="${cls}"><strong>${label}</strong> ${h.detail}</p>`;
             }).join('');
-        }
-
-        async function saveProfile() {
-            if (!STATE.loggedIn) return;
-            try {
-                await supabaseClient
-                    .from('profiles')
-                    .update({
-                        balance: STATE.userBalance,
-                        bonus_balance: STATE.bonusBalance,
-                        withdrawable_balance: STATE.withdrawableBalance,
-                        wins: STATE.winsToday,
-                        losses: STATE.lossesToday,
-                        referral_earned: STATE.referralEarned,
-                        daily_presence_seconds: STATE.dailyPresenceSeconds,
-                        free_spins: STATE.freeSpins,
-                        referral_spins: STATE.referralSpins,
-                        last_seen_room: STATE.roomName || STATE.selectedRoomName,
-                    })
-                    .eq('id', STATE.userId);
-            } catch (e) { console.error(e); }
         }
 
         function addHistory(type, detail) {
@@ -2164,31 +2070,8 @@
         // 18. التوزيع الليلي
         // ============================================================
         async function distributeDaily() {
-            if (STATE.hostMarketingPool <= 0) return;
-            const { data: users, error } = await supabaseClient
-                .from('profiles')
-                .select('id, username, wallet_address, daily_presence_seconds')
-                .eq('is_banned', false);
-            if (error || !users) return;
-            let totalPresence = users.reduce((sum, u) => sum + (u.daily_presence_seconds || 0), 0);
-            if (totalPresence === 0) return;
-            const pool = STATE.hostMarketingPool;
-            for (const u of users) {
-                const ratio = (u.daily_presence_seconds || 0) / totalPresence;
-                const amount = pool * ratio;
-                if (amount < 0.01 || !u.wallet_address || !u.wallet_address.startsWith('0x')) continue;
-                try {
-                    await sendPOL(vaultWallet, u.wallet_address, amount);
-                    addHistory('dist', `تم إرسال ${amount.toFixed(2)} POL إلى ${u.username}`);
-                } catch (e) { console.error(e); }
-            }
-            STATE.hostMarketingPool = 0;
-            for (const u of users) {
-                await supabaseClient.from('profiles').update({ daily_presence_seconds: 0 }).eq('id', u.id);
-            }
-            if (STATE.loggedIn) STATE.dailyPresenceSeconds = 0;
-            updateUI();
-            alert(`🎁 تم توزيع ${pool.toFixed(2)} POL على الحاضرين.`);
+            // لا توجد توزيعات أو قراءات مالية من Supabase في نسخة المحادثات فقط.
+            return;
         }
 
         setInterval(() => {
