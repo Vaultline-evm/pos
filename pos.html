@@ -41,6 +41,7 @@
     }
     .btn-primary { background: linear-gradient(135deg, #ffcf67, #eaa333); color: #1d2430; }
     .btn-danger { background: #a33e4d; }
+    .btn-secondary { background: #3a5a7a; }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
     .tabs {
       display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem;
@@ -135,25 +136,26 @@
     .round-detail { border-top: 1px solid rgba(164,202,242,.16); margin-top: 1rem; padding-top: 1rem; color: #a9bed5; }
     .hidden { display: none !important; }
     .overlay {
-      position: fixed; inset: 0; background: rgba(2,10,20,.76); backdrop-filter: blur(7px);
-      display: grid; place-items: center; z-index: 100;
+      position: fixed; inset: 0; background: rgba(2,10,20,.96); backdrop-filter: blur(10px);
+      display: grid; place-items: center; z-index: 1000;
     }
     .overlay.hidden { display: none; }
     .auth-card {
       background: linear-gradient(145deg, #173656, #0d2038); border: 1px solid rgba(240,184,75,.3);
-      border-radius: 24px; padding: 1.5rem; max-width: 420px; width: 100%;
+      border-radius: 24px; padding: 1.8rem; max-width: 420px; width: 100%;
     }
-    .auth-card h2 { text-align: center; }
-    .auth-card p { color: #a9bed5; text-align: center; margin: 0.5rem 0 1rem; }
+    .auth-card h2 { text-align: center; font-size: 1.5rem; }
+    .auth-card p { color: #a9bed5; text-align: center; margin: 0.5rem 0 1.2rem; }
     .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin: 1rem 0; }
     .auth-tab {
       background: rgba(4,14,26,.36); border: 1px solid rgba(164,202,242,.16);
-      border-radius: 10px; padding: 0.6rem; color: #a9bed5; cursor: pointer;
+      border-radius: 10px; padding: 0.6rem; color: #a9bed5; cursor: pointer; font-weight: 700;
     }
     .auth-tab.active { border-color: rgba(240,184,75,.5); color: #ffe2a1; background: rgba(240,184,75,.10); }
     .auth-form { display: none; gap: 0.7rem; }
     .auth-form.active { display: grid; }
-    .auth-form input { width: 100%; }
+    .auth-form input { width: 100%; padding: 0.7rem; background: rgba(4,14,26,.6); border: 1px solid rgba(164,202,242,.16); border-radius: 11px; color: white; }
+    .auth-form input:focus { border-color: rgba(240,184,75,.68); outline: none; }
     .auth-help { color: #a9bed5; font-size: .76rem; }
     .toast-stack {
       position: fixed; bottom: 1rem; left: 1rem;
@@ -165,6 +167,7 @@
     }
     .toast.success { border-right-color: #32c47a; }
     .toast.error { border-right-color: #ef6461; }
+    .back-btn { margin-right: 0.5rem; }
     @media (max-width: 720px) {
       .game-layout { grid-template-columns: 1fr; }
       .rooms-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
@@ -173,10 +176,12 @@
   </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ===== التطبيق الرئيسي ===== -->
+<div class="app" id="app" style="display:none;">
   <header class="topbar">
     <div class="brand"><div class="brand-mark">◈</div><div><h1>غرف المحافظات السورية</h1><p>دردشة كتابية + عجلة متزامنة</p></div></div>
-    <div class="user-chip"><span class="user-dot"></span><span id="headerUsername">زائر</span><button id="loginBtn" class="btn" style="padding:.2rem .8rem;">تسجيل الدخول</button></div>
+    <div class="user-chip"><span class="user-dot"></span><span id="headerUsername">...</span><button id="logoutBtn" class="btn btn-danger" style="padding:.2rem .8rem;">تسجيل خروج</button></div>
   </header>
   <nav class="tabs">
     <button class="tab active" data-tab="rooms">الغرف</button>
@@ -187,12 +192,25 @@
   <main>
     <!-- الغرف -->
     <section class="pane active" id="pane-rooms">
-      <div class="section-head"><div><h2>اختر غرفتك</h2><p>ادخل غرفة للدردشة والمشاركة في الجولة.</p></div><span id="connectionStatus" class="status">جاري التحميل...</span></div>
+      <div class="section-head"><div><h2>اختر غرفتك</h2><p>ادخل غرفة للدردشة والمشاركة في الجولة.</p></div><span id="connectionStatus" class="status">متصل</span></div>
       <div class="notice">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت دمشق حسب نسبة التواجد.</div>
       <div class="rooms-grid" id="roomsGrid"></div>
       <div id="roomInterface" class="room-interface">
-        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><h3 id="currentRoomTitle">الغرفة</h3><span id="roomPresenceStatus" class="status">غير متصل</span></div><button id="leaveRoomBtn" class="btn btn-danger">مغادرة</button></div><div id="membersList" class="members"></div></div>
-        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>💬 الدردشة الكتابية</h3><span id="chatStatus" class="status">غير متصل</span></div><div id="chatLog" class="chat-log"><div class="chat-empty" style="color:#a9bed5;text-align:center;padding-top:2rem;">اختر غرفة لبدء المحادثة</div></div><form id="chatForm" class="chat-form"><input id="chatInput" type="text" maxlength="300" placeholder="اكتب رسالة..." disabled><button id="sendChatBtn" class="btn btn-primary" type="submit" disabled>إرسال</button></form></div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+            <div><h3 id="currentRoomTitle">الغرفة</h3><span id="roomPresenceStatus" class="status">غير متصل</span></div>
+            <div>
+              <button id="backToRoomsBtn" class="btn btn-secondary back-btn">⬅️ رجوع</button>
+              <button id="leaveRoomBtn" class="btn btn-danger">مغادرة</button>
+            </div>
+          </div>
+          <div id="membersList" class="members"></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><h3>💬 الدردشة الكتابية</h3><span id="chatStatus" class="status">غير متصل</span></div>
+          <div id="chatLog" class="chat-log"><div class="chat-empty" style="color:#a9bed5;text-align:center;padding-top:2rem;">اختر غرفة لبدء المحادثة</div></div>
+          <form id="chatForm" class="chat-form"><input id="chatInput" type="text" maxlength="300" placeholder="اكتب رسالة..." disabled><button id="sendChatBtn" class="btn btn-primary" type="submit" disabled>إرسال</button></form>
+        </div>
       </div>
     </section>
     <!-- العجلة -->
@@ -210,21 +228,41 @@
     <section class="pane" id="pane-wallet">
       <div class="section-head"><div><h2>محفظتك</h2><p>إدارة رصيد POL وسحب الأرباح.</p></div></div>
       <div class="card"><div style="color:#a9bed5;">💳 عنوان محفظتك (Polygon)</div><div style="background:#0a1825;padding:0.5rem;border-radius:12px;font-family:monospace;word-break:break-all;font-size:.8rem;border:1px solid rgba(164,202,242,.16);" id="walletAddressDisplay">0x...</div><div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><button class="btn" onclick="copyWalletAddress()">📋 نسخ</button><button class="btn btn-primary" onclick="showQR()">📱 QR</button></div><div id="qrContainer" style="display:none;margin-top:0.5rem;text-align:center;"><div id="qrcode"></div></div></div>
-      <div class="card"><div style="display:flex;justify-content:space-between;"><span style="color:#a9bed5;">💰 الرصيد المتاح</span><span style="color:#f1c40f;font-size:1.8rem;font-weight:bold;" id="walletBalanceDisplay">100.00</span></div><div style="color:#a9bed5;font-size:.8rem;" id="walletBalanceUSD">≈ $0.00</div><button class="btn btn-danger" onclick="toggleWithdrawForm()" style="margin-top:0.5rem;">➖ سحب</button><div id="withdrawFormContainer" style="display:none;margin-top:0.5rem;"><div style="display:flex;flex-direction:column;gap:0.5rem;"><div><label style="color:#a9bed5;font-size:.8rem;">🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" min="1" step="1" style="width:100%;margin-top:0.2rem;"></div><div><label style="color:#a9bed5;font-size:.8rem;">📤 عنوان الاستلام (Polygon)</label><input type="text" id="withdrawAddress" placeholder="0x..." style="width:100%;margin-top:0.2rem;"></div><button class="btn btn-primary" onclick="executeWithdraw()">✅ تأكيد السحب</button></div></div><p style="color:#a9bed5;font-size:.7rem;margin-top:0.3rem;">* يمكنك سحب الرصيد المتاح فقط.</p></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;"><span style="color:#a9bed5;">💰 الرصيد المتاح</span><span style="color:#f1c40f;font-size:1.8rem;font-weight:bold;" id="walletBalanceDisplay">0.00</span></div><div style="color:#a9bed5;font-size:.8rem;" id="walletBalanceUSD">≈ $0.00</div><button class="btn btn-danger" onclick="toggleWithdrawForm()" style="margin-top:0.5rem;">➖ سحب</button><div id="withdrawFormContainer" style="display:none;margin-top:0.5rem;"><div style="display:flex;flex-direction:column;gap:0.5rem;"><div><label style="color:#a9bed5;font-size:.8rem;">🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" min="1" step="1" style="width:100%;margin-top:0.2rem;"></div><div><label style="color:#a9bed5;font-size:.8rem;">📤 عنوان الاستلام (Polygon)</label><input type="text" id="withdrawAddress" placeholder="0x..." style="width:100%;margin-top:0.2rem;"></div><button class="btn btn-primary" onclick="executeWithdraw()">✅ تأكيد السحب</button></div></div><p style="color:#a9bed5;font-size:.7rem;margin-top:0.3rem;">* يمكنك سحب الرصيد المتاح فقط.</p></div>
     </section>
     <!-- الإعدادات -->
     <section class="pane" id="pane-settings">
       <div class="section-head"><div><h2>الإعدادات</h2><p>تحكم بحسابك ورابط الدعوات.</p></div></div>
-      <div class="card"><h3>👤 حسابي</h3><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">اسم المستخدم</span><strong id="profileUsername">—</strong></div><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">البريد الإلكتروني</span><strong id="profileEmail">—</strong></div><button id="logoutBtn" class="btn btn-danger" style="margin-top:0.5rem;">تسجيل الخروج</button></div>
+      <div class="card"><h3>👤 حسابي</h3><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">اسم المستخدم</span><strong id="profileUsername">—</strong></div><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">البريد الإلكتروني</span><strong id="profileEmail">—</strong></div></div>
       <div class="card"><h3>🔑 تغيير كلمة المرور</h3><form id="passwordForm" style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;"><input id="newPassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة (6 أحرف)" required><input id="confirmPassword" type="password" minlength="6" placeholder="تأكيد كلمة المرور" required><button class="btn btn-primary" type="submit">حفظ</button></form></div>
       <div class="card"><h3>🔗 رابط الإحالة</h3><p style="color:#a9bed5;font-size:.8rem;">تُضاف المكافأة بعد تحقق النظام من الاستحقاق.</p><div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><input id="referralLink" type="text" readonly style="flex:1;background:#0a1825;border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;"><button id="copyReferralBtn" class="btn">نسخ</button></div><div style="display:flex;justify-content:space-between;margin-top:0.5rem;"><span>💰 أرباح الإحالات:</span><span id="referralEarned">0.00 $</span></div></div>
     </section>
   </main>
 </div>
 
-<!-- شاشة تسجيل الدخول -->
-<div id="authOverlay" class="overlay hidden">
-  <div class="auth-card"><h2>مرحباً بك</h2><p>سجّل الدخول للانضمام إلى الغرف واستخدام نقاطك.</p><div class="auth-tabs"><button class="auth-tab active" data-auth="login">تسجيل الدخول</button><button class="auth-tab" data-auth="register">إنشاء حساب</button></div><form id="loginForm" class="auth-form active"><input id="loginEmail" type="email" placeholder="البريد الإلكتروني" required><input id="loginPassword" type="password" placeholder="كلمة المرور" required><button class="btn btn-primary" type="submit">تسجيل الدخول</button></form><form id="registerForm" class="auth-form"><input id="registerUsername" type="text" minlength="3" maxlength="30" placeholder="اسم المستخدم" required><input id="registerEmail" type="email" placeholder="البريد الإلكتروني" required><input id="registerPassword" type="password" minlength="6" placeholder="كلمة المرور (6 أحرف)" required><input id="registerReferral" type="text" maxlength="80" placeholder="رمز الإحالة (اختياري)"><p class="auth-help">* البونص الأساسي 10 نقاط بوليغون. * كل إحالة ناجحة تمنحك 1$ إضافية.</p><button class="btn btn-primary" type="submit">إنشاء الحساب</button></form></div>
+<!-- ===== شاشة تسجيل الدخول (تظهر دائماً ما لم يكن مسجل) ===== -->
+<div id="authOverlay" class="overlay">
+  <div class="auth-card">
+    <h2>🔐 مرحباً بك</h2>
+    <p>سجّل الدخول للانضمام إلى الغرف واستخدام نقاطك.</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-auth="login">تسجيل الدخول</button>
+      <button class="auth-tab" data-auth="register">إنشاء حساب</button>
+    </div>
+    <form id="loginForm" class="auth-form active">
+      <input id="loginEmail" type="email" placeholder="البريد الإلكتروني" required>
+      <input id="loginPassword" type="password" placeholder="كلمة المرور" required>
+      <button class="btn btn-primary" type="submit">تسجيل الدخول</button>
+    </form>
+    <form id="registerForm" class="auth-form">
+      <input id="registerUsername" type="text" minlength="3" maxlength="30" placeholder="اسم المستخدم" required>
+      <input id="registerEmail" type="email" placeholder="البريد الإلكتروني" required>
+      <input id="registerPassword" type="password" minlength="6" placeholder="كلمة المرور (6 أحرف)" required>
+      <input id="registerReferral" type="text" maxlength="80" placeholder="رمز الإحالة (اختياري)">
+      <p class="auth-help">* البونص الأساسي 10 نقاط بوليغون. * كل إحالة ناجحة تمنحك 1$ إضافية.</p>
+      <button class="btn btn-primary" type="submit">إنشاء الحساب</button>
+    </form>
+  </div>
 </div>
 
 <div id="toastStack" class="toast-stack"></div>
@@ -233,7 +271,7 @@
 'use strict';
 
 // ============================================================
-// 1. إعداد Supabase (باسم مختلف لتجنب التعارض)
+// 1. إعداد Supabase
 // ============================================================
 const supabaseClient = window.supabase.createClient(
   'https://ozzrdraeirhdrxztmhfr.supabase.co',
@@ -303,7 +341,7 @@ function setStatus(id, text, cls='') {
 function escapeRoom(r) { return ROOMS.includes(r) ? r : null; }
 
 // ============================================================
-// 4. التشفير والمحفظة (من كودنا الأصلي)
+// 4. التشفير والمحفظة
 // ============================================================
 function generateWallet() {
   const w = ethers.Wallet.createRandom();
@@ -350,7 +388,7 @@ function renderRooms() {
 function renderMembers() {
   const list = $('#membersList');
   list.replaceChildren();
-  const members = state.roomMembers.length ? state.roomMembers : (state.user ? [{ user_id: state.user.id, username: state.profile?.username || 'أنت' }] : []);
+  const members = state.roomMembers.length ? state.roomMembers : [];
   for (const m of members) {
     const chip = document.createElement('span');
     chip.className = 'member';
@@ -423,7 +461,7 @@ function renderGame() {
 
 function renderProfile() {
   const p = state.profile || {};
-  $('#headerUsername').textContent = p.username || 'زائر';
+  $('#headerUsername').textContent = p.username || '...';
   $('#walletAddressDisplay').textContent = state.walletAddress || '0x...';
   $('#walletBalanceDisplay').textContent = formatPoints(p.balance);
   $('#profileUsername').textContent = p.username || '—';
@@ -494,7 +532,7 @@ async function sendChat(e) {
 // 7. الغرفة (Presence + Broadcast)
 // ============================================================
 function configureChannel(room) {
-  const ch = supabaseClient.channel(`room:${room}`, { config: { presence: { key: state.user?.id || 'guest' }, broadcast: { self: false } } });
+  const ch = supabaseClient.channel(`room:${room}`, { config: { presence: { key: state.user.id }, broadcast: { self: false } } });
   ch.on('presence', { event: 'sync' }, () => {
     state.roomMembers = Object.values(ch.presenceState()).flat();
     renderMembers();
@@ -527,12 +565,6 @@ async function joinRoom(room) {
   $('#sendChatBtn').disabled = true;
   renderRooms();
   renderGame();
-
-  if (!state.user || !state.profile) {
-    setStatus('chatStatus', 'سجّل الدخول للدردشة');
-    showToast(`غرفة ${valid} للزوار (دردشة فقط).`, 'info');
-    return;
-  }
 
   const ch = configureChannel(valid);
   state.roomChannel = ch;
@@ -599,7 +631,7 @@ function startPresenceTicker() {
 function stopPresenceTicker() { if (state.presenceTimer) clearInterval(state.presenceTimer); state.presenceTimer = null; }
 
 // ============================================================
-// 9. مزامنة العجلة (RPC + Polling)
+// 9. مزامنة العجلة
 // ============================================================
 async function refreshGame() {
   if (!state.roomName || !state.user) return;
@@ -741,8 +773,8 @@ async function loadProfile() {
     }
     state.loggedIn = true;
     $('#authOverlay').classList.add('hidden');
+    $('#app').style.display = 'block';
     renderProfile();
-    setStatus('connectionStatus', 'متصل', 'online');
     if (state.pendingRoom) { const r = state.pendingRoom; state.pendingRoom = null; setTimeout(() => joinRoom(r), 0); }
   } catch (err) { console.error(err); showToast('تعذر تحميل الحساب: ' + err.message, 'error'); }
   state.loadingProfile = false;
@@ -752,10 +784,10 @@ function resetUI() {
   state.user = null; state.profile = null; state.loggedIn = false;
   state.selectedBet = null; state.gameState = null;
   leaveRoom(true);
+  $('#app').style.display = 'none';
   $('#authOverlay').classList.remove('hidden');
   renderProfile();
   renderRooms();
-  setStatus('connectionStatus', 'غير مسجّل');
 }
 
 async function handleLogin(e) {
@@ -814,9 +846,13 @@ function initEvents() {
   $$('.auth-tab').forEach(t => t.addEventListener('click', () => activateAuthTab(t.dataset.auth)));
   $('#loginForm').addEventListener('submit', handleLogin);
   $('#registerForm').addEventListener('submit', handleRegister);
-  $('#loginBtn').addEventListener('click', () => { activateAuthTab('login'); $('#authOverlay').classList.remove('hidden'); $('#loginEmail').focus(); });
   $('#logoutBtn').addEventListener('click', logout);
   $('#leaveRoomBtn').addEventListener('click', () => leaveRoom());
+  $('#backToRoomsBtn').addEventListener('click', () => {
+    if (state.roomName) leaveRoom(true);
+    $('#roomInterface').classList.remove('visible');
+    renderRooms();
+  });
   $('#chatForm').addEventListener('submit', sendChat);
   $('#choices').addEventListener('click', (e) => {
     const choice = e.target.closest('[data-bet]');
@@ -853,12 +889,15 @@ async function init() {
   initEvents();
   fetchPrice();
 
+  // التحقق من الجلسة
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session?.user) {
     state.user = session.user;
     await loadProfile();
   } else {
-    setStatus('connectionStatus', 'غير مسجّل');
+    // لا يوجد مستخدم: إخفاء التطبيق وإظهار شاشة التسجيل
+    $('#app').style.display = 'none';
+    $('#authOverlay').classList.remove('hidden');
   }
 
   supabaseClient.auth.onAuthStateChange((event, session) => {
