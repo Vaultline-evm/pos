@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>غرف المحافظات السورية</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -15,20 +17,14 @@
     }
     .app { max-width: 1120px; margin: 0 auto; padding: 0 1rem; }
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 0;
-      border-bottom: 1px solid rgba(164,202,242,.16);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 0; border-bottom: 1px solid rgba(164,202,242,.16);
     }
     .brand { display: flex; align-items: center; gap: 0.8rem; }
     .brand-mark {
       background: linear-gradient(145deg, #ffd36f, #e9a428);
-      border-radius: 14px;
-      width: 2.65rem; height: 2.65rem;
-      display: grid; place-items: center;
-      font-size: 1.4rem;
-      color: #15223a;
+      border-radius: 14px; width: 2.65rem; height: 2.65rem;
+      display: grid; place-items: center; font-size: 1.4rem; color: #15223a;
     }
     .brand h1 { font-size: 1.2rem; }
     .brand p { color: #a9bed5; font-size: .8rem; }
@@ -36,38 +32,23 @@
       display: flex; align-items: center; gap: 0.6rem;
       padding: 0.4rem 0.8rem;
       border: 1px solid rgba(164,202,242,.16);
-      border-radius: 999px;
-      color: #a9bed5;
-      font-size: .85rem;
+      border-radius: 999px; color: #a9bed5; font-size: .85rem;
     }
     .user-dot { width: .55rem; height: .55rem; border-radius: 50%; background: #32c47a; }
     .btn {
-      border: none; border-radius: 11px;
-      padding: 0.5rem 1rem;
-      font-weight: 700;
-      background: #294869;
-      color: white;
-      cursor: pointer;
+      border: none; border-radius: 11px; padding: 0.5rem 1rem;
+      font-weight: 700; background: #294869; color: white; cursor: pointer;
     }
     .btn-primary { background: linear-gradient(135deg, #ffcf67, #eaa333); color: #1d2430; }
     .btn-danger { background: #a33e4d; }
     .btn:disabled { opacity: .5; cursor: not-allowed; }
     .tabs {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.35rem;
-      padding: 0.7rem 0;
-      border-bottom: 1px solid rgba(164,202,242,.16);
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem;
+      padding: 0.7rem 0; border-bottom: 1px solid rgba(164,202,242,.16);
     }
     .tab {
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 12px;
-      padding: 0.7rem 0.5rem;
-      color: #a9bed5;
-      font-weight: 700;
-      cursor: pointer;
-      transition: .18s;
+      background: transparent; border: 1px solid transparent; border-radius: 12px;
+      padding: 0.7rem 0.5rem; color: #a9bed5; font-weight: 700; cursor: pointer; transition: .18s;
     }
     .tab:hover, .tab.active { background: rgba(240,184,75,.12); border-color: rgba(240,184,75,.26); color: #ffe1a0; }
     main { padding: 1.5rem 0; }
@@ -75,10 +56,7 @@
     .pane.active { display: block; }
     .card {
       background: linear-gradient(135deg, rgba(24,51,85,.72), rgba(12,31,54,.86));
-      border: 1px solid rgba(164,202,242,.16);
-      border-radius: 20px;
-      padding: 1.2rem;
-      margin-bottom: 1rem;
+      border: 1px solid rgba(164,202,242,.16); border-radius: 20px; padding: 1.2rem; margin-bottom: 1rem;
     }
     .section-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem; }
     .section-head h2 { font-size: 1.25rem; }
@@ -86,26 +64,15 @@
     .status { color: #a9bed5; font-size: .82rem; }
     .status.online { color: #32c47a; }
     .notice {
-      background: rgba(96,165,250,.10);
-      border: 1px solid rgba(96,165,250,.26);
-      border-radius: 14px;
-      padding: 0.8rem;
-      color: #cde3ff;
-      margin-bottom: 1rem;
+      background: rgba(96,165,250,.10); border: 1px solid rgba(96,165,250,.26);
+      border-radius: 14px; padding: 0.8rem; color: #cde3ff; margin-bottom: 1rem;
     }
     .rooms-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 1rem;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem;
     }
     .room {
-      background: rgba(7,20,36,.44);
-      border: 1px solid rgba(164,202,242,.16);
-      border-radius: 16px;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
-      transition: .18s;
+      background: rgba(7,20,36,.44); border: 1px solid rgba(164,202,242,.16);
+      border-radius: 16px; padding: 1rem; text-align: center; cursor: pointer; transition: .18s;
     }
     .room:hover, .room.active { border-color: rgba(240,184,75,.58); background: rgba(240,184,75,.09); }
     .room-name { font-weight: 700; }
@@ -114,33 +81,19 @@
     .room-interface.visible { display: block; }
     .members { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
     .member {
-      border: 1px solid rgba(164,202,242,.16);
-      border-radius: 999px;
-      padding: 0.3rem 0.7rem;
-      color: #a9bed5;
-      font-size: .8rem;
+      border: 1px solid rgba(164,202,242,.16); border-radius: 999px;
+      padding: 0.3rem 0.7rem; color: #a9bed5; font-size: .8rem;
     }
     .chat-log {
-      height: 350px;
-      overflow: auto;
-      background: rgba(0,0,0,.2);
-      border: 1px solid rgba(164,202,242,.16);
-      border-radius: 14px;
-      padding: 0.5rem;
+      height: 350px; overflow: auto; background: rgba(0,0,0,.2);
+      border: 1px solid rgba(164,202,242,.16); border-radius: 14px; padding: 0.5rem;
     }
     .message { padding: 0.5rem 0; border-bottom: 1px solid rgba(164,202,242,.09); }
     .message-name { color: #ffd984; font-weight: 700; }
     .message-time { color: #7892b0; font-size: .72rem; margin-right: 0.5rem; }
     .message-text { color: #e8f0fa; }
     .chat-form { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
-    .chat-form input {
-      flex: 1;
-      background: rgba(4,14,26,.6);
-      border: 1px solid rgba(164,202,242,.16);
-      border-radius: 11px;
-      padding: 0.7rem;
-      color: white;
-    }
+    .chat-form input { flex: 1; background: rgba(4,14,26,.6); border: 1px solid rgba(164,202,242,.16); border-radius: 11px; padding: 0.7rem; color: white; }
     .chat-form input:focus { border-color: rgba(240,184,75,.68); outline: none; }
     .game-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin-bottom: 1rem; }
@@ -148,55 +101,29 @@
     .stat-label { color: #a9bed5; font-size: .75rem; }
     .stat-value { color: #ffe3a0; font-size: 1.25rem; font-weight: 800; }
     .wheel-box {
-      position: relative;
-      width: min(78vw, 310px);
-      aspect-ratio: 1;
-      margin: 0 auto;
+      position: relative; width: min(78vw, 310px); aspect-ratio: 1; margin: 0 auto;
     }
     .wheel-pointer {
-      position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-right: 17px solid transparent;
-      border-left: 17px solid transparent;
-      border-top: 34px solid #f9d17b;
-      z-index: 3;
-      filter: drop-shadow(0 4px 5px rgba(0,0,0,.38));
+      position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+      border-right: 17px solid transparent; border-left: 17px solid transparent;
+      border-top: 34px solid #f9d17b; z-index: 3; filter: drop-shadow(0 4px 5px rgba(0,0,0,.38));
     }
     .wheel {
-      width: 100%; height: 100%;
-      border: 7px solid #f0b84b;
-      border-radius: 50%;
+      width: 100%; height: 100%; border: 7px solid #f0b84b; border-radius: 50%;
       background: conic-gradient(#e96a62 0 16.666%, #efaa3d 16.666% 33.333%, #4fc18f 33.333% 50%, #5e9fd5 50% 66.666%, #9c75c8 66.666% 83.333%, #48b3b5 83.333% 100%);
       transition: transform 3.6s cubic-bezier(.15,.7,.14,1);
     }
     .wheel-center {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 26%; aspect-ratio: 1;
-      border-radius: 50%;
-      background: #10233e;
-      border: 4px solid #f8d07c;
-      display: grid; place-items: center;
-      font-size: 1.4rem;
-      z-index: 2;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 26%; aspect-ratio: 1; border-radius: 50%; background: #10233e;
+      border: 4px solid #f8d07c; display: grid; place-items: center; font-size: 1.4rem; z-index: 2;
     }
     .choices {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
-      margin: 1rem 0;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 1rem 0;
     }
     .choice {
-      background: rgba(6,19,34,.46);
-      border: 1px solid rgba(164,202,242,.16);
-      border-radius: 13px;
-      padding: 0.7rem 0.35rem;
-      text-align: center;
-      color: white;
-      cursor: pointer;
+      background: rgba(6,19,34,.46); border: 1px solid rgba(164,202,242,.16);
+      border-radius: 13px; padding: 0.7rem 0.35rem; text-align: center; color: white; cursor: pointer;
     }
     .choice:hover:not(:disabled), .choice.selected { border-color: rgba(240,184,75,.72); background: rgba(240,184,75,.12); }
     .choice .emoji { font-size: 1.3rem; display: block; }
@@ -208,31 +135,20 @@
     .round-detail { border-top: 1px solid rgba(164,202,242,.16); margin-top: 1rem; padding-top: 1rem; color: #a9bed5; }
     .hidden { display: none !important; }
     .overlay {
-      position: fixed; inset: 0;
-      background: rgba(2,10,20,.76);
-      backdrop-filter: blur(7px);
-      display: grid; place-items: center;
-      z-index: 100;
+      position: fixed; inset: 0; background: rgba(2,10,20,.76); backdrop-filter: blur(7px);
+      display: grid; place-items: center; z-index: 100;
     }
     .overlay.hidden { display: none; }
     .auth-card {
-      background: linear-gradient(145deg, #173656, #0d2038);
-      border: 1px solid rgba(240,184,75,.3);
-      border-radius: 24px;
-      padding: 1.5rem;
-      max-width: 420px;
-      width: 100%;
+      background: linear-gradient(145deg, #173656, #0d2038); border: 1px solid rgba(240,184,75,.3);
+      border-radius: 24px; padding: 1.5rem; max-width: 420px; width: 100%;
     }
     .auth-card h2 { text-align: center; }
     .auth-card p { color: #a9bed5; text-align: center; margin: 0.5rem 0 1rem; }
     .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; margin: 1rem 0; }
     .auth-tab {
-      background: rgba(4,14,26,.36);
-      border: 1px solid rgba(164,202,242,.16);
-      border-radius: 10px;
-      padding: 0.6rem;
-      color: #a9bed5;
-      cursor: pointer;
+      background: rgba(4,14,26,.36); border: 1px solid rgba(164,202,242,.16);
+      border-radius: 10px; padding: 0.6rem; color: #a9bed5; cursor: pointer;
     }
     .auth-tab.active { border-color: rgba(240,184,75,.5); color: #ffe2a1; background: rgba(240,184,75,.10); }
     .auth-form { display: none; gap: 0.7rem; }
@@ -241,21 +157,14 @@
     .auth-help { color: #a9bed5; font-size: .76rem; }
     .toast-stack {
       position: fixed; bottom: 1rem; left: 1rem;
-      display: grid; gap: 0.5rem;
-      width: min(360px, calc(100% - 2rem));
-      z-index: 120;
+      display: grid; gap: 0.5rem; width: min(360px, calc(100% - 2rem)); z-index: 120;
     }
     .toast {
-      background: #10233e;
-      border: 1px solid rgba(164,202,242,.16);
-      border-right: 4px solid #60a5fa;
-      border-radius: 12px;
-      padding: 0.7rem 0.8rem;
-      color: #eaf3ff;
+      background: #10233e; border: 1px solid rgba(164,202,242,.16);
+      border-right: 4px solid #60a5fa; border-radius: 12px; padding: 0.7rem 0.8rem; color: #eaf3ff;
     }
     .toast.success { border-right-color: #32c47a; }
     .toast.error { border-right-color: #ef6461; }
-
     @media (max-width: 720px) {
       .game-layout { grid-template-columns: 1fr; }
       .rooms-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
@@ -266,184 +175,70 @@
 <body>
 <div class="app">
   <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">◈</div>
-      <div>
-        <h1>غرف المحافظات السورية</h1>
-        <p>دردشة كتابية + عجلة متزامنة</p>
-      </div>
-    </div>
-    <div class="user-chip">
-      <span class="user-dot"></span>
-      <span id="headerUsername">زائر</span>
-      <button id="loginBtn" class="btn" style="padding: .2rem .8rem;">تسجيل الدخول</button>
-    </div>
+    <div class="brand"><div class="brand-mark">◈</div><div><h1>غرف المحافظات السورية</h1><p>دردشة كتابية + عجلة متزامنة</p></div></div>
+    <div class="user-chip"><span class="user-dot"></span><span id="headerUsername">زائر</span><button id="loginBtn" class="btn" style="padding:.2rem .8rem;">تسجيل الدخول</button></div>
   </header>
-
   <nav class="tabs">
     <button class="tab active" data-tab="rooms">الغرف</button>
     <button class="tab" data-tab="game">العجلة</button>
     <button class="tab" data-tab="wallet">المحفظة</button>
     <button class="tab" data-tab="settings">الإعدادات</button>
   </nav>
-
   <main>
     <!-- الغرف -->
     <section class="pane active" id="pane-rooms">
-      <div class="section-head">
-        <div><h2>اختر غرفتك</h2><p>ادخل غرفة للدردشة والمشاركة في الجولة.</p></div>
-        <span id="connectionStatus" class="status">جاري التحميل...</span>
-      </div>
+      <div class="section-head"><div><h2>اختر غرفتك</h2><p>ادخل غرفة للدردشة والمشاركة في الجولة.</p></div><span id="connectionStatus" class="status">جاري التحميل...</span></div>
       <div class="notice">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت دمشق حسب نسبة التواجد.</div>
       <div class="rooms-grid" id="roomsGrid"></div>
       <div id="roomInterface" class="room-interface">
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div><h3 id="currentRoomTitle">الغرفة</h3><span id="roomPresenceStatus" class="status">غير متصل</span></div>
-            <button id="leaveRoomBtn" class="btn btn-danger">مغادرة</button>
-          </div>
-          <div id="membersList" class="members"></div>
-        </div>
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3>💬 الدردشة الكتابية</h3>
-            <span id="chatStatus" class="status">غير متصل</span>
-          </div>
-          <div id="chatLog" class="chat-log"><div class="chat-empty" style="color:#a9bed5; text-align:center; padding-top:2rem;">اختر غرفة لبدء المحادثة</div></div>
-          <form id="chatForm" class="chat-form">
-            <input id="chatInput" type="text" maxlength="300" placeholder="اكتب رسالة..." disabled>
-            <button id="sendChatBtn" class="btn btn-primary" type="submit" disabled>إرسال</button>
-          </form>
-        </div>
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><div><h3 id="currentRoomTitle">الغرفة</h3><span id="roomPresenceStatus" class="status">غير متصل</span></div><button id="leaveRoomBtn" class="btn btn-danger">مغادرة</button></div><div id="membersList" class="members"></div></div>
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;"><h3>💬 الدردشة الكتابية</h3><span id="chatStatus" class="status">غير متصل</span></div><div id="chatLog" class="chat-log"><div class="chat-empty" style="color:#a9bed5;text-align:center;padding-top:2rem;">اختر غرفة لبدء المحادثة</div></div><form id="chatForm" class="chat-form"><input id="chatInput" type="text" maxlength="300" placeholder="اكتب رسالة..." disabled><button id="sendChatBtn" class="btn btn-primary" type="submit" disabled>إرسال</button></form></div>
       </div>
     </section>
-
     <!-- العجلة -->
     <section class="pane" id="pane-game">
-      <div class="section-head">
-        <div><h2>لعبة العجلة</h2><p>رهان واحد لكل جولة، أقل اختيار مجموعاً يفوز.</p></div>
-        <span id="gameRoomLabel" class="status warning">اختر غرفة أولاً</span>
-      </div>
+      <div class="section-head"><div><h2>لعبة العجلة</h2><p>رهان واحد لكل جولة، أقل اختيار مجموعاً يفوز.</p></div><span id="gameRoomLabel" class="status warning">اختر غرفة أولاً</span></div>
       <div id="gameNoRoom" class="notice" style="border-color:rgba(240,184,75,.3);background:rgba(240,184,75,.09);color:#ffe5ad;">للمشاركة، ادخل إحدى الغرف من تبويب <strong>الغرف</strong> أولاً.</div>
       <div id="gameContent" class="hidden">
         <div class="game-layout">
-          <div class="card">
-            <div class="stats">
-              <div class="stat"><div class="stat-label">رصيدك</div><div class="stat-value" id="gameBalance">0</div></div>
-              <div class="stat"><div class="stat-label">فوز اليوم</div><div class="stat-value" id="winsToday">0</div></div>
-              <div class="stat"><div class="stat-label">خسارة اليوم</div><div class="stat-value" id="lossesToday">0</div></div>
-            </div>
-            <div class="wheel-box">
-              <div class="wheel-pointer"></div>
-              <div id="wheel" class="wheel"></div>
-              <div id="wheelCenter" class="wheel-center">◈</div>
-            </div>
-            <div id="gameTimer" class="timer">—</div>
-            <div id="gameStatus" class="game-status">جاري المزامنة...</div>
-          </div>
-          <div class="card">
-            <div style="display:flex; justify-content:space-between;"><h3>اختر الرهان</h3><span id="poolTotal" class="status">0 نقطة</span></div>
-            <div id="choices" class="choices"></div>
-            <div class="bet-row">
-              <input id="betAmount" type="number" min="1" max="100000" step="1" value="1">
-              <button id="placeBetBtn" class="btn btn-primary">تأكيد</button>
-            </div>
-            <div id="roundDetail" class="round-detail">اختر رمزاً ثم أدخل عدد النقاط.</div>
-          </div>
+          <div class="card"><div class="stats"><div class="stat"><div class="stat-label">رصيدك</div><div class="stat-value" id="gameBalance">0</div></div><div class="stat"><div class="stat-label">فوز اليوم</div><div class="stat-value" id="winsToday">0</div></div><div class="stat"><div class="stat-label">خسارة اليوم</div><div class="stat-value" id="lossesToday">0</div></div></div><div class="wheel-box"><div class="wheel-pointer"></div><div id="wheel" class="wheel"></div><div id="wheelCenter" class="wheel-center">◈</div></div><div id="gameTimer" class="timer">—</div><div id="gameStatus" class="game-status">جاري المزامنة...</div></div>
+          <div class="card"><div style="display:flex;justify-content:space-between;"><h3>اختر الرهان</h3><span id="poolTotal" class="status">0 نقطة</span></div><div id="choices" class="choices"></div><div class="bet-row"><input id="betAmount" type="number" min="1" max="100000" step="1" value="1"><button id="placeBetBtn" class="btn btn-primary">تأكيد</button></div><div id="roundDetail" class="round-detail">اختر رمزاً ثم أدخل عدد النقاط.</div></div>
         </div>
       </div>
     </section>
-
     <!-- المحفظة -->
     <section class="pane" id="pane-wallet">
       <div class="section-head"><div><h2>محفظتك</h2><p>إدارة رصيد POL وسحب الأرباح.</p></div></div>
-      <div class="card">
-        <div style="color:#a9bed5;">💳 عنوان محفظتك (Polygon)</div>
-        <div style="background:#0a1825;padding:0.5rem;border-radius:12px;font-family:monospace;word-break:break-all;font-size:.8rem;border:1px solid rgba(164,202,242,.16);" id="walletAddressDisplay">0x...</div>
-        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
-          <button class="btn" onclick="copyWalletAddress()">📋 نسخ</button>
-          <button class="btn btn-primary" onclick="showQR()">📱 QR</button>
-        </div>
-        <div id="qrContainer" style="display:none;margin-top:0.5rem;text-align:center;"><div id="qrcode"></div></div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;"><span style="color:#a9bed5;">💰 الرصيد المتاح</span><span style="color:#f1c40f;font-size:1.8rem;font-weight:bold;" id="walletBalanceDisplay">100.00</span></div>
-        <div style="color:#a9bed5;font-size:.8rem;" id="walletBalanceUSD">≈ $0.00</div>
-        <button class="btn btn-danger" onclick="toggleWithdrawForm()" style="margin-top:0.5rem;">➖ سحب</button>
-        <div id="withdrawFormContainer" style="display:none;margin-top:0.5rem;">
-          <div style="display:flex;flex-direction:column;gap:0.5rem;">
-            <div><label style="color:#a9bed5;font-size:.8rem;">🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" min="1" step="1" style="width:100%;margin-top:0.2rem;"></div>
-            <div><label style="color:#a9bed5;font-size:.8rem;">📤 عنوان الاستلام (Polygon)</label><input type="text" id="withdrawAddress" placeholder="0x..." style="width:100%;margin-top:0.2rem;"></div>
-            <button class="btn btn-primary" onclick="executeWithdraw()">✅ تأكيد السحب</button>
-          </div>
-        </div>
-        <p style="color:#a9bed5;font-size:.7rem;margin-top:0.3rem;">* يمكنك سحب الرصيد المتاح فقط.</p>
-      </div>
+      <div class="card"><div style="color:#a9bed5;">💳 عنوان محفظتك (Polygon)</div><div style="background:#0a1825;padding:0.5rem;border-radius:12px;font-family:monospace;word-break:break-all;font-size:.8rem;border:1px solid rgba(164,202,242,.16);" id="walletAddressDisplay">0x...</div><div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><button class="btn" onclick="copyWalletAddress()">📋 نسخ</button><button class="btn btn-primary" onclick="showQR()">📱 QR</button></div><div id="qrContainer" style="display:none;margin-top:0.5rem;text-align:center;"><div id="qrcode"></div></div></div>
+      <div class="card"><div style="display:flex;justify-content:space-between;"><span style="color:#a9bed5;">💰 الرصيد المتاح</span><span style="color:#f1c40f;font-size:1.8rem;font-weight:bold;" id="walletBalanceDisplay">100.00</span></div><div style="color:#a9bed5;font-size:.8rem;" id="walletBalanceUSD">≈ $0.00</div><button class="btn btn-danger" onclick="toggleWithdrawForm()" style="margin-top:0.5rem;">➖ سحب</button><div id="withdrawFormContainer" style="display:none;margin-top:0.5rem;"><div style="display:flex;flex-direction:column;gap:0.5rem;"><div><label style="color:#a9bed5;font-size:.8rem;">🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" min="1" step="1" style="width:100%;margin-top:0.2rem;"></div><div><label style="color:#a9bed5;font-size:.8rem;">📤 عنوان الاستلام (Polygon)</label><input type="text" id="withdrawAddress" placeholder="0x..." style="width:100%;margin-top:0.2rem;"></div><button class="btn btn-primary" onclick="executeWithdraw()">✅ تأكيد السحب</button></div></div><p style="color:#a9bed5;font-size:.7rem;margin-top:0.3rem;">* يمكنك سحب الرصيد المتاح فقط.</p></div>
     </section>
-
     <!-- الإعدادات -->
     <section class="pane" id="pane-settings">
       <div class="section-head"><div><h2>الإعدادات</h2><p>تحكم بحسابك ورابط الدعوات.</p></div></div>
-      <div class="card"><h3>👤 حسابي</h3>
-        <div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">اسم المستخدم</span><strong id="profileUsername">—</strong></div>
-        <div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">البريد الإلكتروني</span><strong id="profileEmail">—</strong></div>
-        <button id="logoutBtn" class="btn btn-danger" style="margin-top:0.5rem;">تسجيل الخروج</button>
-      </div>
-      <div class="card"><h3>🔑 تغيير كلمة المرور</h3>
-        <form id="passwordForm" style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
-          <input id="newPassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة (6 أحرف)" required>
-          <input id="confirmPassword" type="password" minlength="6" placeholder="تأكيد كلمة المرور" required>
-          <button class="btn btn-primary" type="submit">حفظ</button>
-        </form>
-      </div>
-      <div class="card"><h3>🔗 رابط الإحالة</h3>
-        <p style="color:#a9bed5;font-size:.8rem;">تُضاف المكافأة بعد تحقق النظام من الاستحقاق.</p>
-        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
-          <input id="referralLink" type="text" readonly style="flex:1;background:#0a1825;border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;">
-          <button id="copyReferralBtn" class="btn">نسخ</button>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:0.5rem;"><span>💰 أرباح الإحالات:</span><span id="referralEarned">0.00 $</span></div>
-      </div>
+      <div class="card"><h3>👤 حسابي</h3><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">اسم المستخدم</span><strong id="profileUsername">—</strong></div><div style="display:flex;justify-content:space-between;padding:0.3rem 0;border-bottom:1px solid rgba(164,202,242,.1);"><span style="color:#a9bed5;">البريد الإلكتروني</span><strong id="profileEmail">—</strong></div><button id="logoutBtn" class="btn btn-danger" style="margin-top:0.5rem;">تسجيل الخروج</button></div>
+      <div class="card"><h3>🔑 تغيير كلمة المرور</h3><form id="passwordForm" style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;"><input id="newPassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة (6 أحرف)" required><input id="confirmPassword" type="password" minlength="6" placeholder="تأكيد كلمة المرور" required><button class="btn btn-primary" type="submit">حفظ</button></form></div>
+      <div class="card"><h3>🔗 رابط الإحالة</h3><p style="color:#a9bed5;font-size:.8rem;">تُضاف المكافأة بعد تحقق النظام من الاستحقاق.</p><div style="display:flex;gap:0.5rem;margin-top:0.5rem;"><input id="referralLink" type="text" readonly style="flex:1;background:#0a1825;border:1px solid rgba(164,202,242,.16);border-radius:11px;padding:0.5rem;color:white;"><button id="copyReferralBtn" class="btn">نسخ</button></div><div style="display:flex;justify-content:space-between;margin-top:0.5rem;"><span>💰 أرباح الإحالات:</span><span id="referralEarned">0.00 $</span></div></div>
     </section>
   </main>
 </div>
 
 <!-- شاشة تسجيل الدخول -->
 <div id="authOverlay" class="overlay hidden">
-  <div class="auth-card">
-    <h2>مرحباً بك</h2>
-    <p>سجّل الدخول للانضمام إلى الغرف واستخدام نقاطك.</p>
-    <div class="auth-tabs">
-      <button class="auth-tab active" data-auth="login">تسجيل الدخول</button>
-      <button class="auth-tab" data-auth="register">إنشاء حساب</button>
-    </div>
-    <form id="loginForm" class="auth-form active">
-      <input id="loginEmail" type="email" placeholder="البريد الإلكتروني" required>
-      <input id="loginPassword" type="password" placeholder="كلمة المرور" required>
-      <button class="btn btn-primary" type="submit">تسجيل الدخول</button>
-    </form>
-    <form id="registerForm" class="auth-form">
-      <input id="registerUsername" type="text" minlength="3" maxlength="30" placeholder="اسم المستخدم" required>
-      <input id="registerEmail" type="email" placeholder="البريد الإلكتروني" required>
-      <input id="registerPassword" type="password" minlength="6" placeholder="كلمة المرور (6 أحرف)" required>
-      <input id="registerReferral" type="text" maxlength="80" placeholder="رمز الإحالة (اختياري)">
-      <p class="auth-help">* البونص الأساسي 10 نقاط بوليغون. * كل إحالة ناجحة تمنحك 1$ إضافية.</p>
-      <button class="btn btn-primary" type="submit">إنشاء الحساب</button>
-    </form>
-  </div>
+  <div class="auth-card"><h2>مرحباً بك</h2><p>سجّل الدخول للانضمام إلى الغرف واستخدام نقاطك.</p><div class="auth-tabs"><button class="auth-tab active" data-auth="login">تسجيل الدخول</button><button class="auth-tab" data-auth="register">إنشاء حساب</button></div><form id="loginForm" class="auth-form active"><input id="loginEmail" type="email" placeholder="البريد الإلكتروني" required><input id="loginPassword" type="password" placeholder="كلمة المرور" required><button class="btn btn-primary" type="submit">تسجيل الدخول</button></form><form id="registerForm" class="auth-form"><input id="registerUsername" type="text" minlength="3" maxlength="30" placeholder="اسم المستخدم" required><input id="registerEmail" type="email" placeholder="البريد الإلكتروني" required><input id="registerPassword" type="password" minlength="6" placeholder="كلمة المرور (6 أحرف)" required><input id="registerReferral" type="text" maxlength="80" placeholder="رمز الإحالة (اختياري)"><p class="auth-help">* البونص الأساسي 10 نقاط بوليغون. * كل إحالة ناجحة تمنحك 1$ إضافية.</p><button class="btn btn-primary" type="submit">إنشاء الحساب</button></form></div>
 </div>
 
 <div id="toastStack" class="toast-stack"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
 'use strict';
 
-// ====================== الإعدادات ======================
-const SUPABASE_URL = 'https://ozzrdraeirhdrxztmhfr.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ============================================================
+// 1. إعداد Supabase (باسم مختلف لتجنب التعارض)
+// ============================================================
+const supabaseClient = window.supabase.createClient(
+  'https://ozzrdraeirhdrxztmhfr.supabase.co',
+  'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np'
+);
 
 const ROOMS = ['دمشق','حلب','حمص','حماة','اللاذقية','طرطوس','دير الزور','الحسكة','الرقة','إدلب','درعا','السويداء','القنيطرة','ريف دمشق'];
 const WHEEL_ITEMS = [
@@ -455,7 +250,9 @@ const WHEEL_ITEMS = [
   { name: 'بقرة', emoji: '🐄' }
 ];
 
-// ====================== الحالة ======================
+// ============================================================
+// 2. الحالة العامة
+// ============================================================
 const state = {
   user: null,
   profile: null,
@@ -474,7 +271,9 @@ const state = {
   loggedIn: false
 };
 
-// ====================== الدوال المساعدة ======================
+// ============================================================
+// 3. دوال مساعدة
+// ============================================================
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
@@ -503,7 +302,9 @@ function setStatus(id, text, cls='') {
 
 function escapeRoom(r) { return ROOMS.includes(r) ? r : null; }
 
-// ====================== التشفير والمحفظة ======================
+// ============================================================
+// 4. التشفير والمحفظة (من كودنا الأصلي)
+// ============================================================
 function generateWallet() {
   const w = ethers.Wallet.createRandom();
   return { address: w.address, privateKey: w.privateKey };
@@ -512,6 +313,7 @@ function encrypt(text, pw) { return btoa(pw + '|' + text); }
 function decrypt(enc, pw) {
   try { const d = atob(enc); const parts = d.split('|'); if (parts[0] === pw) return parts.slice(1).join('|'); return null; } catch { return null; }
 }
+
 let polPrice = 0.5;
 async function fetchPrice() {
   try {
@@ -528,7 +330,9 @@ function updateUSD() {
   if (el) el.textContent = `≈ $${usd.toFixed(2)}`;
 }
 
-// ====================== عرض الغرف ======================
+// ============================================================
+// 5. عرض الغرف والمشاركين والعجلة
+// ============================================================
 function renderRooms() {
   const grid = $('#roomsGrid');
   grid.replaceChildren();
@@ -555,7 +359,6 @@ function renderMembers() {
   }
 }
 
-// ====================== العجلة ======================
 function buildWheel() {
   const wheel = $('#wheel');
   const colors = ['#e96a62','#efaa3d','#4fc18f','#5e9fd5','#9c75c8','#48b3b5'];
@@ -635,7 +438,9 @@ function renderProfile() {
   updateUSD();
 }
 
-// ====================== الدردشة ======================
+// ============================================================
+// 6. الدردشة
+// ============================================================
 function appendChat({ username, message, created_at, system=false }) {
   const log = $('#chatLog');
   const empty = log.querySelector('.chat-empty');
@@ -662,7 +467,7 @@ async function loadChat() {
   if (!state.roomName) return;
   const log = $('#chatLog');
   log.replaceChildren();
-  const { data, error } = await supabase.from('chat_history').select('username,message,created_at').eq('room_name', state.roomName).order('created_at', { ascending: false }).limit(30);
+  const { data, error } = await supabaseClient.from('chat_history').select('username,message,created_at').eq('room_name', state.roomName).order('created_at', { ascending: false }).limit(30);
   if (error) { appendChat({ system:true, message:'تعذر تحميل الرسائل.' }); return; }
   const msgs = (data || []).reverse();
   if (!msgs.length) { log.innerHTML = '<div class="chat-empty" style="color:#a9bed5;text-align:center;padding-top:2rem;">ابدأ المحادثة برسالة لطيفة</div>'; }
@@ -676,7 +481,7 @@ async function sendChat(e) {
   $('#sendChatBtn').disabled = true;
   const payload = { username: state.profile.username, message: msg, created_at: new Date().toISOString() };
   try {
-    const { error } = await supabase.from('chat_history').insert({ room_name: state.roomName, user_id: state.user.id, username: payload.username, message: msg });
+    const { error } = await supabaseClient.from('chat_history').insert({ room_name: state.roomName, user_id: state.user.id, username: payload.username, message: msg });
     if (error) throw error;
     appendChat(payload);
     await state.roomChannel.send({ type: 'broadcast', event: 'chat', payload });
@@ -685,9 +490,11 @@ async function sendChat(e) {
   $('#sendChatBtn').disabled = false;
 }
 
-// ====================== الغرفة (Presence + Broadcast) ======================
+// ============================================================
+// 7. الغرفة (Presence + Broadcast)
+// ============================================================
 function configureChannel(room) {
-  const ch = supabase.channel(`room:${room}`, { config: { presence: { key: state.user?.id || 'guest' }, broadcast: { self: false } } });
+  const ch = supabaseClient.channel(`room:${room}`, { config: { presence: { key: state.user?.id || 'guest' }, broadcast: { self: false } } });
   ch.on('presence', { event: 'sync' }, () => {
     state.roomMembers = Object.values(ch.presenceState()).flat();
     renderMembers();
@@ -755,7 +562,7 @@ async function leaveRoom(silent=false) {
   stopGameTicker();
   if (state.roomChannel) {
     try { await state.roomChannel.untrack(); } catch(_) {}
-    try { await supabase.removeChannel(state.roomChannel); } catch(_) {}
+    try { await supabaseClient.removeChannel(state.roomChannel); } catch(_) {}
   }
   state.roomChannel = null;
   state.roomName = null;
@@ -775,12 +582,14 @@ async function leaveRoom(silent=false) {
   if (!silent && state.user) showToast('غادرت الغرفة.');
 }
 
-// ====================== عدّاد التواجد ======================
+// ============================================================
+// 8. عدّاد التواجد
+// ============================================================
 function startPresenceTicker() {
   stopPresenceTicker();
   state.presenceTimer = setInterval(async () => {
     if (!state.roomName || !state.user) return;
-    const { data, error } = await supabase.rpc('record_presence', { p_seconds: 30 });
+    const { data, error } = await supabaseClient.rpc('record_presence', { p_seconds: 30 });
     if (!error && state.profile) {
       state.profile.daily_presence_seconds = Number(data || state.profile.daily_presence_seconds || 0);
       renderProfile();
@@ -789,22 +598,24 @@ function startPresenceTicker() {
 }
 function stopPresenceTicker() { if (state.presenceTimer) clearInterval(state.presenceTimer); state.presenceTimer = null; }
 
-// ====================== مزامنة العجلة ======================
+// ============================================================
+// 9. مزامنة العجلة (RPC + Polling)
+// ============================================================
 async function refreshGame() {
   if (!state.roomName || !state.user) return;
   try {
-    const { data, error } = await supabase.rpc('get_game_state', { p_room_name: state.roomName });
+    const { data, error } = await supabaseClient.rpc('get_game_state', { p_room_name: state.roomName });
     if (error) throw error;
     state.gameState = data;
     if (new Date().getSeconds() >= 30 && data.status === 'betting') {
-      const resolved = await supabase.rpc('resolve_game_round', { p_room_name: state.roomName });
+      const resolved = await supabaseClient.rpc('resolve_game_round', { p_room_name: state.roomName });
       if (!resolved.error) state.gameState = { ...data, ...resolved.data };
     }
     if (state.gameState?.status === 'resolved' && Number.isInteger(state.gameState.winning_index)) {
       animateResult(state.gameState);
     }
     renderGame();
-    const latest = await supabase.from('profiles').select('balance,wins,losses,daily_presence_seconds').eq('id', state.user.id).single();
+    const latest = await supabaseClient.from('profiles').select('balance,wins,losses,daily_presence_seconds').eq('id', state.user.id).single();
     if (!latest.error && state.profile) {
       Object.assign(state.profile, latest.data);
       renderProfile();
@@ -832,14 +643,16 @@ function animateResult(game) {
   setTimeout(() => { $('#wheelCenter').textContent = '◈'; }, 3800);
 }
 
-// ====================== الرهان ======================
+// ============================================================
+// 10. الرهان
+// ============================================================
 async function placeBet() {
   if (!state.roomName || state.selectedBet === null || !isBettingOpen()) return;
   const amount = Number($('#betAmount').value);
   if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) { showToast('مبلغ غير صحيح.', 'error'); return; }
   $('#placeBetBtn').disabled = true;
   try {
-    const { data, error } = await supabase.rpc('place_game_bet', { p_room_name: state.roomName, p_bet_index: state.selectedBet, p_amount: amount });
+    const { data, error } = await supabaseClient.rpc('place_game_bet', { p_room_name: state.roomName, p_bet_index: state.selectedBet, p_amount: amount });
     if (error) throw error;
     if (state.profile) state.profile.balance = Number(data.balance);
     showToast('تم تسجيل رهانك.', 'success');
@@ -848,7 +661,9 @@ async function placeBet() {
   $('#placeBetBtn').disabled = false;
 }
 
-// ====================== المحفظة ======================
+// ============================================================
+// 11. المحفظة
+// ============================================================
 function toggleWithdrawForm() {
   const el = $('#withdrawFormContainer');
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
@@ -893,12 +708,14 @@ function showQR() {
   qrInstance = new QRCode(el, { text: state.walletAddress || '0x...', width: 140, height: 140, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
 }
 
-// ====================== المصادقة ======================
+// ============================================================
+// 12. المصادقة
+// ============================================================
 async function loadProfile() {
   if (!state.user || state.loadingProfile) return;
   state.loadingProfile = true;
   try {
-    const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
+    const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
     if (error) throw error;
     if (!profile) {
       const meta = state.user.user_metadata || {};
@@ -906,13 +723,13 @@ async function loadProfile() {
       const referral = meta.referral_code || '';
       const wallet = generateWallet();
       const enc = encrypt(wallet.privateKey, 'temporary_password_123');
-      const { error: ins } = await supabase.from('profiles').insert([{
+      const { error: ins } = await supabaseClient.from('profiles').insert([{
         id: state.user.id, username, wallet_address: wallet.address,
         encrypted_private_key: enc, referral_code: username + '-' + Math.random().toString(36).substring(2,6),
         bonus_balance: 10
       }]);
       if (ins) throw ins;
-      const retry = await supabase.from('profiles').select('*').eq('id', state.user.id).single();
+      const retry = await supabaseClient.from('profiles').select('*').eq('id', state.user.id).single();
       if (retry.error) throw retry.error;
       state.profile = retry.data;
       state.walletAddress = retry.data.wallet_address;
@@ -941,14 +758,13 @@ function resetUI() {
   setStatus('connectionStatus', 'غير مسجّل');
 }
 
-// أحداث المصادقة
 async function handleLogin(e) {
   e.preventDefault();
   const email = $('#loginEmail').value.trim(), pw = $('#loginPassword').value;
   const btn = e.submitter || $('#loginForm').querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
     showToast('تم تسجيل الدخول.', 'success');
   } catch (err) { showToast(err.message, 'error'); }
@@ -965,7 +781,7 @@ async function handleRegister(e) {
   const btn = e.submitter || $('#registerForm').querySelector('button[type="submit"]');
   btn.disabled = true;
   try {
-    const { data, error } = await supabase.auth.signUp({ email, password: pw, options: { data: { username, referral_code: referral || null } } });
+    const { data, error } = await supabaseClient.auth.signUp({ email, password: pw, options: { data: { username, referral_code: referral || null } } });
     if (error) throw error;
     $('#registerPassword').value = '';
     if (data.session) showToast('تم إنشاء الحساب وتسجيل الدخول.', 'success');
@@ -980,14 +796,14 @@ function activateAuthTab(mode) {
   $('#registerForm').classList.toggle('active', mode === 'register');
 }
 
-// ====================== تسجيل الخروج ======================
 async function logout() {
-  try { await supabase.auth.signOut(); showToast('تم تسجيل الخروج.', 'success'); } catch(e) { showToast(e.message, 'error'); }
+  try { await supabaseClient.auth.signOut(); showToast('تم تسجيل الخروج.', 'success'); } catch(e) { showToast(e.message, 'error'); }
 }
 
-// ====================== ربط الأحداث ======================
+// ============================================================
+// 13. ربط الأحداث والتهيئة
+// ============================================================
 function initEvents() {
-  // التبويبات
   $$('.tab').forEach(tab => tab.addEventListener('click', () => {
     const name = tab.dataset.tab;
     $$('.tab').forEach(b => b.classList.toggle('active', b === tab));
@@ -995,20 +811,13 @@ function initEvents() {
     if (name === 'game' && state.roomName) refreshGame();
   }));
 
-  // المصادقة
   $$('.auth-tab').forEach(t => t.addEventListener('click', () => activateAuthTab(t.dataset.auth)));
   $('#loginForm').addEventListener('submit', handleLogin);
   $('#registerForm').addEventListener('submit', handleRegister);
   $('#loginBtn').addEventListener('click', () => { activateAuthTab('login'); $('#authOverlay').classList.remove('hidden'); $('#loginEmail').focus(); });
   $('#logoutBtn').addEventListener('click', logout);
-
-  // الغرفة
   $('#leaveRoomBtn').addEventListener('click', () => leaveRoom());
-
-  // الدردشة
   $('#chatForm').addEventListener('submit', sendChat);
-
-  // العجلة
   $('#choices').addEventListener('click', (e) => {
     const choice = e.target.closest('[data-bet]');
     if (!choice || choice.disabled) return;
@@ -1016,8 +825,6 @@ function initEvents() {
     renderGame();
   });
   $('#placeBetBtn').addEventListener('click', placeBet);
-
-  // الإعدادات
   $('#passwordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const newPw = $('#newPassword').value;
@@ -1025,23 +832,20 @@ function initEvents() {
     const btn = e.submitter || $('#passwordForm').querySelector('button[type="submit"]');
     btn.disabled = true;
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPw });
+      const { error } = await supabaseClient.auth.updateUser({ password: newPw });
       if (error) throw error;
       $('#passwordForm').reset();
       showToast('تم تغيير كلمة المرور.', 'success');
     } catch (err) { showToast(err.message, 'error'); }
     btn.disabled = false;
   });
-
   $('#copyReferralBtn').addEventListener('click', () => {
     const link = $('#referralLink').value;
     if (link) navigator.clipboard.writeText(link).then(() => alert('📋 تم النسخ!'));
   });
-
   window.addEventListener('beforeunload', () => leaveRoom(true));
 }
 
-// ====================== التهيئة ======================
 async function init() {
   buildWheel();
   renderRooms();
@@ -1049,8 +853,7 @@ async function init() {
   initEvents();
   fetchPrice();
 
-  // التحقق من جلسة
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session?.user) {
     state.user = session.user;
     await loadProfile();
@@ -1058,7 +861,7 @@ async function init() {
     setStatus('connectionStatus', 'غير مسجّل');
   }
 
-  supabase.auth.onAuthStateChange((event, session) => {
+  supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
       state.user = session.user;
       setTimeout(loadProfile, 0);
@@ -1067,7 +870,6 @@ async function init() {
     }
   });
 
-  // رابط الإحالة من الرابط
   const ref = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('ref');
   if (ref) { $('#registerReferral').value = ref; activateAuthTab('register'); }
 }
