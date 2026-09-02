@@ -285,6 +285,16 @@
             justify-content: center;
             font-size: 1.5rem;
         }
+        .fee-display {
+            margin-top: 6px;
+            font-size: 1rem;
+            color: #f1c40f;
+            background: rgba(241, 196, 15, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #f1c40f44;
+            display: inline-block;
+        }
         .bet-options {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -578,10 +588,13 @@
             border-color: #f1c40f;
             background: rgba(241, 196, 15, 0.15);
         }
+        /* جعل شاشة المحادثة تملأ الشاشة */
         .chat-container {
             display: flex;
             flex-direction: column;
-            height: 160px;
+            flex: 1;
+            min-height: 300px;
+            max-height: 60vh;
             border: 1px solid #1f3347;
             border-radius: 12px;
             overflow: hidden;
@@ -595,12 +608,11 @@
             display: flex;
             flex-direction: column;
             gap: 3px;
-            min-height: 100px;
-            max-height: 120px;
+            min-height: 200px;
         }
         .chat-message {
-            font-size: 0.75rem;
-            padding: 4px 8px;
+            font-size: 0.85rem;
+            padding: 6px 10px;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             word-break: break-word;
@@ -610,7 +622,7 @@
             color: #8ab4d6;
         }
         .chat-message .msg-time {
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             color: #5a7a8a;
             margin-left: 4px;
         }
@@ -619,7 +631,7 @@
             border-right: 3px solid #f1c40f;
             text-align: center;
             color: #f1c40f;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             padding: 6px 10px;
         }
         .chat-input-row {
@@ -636,23 +648,23 @@
             border: none;
             background: #1c2f44;
             color: #fff;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             outline: 1px solid #3a5a7a;
-            min-height: 36px;
+            min-height: 40px;
         }
         .chat-input-row input:focus {
             outline: 2px solid #f1c40f;
         }
         .chat-input-row button {
-            padding: 8px 14px;
+            padding: 8px 18px;
             border: none;
             border-radius: 30px;
             background: linear-gradient(135deg, #f39c12, #e67e22);
             color: #fff;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.8rem;
-            min-height: 36px;
+            font-size: 0.9rem;
+            min-height: 40px;
         }
         .game-timer {
             font-size: 1.4rem;
@@ -783,6 +795,60 @@
         .game-tutorial-card .btn-close-tutorial:hover {
             transform: scale(1.02);
         }
+        /* نموذج تغيير كلمة المرور */
+        .change-password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .change-password-modal.show {
+            display: flex;
+        }
+        .change-password-card {
+            background: #0e2238;
+            border-radius: 28px;
+            padding: 24px 20px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid #f1c40f66;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+        }
+        .change-password-card h3 {
+            color: #f1c40f;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .change-password-card input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 30px;
+            border: none;
+            background: #1c2f44;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: 1px solid #3a5a7a;
+            margin-bottom: 8px;
+        }
+        .change-password-card input:focus {
+            outline: 2px solid #f1c40f;
+        }
+        .change-password-card .btn-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .change-password-card .btn-row button {
+            flex: 1;
+        }
         @media (max-width: 420px) {
             .room-grid {
                 grid-template-columns: 1fr 1fr 1fr;
@@ -818,10 +884,11 @@
                 font-size: 1.5rem;
             }
             .chat-container {
-                height: 140px;
+                min-height: 200px;
+                max-height: 50vh;
             }
             .chat-messages {
-                max-height: 100px;
+                min-height: 150px;
             }
             .bet-input {
                 width: 80px;
@@ -852,7 +919,7 @@
                     <div class="room-grid" id="roomsGrid"></div>
                 </div>
 
-                <div class="card" id="roomInterface" style="display:none;">
+                <div class="card" id="roomInterface" style="display:none; flex:1; display:none; flex-direction:column;">
                     <div class="flex-between">
                         <span class="label">📍 الغرفة الحالية</span>
                         <span id="currentRoomName" style="color:#f1c40f; font-weight:bold;">-</span>
@@ -874,7 +941,7 @@
                         </div>
                     </div>
 
-                    <div style="margin-top:6px;">
+                    <div style="margin-top:6px; flex:1; display:flex; flex-direction:column;">
                         <div class="flex-between"><span class="label">💬 الدردشة الكتابية</span></div>
                         <div class="chat-container">
                             <div class="chat-messages" id="chatMessages">
@@ -913,6 +980,8 @@
                             <div class="wheel-center" id="wheelCenterEmoji">🎡</div>
                         </div>
                         <div style="font-size:1.3rem; font-weight:bold; color:#f1c40f; margin-top:8px;" id="diceResult">🎡 ?</div>
+                        <!-- عرض الرسوم -->
+                        <div class="fee-display" id="feeDisplay">💰 رسوم الصندوق: 0.00 POL</div>
                     </div>
                     <div class="bet-options" id="betOptions">
                         <div class="bet-option" data-item="0" onclick="selectBet(0)">
@@ -956,7 +1025,6 @@
                     <div class="stats-row" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">
                         <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">🏆 فوز اليوم</div><div class="value green" id="winsToday" style="font-size:1.1rem;">0</div></div>
                         <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">💀 خسارة اليوم</div><div class="value red" id="lossesToday" style="font-size:1.1rem;">0</div></div>
-                        <div class="card" style="flex:1; min-width:60px; text-align:center; padding:8px;"><div class="label">🔄 تدويرات مجانية</div><div class="value gold" id="freeSpins" style="font-size:1.1rem;">0</div></div>
                     </div>
                     <div>
                         <div class="flex-between"><span><strong>📜 آخر الجولات</strong></span><span class="small-text">آخر 10</span></div>
@@ -977,7 +1045,11 @@
                     <div id="withdrawFormContainer" style="display:none; margin-top:8px;">
                         <div class="withdraw-form">
                             <div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="1" step="1" /></div>
-                            <div class="field-group"><label>📤 عنوان الاستلام (Polygon)</label><input type="text" id="withdrawAddress" placeholder="0x..." /></div>
+                            <div class="field-group"><label>📤 عنوان الاستلام (Polygon)</label>
+                                <input type="text" id="withdrawAddress" placeholder="0x..." />
+                                <button class="btn btn-secondary btn-sm" onclick="generateWithdrawQR()" style="margin-top:3px;">📱 تصوير QR للعنوان</button>
+                                <div id="withdrawQRContainer" style="display:none; margin-top:4px;" class="qr-container"><div id="withdrawQRCode"></div></div>
+                            </div>
                             <button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button>
                         </div>
                     </div>
@@ -987,8 +1059,8 @@
 
             <!-- تبويب الإعدادات -->
             <div class="tab-pane" id="tab-settings">
-                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div><button class="btn btn-danger btn-sm" onclick="logoutUser()" style="margin-top:6px;">🚪 تسجيل الخروج</button></div>
-                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرفة اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">👤 حسابي</h3><div class="flex-between"><span class="label">اسم المستخدم</span><span id="displayUsername" style="color:#f1c40f;">-</span></div><button class="btn btn-secondary btn-sm" onclick="showChangePassword()" style="margin-top:4px;">🔑 تغيير كلمة المرور</button><button class="btn btn-danger btn-sm" onclick="logoutUser()" style="margin-top:4px;">🚪 تسجيل الخروج</button></div>
+                <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">⏳ وقت التواجد اليومي</h3><div class="flex-between"><span class="label">🕒 إجمالي وقت التواجد في الغرف اليوم</span><span id="dailyPresenceDisplay" style="color:#8ab4d6;">0 دقيقة</span></div></div>
                 <div class="card"><h3 style="margin:0 0 6px; font-size:1rem;">🔗 رابط الإحالة</h3>
                     <div class="referral-link-box">
                         <span>🔗 الرابط:</span>
@@ -997,7 +1069,6 @@
                     </div>
                     <hr style="border-color:#1f3347; margin:4px 0;" />
                     <div class="flex-between"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div>
-                    <div class="flex-between"><span>🔄 تدويرات مجانية من الإحالات:</span><span class="badge" id="referralSpins">0</span></div>
                 </div>
             </div>
 
@@ -1024,7 +1095,7 @@
                 <input type="password" id="registerPassword" placeholder="كلمة المرور (6 أحرف على الأقل)" />
                 <input type="text" id="referralCode" placeholder="رمز الإحالة (اختياري)" />
                 <button class="btn btn-success btn-block" id="registerBtn">✅ إنشاء الحساب</button>
-                <p class="small-text" style="margin-top:4px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً. * كل إحالة = 3 تدويرات مجانية</p>
+                <p class="small-text" style="margin-top:4px; color:#8ab4d6;">* سيتم توليد محفظة لك تلقائياً. * كل إحالة ناجحة تمنحك 1$ إضافية.</p>
             </div>
         </div>
     </div>
@@ -1048,13 +1119,23 @@
             </div>
             <div class="tutorial-item">
                 <span class="icon">🏆</span>
-                <div class="text"><strong>الأرباح:</strong> 70% من مجمل الرهانات توزع على الفائزين حسب نسبة رهانهم، و 30% تذهب للصندوق.</div>
-            </div>
-            <div class="tutorial-item">
-                <span class="icon">🔄</span>
-                <div class="text"><strong>تدويرات مجانية:</strong> احصل على 3 تدويرات مجانية لكل إحالة ناجحة!</div>
+                <div class="text"><strong>الأرباح:</strong> 70% من مجمل الرهانات توزع على الفائزين حسب نسبة رهانهم، و 30% تذهب للصندوق (تُظهرها العجلة).</div>
             </div>
             <button class="btn-close-tutorial" onclick="closeTutorial()">🎮 هيا نلعب!</button>
+        </div>
+    </div>
+
+    <!-- نافذة تغيير كلمة المرور -->
+    <div class="change-password-modal" id="changePasswordModal">
+        <div class="change-password-card">
+            <h3>🔑 تغيير كلمة المرور</h3>
+            <input type="password" id="oldPassword" placeholder="كلمة المرور الحالية" />
+            <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة (6 أحرف)" />
+            <input type="password" id="confirmNewPassword" placeholder="تأكيد كلمة المرور الجديدة" />
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="closeChangePassword()">إلغاء</button>
+                <button class="btn btn-primary" onclick="changePassword()">تغيير</button>
+            </div>
         </div>
     </div>
 
@@ -1169,16 +1250,15 @@
             withdrawableBalance: 0,
             winsToday: 0,
             lossesToday: 0,
-            freeSpins: 0,
             history: [],
             referralEarned: 0,
-            referralSpins: 0,
             hostMarketingPool: 0,
             platformPool: 0,
             inRoom: false,
             muted: false,
             lastEntryTime: null,
             dailyPresenceSeconds: 0,
+            roomEntryTime: null, // لتسجيل وقت دخول الغرفة
             username: '',
             walletAddress: '',
             privateKeyEncrypted: '',
@@ -1204,6 +1284,8 @@
             tutorialShown: false,
             // حضور
             presenceChannel: null,
+            // الرسوم
+            currentFee: 0,
         };
 
         // ============================================================
@@ -1212,13 +1294,11 @@
         const elBalance = document.getElementById('userBalance');
         const elWins = document.getElementById('winsToday');
         const elLosses = document.getElementById('lossesToday');
-        const elFreeSpins = document.getElementById('freeSpins');
         const elResult = document.getElementById('resultBox');
         const elWheel = document.getElementById('wheelElement');
         const elDiceResult = document.getElementById('diceResult');
         const elHistory = document.getElementById('historyLog');
         const elReferralEarned = document.getElementById('referralEarned');
-        const elReferralSpins = document.getElementById('referralSpins');
         const elWalletBalance = document.getElementById('walletBalanceDisplay');
         const elWalletAddress = document.getElementById('walletAddressDisplay');
         const elDisplayUsername = document.getElementById('displayUsername');
@@ -1244,6 +1324,7 @@
         const betAmountInput = document.getElementById('betAmount');
         const placeBetBtn = document.getElementById('placeBetBtn');
         const tutorialOverlay = document.getElementById('gameTutorial');
+        const feeDisplay = document.getElementById('feeDisplay');
 
         // ============================================================
         // 6. المصادقة
@@ -1298,7 +1379,7 @@
                 const wallet = generateWallet24();
                 const encryptedKey = encrypt(wallet.privateKey, password);
 
-                let referralSpins = 0;
+                let referralBonus = 0;
                 if (referralCode) {
                     const { data: referrer } = await supabaseClient
                         .from('profiles')
@@ -1306,8 +1387,8 @@
                         .eq('referral_code', referralCode)
                         .maybeSingle();
                     if (referrer) {
-                        referralSpins = 3;
-                        await supabaseClient.rpc('add_referral_spins', { user_id: referrer.id, spins: 3 });
+                        referralBonus = 1; // مكافأة 1$
+                        await supabaseClient.rpc('add_referral_bonus', { user_id: referrer.id, bonus: 1 });
                         await supabaseClient
                             .from('referrals')
                             .insert([{ referrer_id: referrer.id, referred_id: authData.user.id, referred_email: email }]);
@@ -1322,9 +1403,9 @@
                         wallet_address: wallet.address,
                         encrypted_private_key: encryptedKey,
                         referral_code: generateReferralCode(username),
-                        free_spins: referralSpins,
                         bonus_balance: 10,
                         withdrawable_balance: 0,
+                        referral_earned: referralBonus,
                     }]);
 
                 if (profileError) {
@@ -1427,8 +1508,6 @@
                 STATE.lossesToday = profile.losses || 0;
                 STATE.referralEarned = profile.referral_earned || 0;
                 STATE.dailyPresenceSeconds = profile.daily_presence_seconds || 0;
-                STATE.freeSpins = profile.free_spins || 0;
-                STATE.referralSpins = profile.referral_spins || 0;
                 STATE.canKick = ADMIN_EMAILS.includes(user.email);
 
                 document.getElementById('authOverlay').style.display = 'none';
@@ -1503,10 +1582,14 @@
 
         function selectAndJoinRoom(roomName) {
             if (STATE.inRoom && STATE.roomName === roomName) return;
+            // إذا كنا في غرفة أخرى، نغادرها أولاً مع حساب الوقت
+            if (STATE.inRoom) {
+                leaveVoiceRoom();
+            }
             STATE.selectedRoomName = roomName;
             elCurrentRoomName.textContent = roomName;
             roomsListCard.style.display = 'none';
-            roomInterface.style.display = 'block';
+            roomInterface.style.display = 'flex';
             renderRooms();
 
             elParticipantsList.innerHTML = '';
@@ -1580,8 +1663,10 @@
             });
 
             channel.on('broadcast', { event: 'game-result' }, (payload) => {
-                const { winningIndex, poolPerItem, winners, totalPool } = payload.payload;
+                const { winningIndex, poolPerItem, winners, totalPool, fee } = payload.payload;
+                STATE.currentFee = fee || 0;
                 applyGameResult(winningIndex, poolPerItem, winners, totalPool);
+                updateFeeDisplay();
             });
 
             // الاشتراك في القناة مع Presence
@@ -1593,6 +1678,8 @@
                         STATE.roomName = roomName;
                         STATE.presenceChannel = channel;
                         STATE.chatChannel = channel;
+                        // تسجيل وقت الدخول لحساب وقت التواجد
+                        STATE.roomEntryTime = Date.now();
 
                         await channel.track({
                             user_id: STATE.userId,
@@ -1676,9 +1763,20 @@
         }
 
         // ============================================================
-        // 11. مغادرة الغرفة (بدون تنظيف صوت)
+        // 11. مغادرة الغرفة مع حساب الوقت الفعلي
         // ============================================================
         async function leaveVoiceRoom() {
+            // حساب وقت التواجد في الغرفة
+            if (STATE.inRoom && STATE.roomEntryTime) {
+                const now = Date.now();
+                const diffSeconds = Math.floor((now - STATE.roomEntryTime) / 1000);
+                STATE.dailyPresenceSeconds += diffSeconds;
+                STATE.roomEntryTime = null;
+                // حفظ الفترة المقطوعة
+                await saveProfile();
+                updateUI();
+            }
+
             if (STATE.presenceChannel) {
                 await STATE.presenceChannel.untrack();
                 await supabaseClient.removeChannel(STATE.presenceChannel);
@@ -1695,11 +1793,12 @@
         }
 
         // ============================================================
-        // 12. العجلة - الخوارزمية الموحدة
+        // 12. العجلة - الخوارزمية الموحدة مع عرض الرسوم
         // ============================================================
         function initWheel() {
             renderWheelItems();
             updatePoolDisplay();
+            updateFeeDisplay();
         }
 
         function renderWheelItems() {
@@ -1710,6 +1809,10 @@
                 return `${c} ${start}% ${end}%`;
             }).join(', ');
             elWheel.style.background = `conic-gradient(${grad})`;
+        }
+
+        function updateFeeDisplay() {
+            feeDisplay.textContent = `💰 رسوم الصندوق: ${STATE.currentFee.toFixed(2)} POL`;
         }
 
         function selectBet(index) {
@@ -1789,7 +1892,7 @@
         }
 
         // ============================================================
-        // 13. حساب النتيجة وإرسالها
+        // 13. حساب النتيجة وإرسالها مع الرسوم
         // ============================================================
         function spinWheel() {
             if (STATE.isSpinning) return;
@@ -1820,6 +1923,9 @@
 
             const resultItem = WHEEL_ITEMS[resultIndex];
             const totalPool = Object.values(roomBets).reduce((sum, b) => sum + b.amount, 0);
+            const fee = totalPool * 0.3;
+            STATE.currentFee = fee;
+            const winPool = totalPool * 0.7;
 
             const winners = [];
             for (const [userId, betData] of Object.entries(roomBets)) {
@@ -1830,7 +1936,6 @@
 
             let winnerPayouts = {};
             if (winners.length > 0 && totalPool > 0) {
-                const winPool = totalPool * 0.7;
                 const totalWinnerBets = winners.reduce((sum, w) => sum + w.amount, 0);
                 const multiplier = winPool / totalWinnerBets;
                 for (const w of winners) {
@@ -1847,11 +1952,13 @@
                         poolPerItem: poolPerItem,
                         winners: winnerPayouts,
                         totalPool: totalPool,
+                        fee: fee,
                     }
                 });
             }
 
             applyGameResult(resultIndex, poolPerItem, winnerPayouts, totalPool);
+            updateFeeDisplay();
 
             const segmentAngle = 360 / WHEEL_ITEMS.length;
             const targetAngle = 360 - (resultIndex * segmentAngle + segmentAngle / 2);
@@ -1975,6 +2082,9 @@
             elResult.innerHTML = '<span style="color:#2ecc71;">🎯 اختر رهانك خلال 30 ثانية!</span>';
             updateGameUI();
             updatePoolDisplay();
+            // إعادة تعيين الرسوم
+            STATE.currentFee = 0;
+            updateFeeDisplay();
 
             if (STATE.gameInterval) clearInterval(STATE.gameInterval);
             STATE.gameInterval = setInterval(() => {
@@ -2030,9 +2140,7 @@
             elBalance.textContent = totalBalance.toFixed(2);
             elWins.textContent = STATE.winsToday;
             elLosses.textContent = STATE.lossesToday;
-            elFreeSpins.textContent = STATE.freeSpins;
             elReferralEarned.textContent = STATE.referralEarned.toFixed(2);
-            elReferralSpins.textContent = STATE.referralSpins;
             elWalletBalance.textContent = totalBalance.toFixed(2);
             elWalletAddress.textContent = STATE.walletAddress || '0x...';
             elDisplayUsername.textContent = STATE.username || '-';
@@ -2077,8 +2185,6 @@
                         losses: STATE.lossesToday,
                         referral_earned: STATE.referralEarned,
                         daily_presence_seconds: STATE.dailyPresenceSeconds,
-                        free_spins: STATE.freeSpins,
-                        referral_spins: STATE.referralSpins,
                         last_seen_room: STATE.roomName || STATE.selectedRoomName,
                     })
                     .eq('id', STATE.userId);
@@ -2155,13 +2261,84 @@
             });
         }
 
+        function generateWithdrawQR() {
+            const address = withdrawAddress.value.trim();
+            if (!address || !address.startsWith('0x')) {
+                alert('⚠️ أدخل عنواناً صحيحاً أولاً.');
+                return;
+            }
+            const container = document.getElementById('withdrawQRContainer');
+            if (container.style.display === 'block') {
+                container.style.display = 'none';
+                return;
+            }
+            container.style.display = 'block';
+            const qrDiv = document.getElementById('withdrawQRCode');
+            qrDiv.innerHTML = '';
+            new QRCode(qrDiv, {
+                text: address,
+                width: 120,
+                height: 120,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
         function copyReferral() {
             const link = document.getElementById('referralLinkDisplay').textContent;
             navigator.clipboard.writeText(link).then(() => alert('📋 تم نسخ الرابط!'));
         }
 
         // ============================================================
-        // 18. التوزيع الليلي
+        // 18. تغيير كلمة المرور
+        // ============================================================
+        function showChangePassword() {
+            document.getElementById('changePasswordModal').classList.add('show');
+        }
+
+        function closeChangePassword() {
+            document.getElementById('changePasswordModal').classList.remove('show');
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+        }
+
+        async function changePassword() {
+            const old = document.getElementById('oldPassword').value.trim();
+            const newPwd = document.getElementById('newPassword').value.trim();
+            const confirm = document.getElementById('confirmNewPassword').value.trim();
+
+            if (!old || !newPwd || !confirm) {
+                alert('⚠️ يرجى ملء جميع الحقول.');
+                return;
+            }
+            if (newPwd.length < 6) {
+                alert('⚠️ كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل.');
+                return;
+            }
+            if (newPwd !== confirm) {
+                alert('⚠️ كلمة المرور الجديدة وتأكيدها غير متطابقين.');
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient.auth.updateUser({
+                    password: newPwd
+                });
+                if (error) {
+                    alert('❌ فشل تغيير كلمة المرور: ' + error.message);
+                } else {
+                    alert('✅ تم تغيير كلمة المرور بنجاح.');
+                    closeChangePassword();
+                }
+            } catch (e) {
+                alert('❌ خطأ: ' + e.message);
+            }
+        }
+
+        // ============================================================
+        // 19. التوزيع الليلي
         // ============================================================
         async function distributeDaily() {
             if (STATE.hostMarketingPool <= 0) return;
@@ -2199,12 +2376,12 @@
         }, 1000);
 
         // ============================================================
-        // 19. مراقبة تغيير كمية الرهان
+        // 20. مراقبة تغيير كمية الرهان
         // ============================================================
         betAmountInput.addEventListener('input', updateUSDValues);
 
         // ============================================================
-        // 20. التهيئة النهائية
+        // 21. التهيئة النهائية
         // ============================================================
         document.querySelectorAll('.tab-item').forEach(tab => {
             tab.addEventListener('click', function() {
@@ -2224,12 +2401,17 @@
         });
 
         window.onload = function() {
-            console.log('🚀 بدء التطبيق (نسخة الدردشة النصية فقط)...');
+            console.log('🚀 بدء التطبيق (نسخة الدردشة النصية مع جميع التعديلات)...');
             renderRooms();
             initWheel();
             initAuth();
             updateUI();
             fetchPolPrice();
+            // استعادة وقت التواجد من قاعدة البيانات
+            if (STATE.loggedIn) {
+                STATE.dailyPresenceSeconds = STATE.dailyPresenceSeconds || 0;
+                updateUI();
+            }
         };
 
         // جعل الدوال عامة
@@ -2240,14 +2422,18 @@
         window.toggleWithdrawForm = toggleWithdrawForm;
         window.copyWalletAddress = copyWalletAddress;
         window.showQR = showQR;
+        window.generateWithdrawQR = generateWithdrawQR;
         window.copyReferral = copyReferral;
         window.logoutUser = logoutUser;
         window.sendChatMessage = sendChatMessage;
         window.selectBet = selectBet;
         window.placeBet = placeBet;
         window.closeTutorial = closeTutorial;
+        window.showChangePassword = showChangePassword;
+        window.closeChangePassword = closeChangePassword;
+        window.changePassword = changePassword;
 
-        console.log('✅ التطبيق جاهز (بدون صوت)');
+        console.log('✅ التطبيق جاهز (بدون صوت، مع رسوم، محادثة كبيرة، وقت تواجد، تغيير كلمة مرور، QR للسحب)');
     </script>
 </body>
 </html>
