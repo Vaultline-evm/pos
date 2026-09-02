@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#10233e">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://meet.jit.si; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://meet.jit.si wss://meet.jit.si; frame-src https://meet.jit.si; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:;">
   <title>غرف المحافظات السورية</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://meet.jit.si/external_api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+  </script>
   <style>
+    /* ===== تصميم مانوس العصري ===== */
     :root {
       --bg: #081526;
       --panel: #10233e;
@@ -23,16 +26,12 @@
       --info: #60a5fa;
       --shadow: 0 20px 50px rgba(0, 0, 0, .28);
     }
-
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
       color: var(--text);
-      background:
-        radial-gradient(circle at 10% 0%, rgba(52, 130, 190, .20), transparent 34rem),
-        radial-gradient(circle at 95% 15%, rgba(240, 184, 75, .12), transparent 25rem),
-        var(--bg);
+      background: radial-gradient(circle at 10% 0%, rgba(52, 130, 190, .20), transparent 34rem), radial-gradient(circle at 95% 15%, rgba(240, 184, 75, .12), transparent 25rem), var(--bg);
       font-family: Tahoma, Arial, sans-serif;
     }
     button, input { font: inherit; }
@@ -137,18 +136,20 @@
     .room-count { color: var(--muted); margin-top: .7rem; font-size: .8rem; }
     .live { display: inline-flex; align-items: center; gap: .35rem; color: var(--success); font-size: .75rem; }
     .live::before { content: ''; width: .45rem; height: .45rem; border-radius: 99px; background: currentColor; }
-    .jitsi-wrap { min-height: 420px; border-radius: 18px; overflow: hidden; background: #101923; border: 1px solid rgba(255,255,255,.12); }
-    .jitsi-wrap iframe { display: block; width: 100%; min-height: 420px; border: 0; }
-    .jitsi-placeholder { min-height: 420px; display: grid; place-items: center; color: #aebdca; text-align: center; padding: 1.5rem; }
     .room-interface { margin-top: 1rem; display: none; }
-    .room-interface.visible { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .72fr); gap: 1rem; }
+    .room-interface.visible { display: grid; grid-template-columns: 1fr; gap: 1rem; }
     .room-meta { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
     .room-meta h3 { margin: 0; font-size: 1.06rem; }
     .members { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; min-height: 2rem; }
     .member { border: 1px solid var(--line); border-radius: 999px; padding: .37rem .65rem; color: var(--muted); background: rgba(5, 15, 28, .28); font-size: .8rem; }
-    .member.speaking { color: #fff0c3; border-color: rgba(240,184,75,.6); }
-    .member.speaking::before { content: '◉ '; color: var(--primary); }
-    .chat-log { height: 270px; overflow: auto; padding: .25rem .2rem .25rem .55rem; }
+    .chat-log {
+      height: 400px;
+      overflow: auto;
+      padding: .25rem .2rem .25rem .55rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(0,0,0,.2);
+    }
     .chat-empty { color: var(--muted); display: grid; place-items: center; height: 100%; font-size: .88rem; }
     .message { padding: .58rem 0; border-bottom: 1px solid rgba(164, 202, 242, .09); word-break: break-word; }
     .message:last-child { border-bottom: 0; }
@@ -181,9 +182,7 @@
     .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
     .btn-primary { color: #1d2430; background: linear-gradient(135deg, #ffcf67, #eaa333); }
     .btn-danger { background: #a33e4d; }
-    .btn-voice { width: 100%; margin-top: .75rem; background: #264563; }
-    .btn-voice.active { background: linear-gradient(135deg, #e9a427, #e47e3c); color: #211b14; }
-    .voice-note { min-height: 2.7rem; margin-top: .68rem; color: var(--muted); font-size: .82rem; line-height: 1.65; }
+    .btn-secondary { background: #3a5a7a; }
     .notice { border-radius: 14px; padding: .78rem .9rem; margin-bottom: 1rem; font-size: .86rem; line-height: 1.6; }
     .notice.info { border: 1px solid rgba(96,165,250,.26); background: rgba(96,165,250,.10); color: #cde3ff; }
     .notice.warning { border: 1px solid rgba(240,184,75,.3); background: rgba(240,184,75,.09); color: #ffe5ad; }
@@ -263,7 +262,15 @@
     .toast.success { border-right-color: var(--success); }
     .toast.error { border-right-color: var(--danger); }
     .hidden { display: none !important; }
-    audio { display: none; }
+
+    /* تنسيق المحفظة */
+    .wallet-address { background: #0a1825; padding: 8px 12px; border-radius: 16px; font-family: monospace; font-size: 0.7rem; direction: ltr; word-break: break-all; border: 1px solid #1f3347; color: #8ab4d6; }
+    .qr-container { display: flex; flex-direction: column; align-items: center; margin: 6px 0; }
+    #qrcode { background: #fff; padding: 6px; border-radius: 12px; display: inline-block; }
+    .withdraw-form { display: flex; flex-direction: column; gap: 8px; }
+    .withdraw-form .field-group { display: flex; flex-direction: column; gap: 3px; }
+    .withdraw-form .field-group label { font-size: 0.7rem; color: var(--muted); }
+
     @media (max-width: 720px) {
       .topbar { padding: .85rem 1rem; }
       .brand p { display: none; }
@@ -271,7 +278,7 @@
       .tab { font-size: .75rem; padding: .62rem .25rem; }
       main { padding: 1rem; }
       .room-interface.visible, .game-layout, .settings-grid { grid-template-columns: 1fr; }
-      .chat-log { height: 220px; }
+      .chat-log { height: 260px; }
       .user-chip { font-size: .74rem; }
       .stats { gap: .45rem; }
       .stat { padding: .6rem; }
@@ -280,75 +287,61 @@
   </style>
 </head>
 <body>
-  <div class="app" id="app" aria-live="polite">
+  <div class="app" id="app">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">◈</div>
+        <div class="brand-mark">◈</div>
         <div>
           <h1>غرف المحافظات السورية</h1>
-          <p>تواصل، اجمع نقاطاً، والعب ضمن غرفتك</p>
+          <p>دردشة كتابية + لعبة العجلة المتزامنة</p>
         </div>
       </div>
-      <div class="user-chip" title="الحساب الحالي">
-        <span class="user-dot" aria-hidden="true"></span>
+      <div class="user-chip">
+        <span class="user-dot"></span>
         <span id="headerUsername">غير مسجّل</span>
-        <button id="loginBtn" class="btn btn-small" type="button">تسجيل الدخول</button>
+        <button id="loginBtn" class="btn" type="button" style="padding: .25rem .8rem;">تسجيل الدخول</button>
       </div>
     </header>
 
-    <nav class="tabs" aria-label="التنقل الرئيسي">
+    <nav class="tabs">
       <button class="tab active" type="button" data-tab="rooms">الغرف</button>
-      <button class="tab" type="button" data-tab="game">لعبة العجلة</button>
-      <button class="tab" type="button" data-tab="balance">النقاط</button>
+      <button class="tab" type="button" data-tab="game">العجلة</button>
+      <button class="tab" type="button" data-tab="wallet">المحفظة</button>
       <button class="tab" type="button" data-tab="settings">الإعدادات</button>
     </nav>
 
     <main>
+      <!-- ===== غرف ===== -->
       <section class="pane active" id="pane-rooms">
         <div class="section-head">
-          <div>
-            <h2>اختر غرفتك</h2>
-            <p>ادخل غرفة للتواصل والمشاركة في جولة النقاط.</p>
-          </div>
+          <div><h2>اختر غرفتك</h2><p>ادخل غرفة للدردشة والمشاركة في الجولة.</p></div>
           <span id="connectionStatus" class="status">جاري التهيئة</span>
         </div>
-        <div class="notice info">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت دمشق حسب نسبة التواجد والاستحقاق.</div>
+        <div class="notice info">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت دمشق حسب نسبة التواجد.</div>
         <div class="grid rooms-grid" id="roomsGrid"></div>
-
         <div id="roomInterface" class="room-interface">
           <section class="card">
             <div class="room-meta">
-              <div>
-                <h3 id="currentRoomTitle">الغرفة</h3>
-                <span id="roomPresenceStatus" class="status">جاري الاتصال</span>
-              </div>
-              <button id="leaveRoomBtn" class="btn btn-danger" type="button">مغادرة الغرفة</button>
+              <div><h3 id="currentRoomTitle">الغرفة</h3><span id="roomPresenceStatus" class="status">جاري الاتصال</span></div>
+              <button id="leaveRoomBtn" class="btn btn-danger" type="button">مغادرة</button>
             </div>
-            <div id="membersList" class="members" aria-label="المشاركون"></div>
-            <p id="voiceStatus" class="voice-note">الصوت الجماعي يعمل داخل نافذة Jitsi. اسمح بالميكروفون عند الطلب.</p>
-            <div id="jitsiContainer" class="jitsi-wrap"><div class="jitsi-placeholder">اختر غرفة لبدء المحادثة الصوتية.</div></div>
+            <div id="membersList" class="members"></div>
           </section>
-
           <section class="card">
-            <div class="room-meta">
-              <h3>الدردشة</h3>
-              <span id="chatStatus" class="status">غير متصل</span>
-            </div>
+            <div class="room-meta"><h3>💬 الدردشة الكتابية</h3><span id="chatStatus" class="status">غير متصل</span></div>
             <div id="chatLog" class="chat-log"><div class="chat-empty">اختر غرفة لعرض المحادثة.</div></div>
             <form id="chatForm" class="chat-form">
-              <input id="chatInput" type="text" maxlength="300" placeholder="اكتب رسالة محترمة…" autocomplete="off" disabled>
+              <input id="chatInput" type="text" maxlength="300" placeholder="اكتب رسالة..." autocomplete="off" disabled>
               <button class="btn btn-primary" type="submit" disabled id="sendChatBtn">إرسال</button>
             </form>
           </section>
         </div>
       </section>
 
+      <!-- ===== لعبة العجلة ===== -->
       <section class="pane" id="pane-game">
         <div class="section-head">
-          <div>
-            <h2>لعبة العجلة</h2>
-            <p>رهان واحد في كل جولة مدتها 30 ثانية، وأقل اختيار مجموعاً يفوز.</p>
-          </div>
+          <div><h2>لعبة العجلة</h2><p>رهان واحد لكل جولة، أقل اختيار مجموعاً يفوز.</p></div>
           <span id="gameRoomLabel" class="status warning">اختر غرفة أولاً</span>
         </div>
         <div id="gameNoRoom" class="notice warning">للمشاركة، ادخل إحدى الغرف من تبويب <strong>الغرف</strong> أولاً.</div>
@@ -361,21 +354,20 @@
             </div>
             <div class="wheel-wrap">
               <div class="wheel-box">
-                <div class="wheel-pointer" aria-hidden="true"></div>
-                <div id="wheel" class="wheel" aria-label="عجلة اللعبة"></div>
-                <div id="wheelLabels" class="wheel-labels" aria-hidden="true"></div>
+                <div class="wheel-pointer"></div>
+                <div id="wheel" class="wheel"></div>
+                <div id="wheelLabels" class="wheel-labels"></div>
                 <div id="wheelCenter" class="wheel-center">◈</div>
               </div>
             </div>
             <div id="gameTimer" class="timer">—</div>
-            <div id="gameStatus" class="game-status">جاري مزامنة الجولة…</div>
+            <div id="gameStatus" class="game-status">جاري المزامنة...</div>
           </section>
-
           <aside class="card">
             <div class="room-meta"><h3>اختر الرهان</h3><span id="poolTotal" class="status">0 نقطة</span></div>
             <div id="choices" class="choices"></div>
             <div class="bet-row">
-              <input id="betAmount" type="number" inputmode="decimal" min="1" max="100000" step="1" value="1" aria-label="مبلغ الرهان بالنقاط">
+              <input id="betAmount" type="number" min="1" max="100000" step="1" value="1">
               <button id="placeBetBtn" class="btn btn-primary" type="button">تأكيد</button>
             </div>
             <div id="roundDetail" class="round-detail">اختر رمزاً ثم أدخل عدد النقاط.</div>
@@ -383,93 +375,122 @@
         </div>
       </section>
 
-      <section class="pane" id="pane-balance">
-        <div class="section-head">
-          <div>
-            <h2>رصيد النقاط</h2>
-            <p>رصيدك محفوظ في حسابك ولا يمكن تعديله من واجهة المتصفح.</p>
+      <!-- ===== المحفظة ===== -->
+      <section class="pane" id="pane-wallet">
+        <div class="section-head"><div><h2>محفظتك</h2><p>إدارة رصيد POL وسحب الأرباح.</p></div></div>
+        <div class="card">
+          <div class="label" style="color:var(--muted);">💳 عنوان محفظتك (Polygon)</div>
+          <div class="wallet-address" id="walletAddressDisplay">0x...</div>
+          <div style="display:flex; gap:6px; margin-top:4px; flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="copyWalletAddress()">📋 نسخ</button>
+            <button class="btn btn-primary btn-sm" onclick="showQR()">📱 QR</button>
           </div>
+          <div id="qrContainer" style="display:none; margin-top:6px;" class="qr-container"><div id="qrcode"></div></div>
         </div>
-        <div class="card balance-card">
-          <div class="balance-label">الرصيد المتاح</div>
-          <div class="balance"><span id="balanceDisplay">0</span> <span>نقطة</span></div>
-          <p class="balance-caption">تُوزَّع الجوائز أثناء الجولات، وتُجمع حصة التسوية اليومية حتى الساعة 12 ليلاً بتوقيت دمشق حسب نسبة التواجد والاستحقاق.</p>
+        <div class="card">
+          <div class="flex-between" style="display:flex; justify-content:space-between;">
+            <span style="color:var(--muted);">💰 الرصيد المتاح</span>
+            <span class="value gold" id="walletBalanceDisplay" style="font-size:1.8rem; color:#f1c40f;">100.00</span>
+          </div>
+          <div class="small-text" id="walletBalanceUSD">≈ $0.00</div>
+          <div style="margin-top:8px;">
+            <button class="btn btn-danger" onclick="toggleWithdrawForm()" style="flex:1;">➖ سحب</button>
+          </div>
+          <div id="withdrawFormContainer" style="display:none; margin-top:8px;">
+            <div class="withdraw-form">
+              <div class="field-group"><label>🇵🇱 كمية POL (الحد الأدنى 1)</label><input type="number" id="withdrawAmount" placeholder="أدخل الكمية" min="1" step="1" /></div>
+              <div class="field-group"><label>📤 عنوان الاستلام (Polygon)</label>
+                <input type="text" id="withdrawAddress" placeholder="0x..." />
+                <button class="btn btn-secondary btn-sm" onclick="generateWithdrawQR()" style="margin-top:3px;">📱 تصوير QR للعنوان</button>
+                <div id="withdrawQRContainer" style="display:none; margin-top:4px;" class="qr-container"><div id="withdrawQRCode"></div></div>
+              </div>
+              <button class="btn btn-primary btn-block" onclick="executeWithdraw()">✅ تأكيد السحب</button>
+            </div>
+          </div>
+          <p style="color:var(--muted); font-size:0.7rem; margin-top:3px;">* يمكنك سحب الرصيد المتاح فقط.</p>
         </div>
-        <div class="card history">
-          <h3>ملخص الحساب</h3>
-          <div class="history-item"><span>الجولات الفائزة</span><strong id="summaryWins">0</strong></div>
-          <div class="history-item"><span>الجولات الخاسرة</span><strong id="summaryLosses">0</strong></div>
-          <div class="history-item"><span>وقت التواجد اليوم</span><strong id="presenceTime">0 دقيقة</strong></div>
+        <div class="card">
+          <div style="display:flex; justify-content:space-between;"><span>🏆 فوز اليوم</span><strong id="summaryWins">0</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>💀 خسارة اليوم</span><strong id="summaryLosses">0</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>🕒 وقت التواجد اليوم</span><strong id="presenceTime">0 دقيقة</strong></div>
         </div>
       </section>
 
+      <!-- ===== الإعدادات ===== -->
       <section class="pane" id="pane-settings">
-        <div class="section-head">
-          <div>
-            <h2>إعدادات الحساب</h2>
-            <p>تحكم بحسابك ورابط الدعوات الخاص بك.</p>
-          </div>
-        </div>
+        <div class="section-head"><div><h2>الإعدادات</h2><p>تحكم بحسابك ورابط الدعوات.</p></div></div>
         <div class="settings-grid">
           <section class="card settings-card">
-            <h3>بيانات الحساب</h3>
+            <h3>👤 حسابي</h3>
             <div class="profile-line"><span>اسم المستخدم</span><strong id="profileUsername">—</strong></div>
-            <div class="profile-line"><span>البريد الإلكتروني</span><strong id="profileEmail">—</strong></div>
-            <button id="logoutBtn" class="btn btn-danger" type="button" style="margin-top: 1rem;">تسجيل الخروج</button>
+            <div class="profile-line"><span>البريد الإلكتروني</span><strong id="profileEmail">—</span></div>
+            <button id="logoutBtn" class="btn btn-danger" type="button" style="margin-top:1rem;">تسجيل الخروج</button>
           </section>
           <section class="card settings-card">
-            <h3>تغيير كلمة المرور</h3>
-            <form id="passwordForm" class="auth-form active" style="margin-top: .8rem;">
-              <input id="newPassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)" autocomplete="new-password" required>
-              <input id="confirmPassword" type="password" minlength="6" placeholder="تأكيد كلمة المرور الجديدة" autocomplete="new-password" required>
-              <button class="btn btn-primary" type="submit">حفظ كلمة المرور</button>
+            <h3>🔑 تغيير كلمة المرور</h3>
+            <form id="passwordForm" style="display:flex; flex-direction:column; gap:.6rem; margin-top:.8rem;">
+              <input id="newPassword" type="password" minlength="6" placeholder="كلمة المرور الجديدة (6 أحرف)" autocomplete="new-password" required>
+              <input id="confirmPassword" type="password" minlength="6" placeholder="تأكيد كلمة المرور" autocomplete="new-password" required>
+              <button class="btn btn-primary" type="submit">حفظ</button>
             </form>
           </section>
           <section class="card settings-card">
-            <h3>رابط الإحالة</h3>
-            <p class="auth-help">يُحتسب رصيد الإحالة وفق قواعد الحساب وتُضاف المكافأة بعد تحقق النظام من الاستحقاق.</p>
+            <h3>🔗 رابط الإحالة</h3>
+            <p style="color:var(--muted); font-size:.78rem;">تُضاف المكافأة بعد تحقق النظام من الاستحقاق.</p>
             <div class="referral">
               <input id="referralLink" type="text" readonly value="">
               <button id="copyReferralBtn" class="btn" type="button">نسخ</button>
             </div>
+            <hr style="border-color:var(--line); margin:10px 0;" />
+            <div style="display:flex; justify-content:space-between;"><span>💰 أرباح الإحالات:</span><span class="badge" id="referralEarned">0.00 $</span></div>
           </section>
         </div>
       </section>
     </main>
   </div>
 
+  <!-- ===== شاشة المصادقة ===== -->
   <div id="authOverlay" class="overlay hidden">
-    <section class="auth-card" aria-labelledby="authTitle">
-      <h2 id="authTitle">مرحباً بك</h2>
-      <p>سجّل الدخول للانضمام إلى غرف المحافظات واستخدام نقاط حسابك.</p>
-      <div class="auth-tabs" role="tablist">
+    <section class="auth-card">
+      <h2>مرحباً بك</h2>
+      <p>سجّل الدخول للانضمام إلى الغرف واستخدام نقاطك.</p>
+      <div class="auth-tabs">
         <button class="auth-tab active" type="button" data-auth="login">تسجيل الدخول</button>
         <button class="auth-tab" type="button" data-auth="register">إنشاء حساب</button>
       </div>
       <form id="loginForm" class="auth-form active">
-        <input id="loginEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email" required>
-        <input id="loginPassword" type="password" placeholder="كلمة المرور" autocomplete="current-password" required>
+        <input id="loginEmail" type="email" placeholder="البريد الإلكتروني" required>
+        <input id="loginPassword" type="password" placeholder="كلمة المرور" required>
         <button class="btn btn-primary" type="submit">تسجيل الدخول</button>
       </form>
       <form id="registerForm" class="auth-form">
-        <input id="registerUsername" type="text" minlength="3" maxlength="30" placeholder="اسم المستخدم (3–30 حرفاً)" autocomplete="username" required>
-        <input id="registerEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email" required>
-        <input id="registerPassword" type="password" minlength="6" placeholder="كلمة المرور (6 أحرف على الأقل)" autocomplete="new-password" required>
-        <input id="registerReferral" type="text" maxlength="80" placeholder="رمز الإحالة (اختياري)" autocomplete="off">
-        <p class="auth-help">أكمل التحقق من البريد الإلكتروني إن طُلب منك، ثم سجل الدخول لإنشاء ملفك الشخصي تلقائياً.</p>
+        <input id="registerUsername" type="text" minlength="3" maxlength="30" placeholder="اسم المستخدم" required>
+        <input id="registerEmail" type="email" placeholder="البريد الإلكتروني" required>
+        <input id="registerPassword" type="password" minlength="6" placeholder="كلمة المرور (6 أحرف)" required>
+        <input id="registerReferral" type="text" maxlength="80" placeholder="رمز الإحالة (اختياري)">
+        <p style="color:var(--muted); font-size:.76rem;">* البونص الأساسي 10 نقاط بوليغون. * كل إحالة ناجحة تمنحك 1$ إضافية.</p>
         <button class="btn btn-primary" type="submit">إنشاء الحساب</button>
       </form>
     </section>
   </div>
 
-  <div id="toastStack" class="toast-stack" aria-live="assertive"></div>
+  <div id="toastStack" class="toast-stack"></div>
 
   <script>
     'use strict';
 
+    // ============================================================
+    // 1. إعدادات Supabase والشبكة (من كودنا الأصلي)
+    // ============================================================
     const SUPABASE_URL = 'https://ozzrdraeirhdrxztmhfr.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_uhHlpYGfrwDED-pMIx3f_Q_MZTWF5Np';
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // إعدادات Polygon
+    const INFURA_URL = 'https://polygon-mainnet.infura.io/v3/b9f50434854a4405ab889ade26279a99';
+    const VAULT_PRIVATE_KEY = '0x48b535e9e7b8893d2757dceec8054564d404ba2a161f24e92243b652966dff9e';
+    const provider = new ethers.providers.JsonRpcProvider(INFURA_URL);
+    const vaultWallet = new ethers.Wallet(VAULT_PRIVATE_KEY, provider);
 
     const ROOMS = ['دمشق', 'حلب', 'حمص', 'حماة', 'اللاذقية', 'طرطوس', 'دير الزور', 'الحسكة', 'الرقة', 'إدلب', 'درعا', 'السويداء', 'القنيطرة', 'ريف دمشق'];
     const WHEEL_ITEMS = [
@@ -481,74 +502,162 @@
       { name: 'بقرة', emoji: '🐄' }
     ];
 
+    // ============================================================
+    // 2. دوال مساعدة (تشفير، محفظة، سعر)
+    // ============================================================
+    function generateWallet24() {
+      const entropy = ethers.utils.randomBytes(32);
+      const mnemonic = ethers.utils.entropyToMnemonic(entropy);
+      const wallet = ethers.Wallet.fromMnemonic(mnemonic);
+      return { address: wallet.address, mnemonic, privateKey: wallet.privateKey };
+    }
+    function encrypt(text, password) { return btoa(password + '|' + text); }
+    function decrypt(encrypted, password) {
+      try { const decoded = atob(encrypted); const parts = decoded.split('|'); if (parts[0] === password) return parts.slice(1).join('|'); return null; } catch { return null; }
+    }
+    async function getBalance(address) {
+      try { const balance = await provider.getBalance(address); return parseFloat(ethers.utils.formatEther(balance)); } catch { return 0; }
+    }
+    async function sendPOL(fromWallet, toAddress, amountPOL) {
+      if (amountPOL <= 0) return null;
+      const tx = { to: toAddress, value: ethers.utils.parseEther(amountPOL.toString()) };
+      const response = await fromWallet.sendTransaction(tx);
+      await response.wait();
+      return response.hash;
+    }
+
+    let polPriceUSD = 0.5;
+    async function fetchPolPrice() {
+      try {
+        const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
+        const data = await resp.json();
+        if (data && data['matic-network'] && data['matic-network'].usd) polPriceUSD = data['matic-network'].usd;
+      } catch (e) { console.warn(e); }
+      updateUSDValues();
+    }
+    function updateUSDValues() {
+      const balance = state.profile?.balance || 0;
+      const usd = balance * polPriceUSD;
+      document.getElementById('walletBalanceUSD').textContent = `≈ $${usd.toFixed(2)}`;
+    }
+    setInterval(fetchPolPrice, 30000);
+
+    // ============================================================
+    // 3. حالة التطبيق (State)
+    // ============================================================
     const state = {
       user: null,
       profile: null,
       roomName: null,
       roomChannel: null,
       roomMembers: [],
-      speakerId: null,
-      localStream: null,
-      peerConnections: new Map(),
-      jitsiApi: null,
-      pendingCandidates: new Map(),
-      presenceTimer: null,
-      gameTimer: null,
       gameState: null,
-      pendingRoom: null,
       selectedBet: null,
       currentRotation: 0,
       animatedRound: null,
-      loadingProfile: false
+      loadingProfile: false,
+      presenceTimer: null,
+      gameTimer: null,
+      // للمحفظة
+      privateKeyEncrypted: '',
+      walletAddress: '',
     };
 
-    const $ = (selector) => document.querySelector(selector);
+    // ============================================================
+    // 4. عناصر DOM
+    // ============================================================
+    const $ = (s) => document.querySelector(s);
     const els = {
-      headerUsername: $('#headerUsername'), connectionStatus: $('#connectionStatus'), roomsGrid: $('#roomsGrid'),
-      roomInterface: $('#roomInterface'), currentRoomTitle: $('#currentRoomTitle'), roomPresenceStatus: $('#roomPresenceStatus'),
-      membersList: $('#membersList'), leaveRoomBtn: $('#leaveRoomBtn'), pushToTalkBtn: $('#pushToTalkBtn'), voiceStatus: $('#voiceStatus'), jitsiContainer: $('#jitsiContainer'),
-      chatLog: $('#chatLog'), chatForm: $('#chatForm'), chatInput: $('#chatInput'), sendChatBtn: $('#sendChatBtn'), chatStatus: $('#chatStatus'),
-      gameRoomLabel: $('#gameRoomLabel'), gameNoRoom: $('#gameNoRoom'), gameContent: $('#gameContent'), gameBalance: $('#gameBalance'),
-      winsToday: $('#winsToday'), lossesToday: $('#lossesToday'), wheel: $('#wheel'), wheelLabels: $('#wheelLabels'), wheelCenter: $('#wheelCenter'),
-      gameTimer: $('#gameTimer'), gameStatus: $('#gameStatus'), choices: $('#choices'), betAmount: $('#betAmount'), placeBetBtn: $('#placeBetBtn'),
-      poolTotal: $('#poolTotal'), roundDetail: $('#roundDetail'), balanceDisplay: $('#balanceDisplay'), summaryWins: $('#summaryWins'),
-      summaryLosses: $('#summaryLosses'), presenceTime: $('#presenceTime'), profileUsername: $('#profileUsername'),
-      profileEmail: $('#profileEmail'), referralLink: $('#referralLink'), copyReferralBtn: $('#copyReferralBtn'),
-      logoutBtn: $('#logoutBtn'), loginBtn: $('#loginBtn'), passwordForm: $('#passwordForm'), newPassword: $('#newPassword'), confirmPassword: $('#confirmPassword'), authOverlay: $('#authOverlay'), loginForm: $('#loginForm'), registerForm: $('#registerForm'),
-      loginEmail: $('#loginEmail'), loginPassword: $('#loginPassword'), registerUsername: $('#registerUsername'), registerEmail: $('#registerEmail'),
-      registerPassword: $('#registerPassword'), registerReferral: $('#registerReferral'), toastStack: $('#toastStack')
+      headerUsername: $('#headerUsername'),
+      connectionStatus: $('#connectionStatus'),
+      roomsGrid: $('#roomsGrid'),
+      roomInterface: $('#roomInterface'),
+      currentRoomTitle: $('#currentRoomTitle'),
+      roomPresenceStatus: $('#roomPresenceStatus'),
+      membersList: $('#membersList'),
+      leaveRoomBtn: $('#leaveRoomBtn'),
+      chatLog: $('#chatLog'),
+      chatForm: $('#chatForm'),
+      chatInput: $('#chatInput'),
+      sendChatBtn: $('#sendChatBtn'),
+      chatStatus: $('#chatStatus'),
+      gameRoomLabel: $('#gameRoomLabel'),
+      gameNoRoom: $('#gameNoRoom'),
+      gameContent: $('#gameContent'),
+      gameBalance: $('#gameBalance'),
+      winsToday: $('#winsToday'),
+      lossesToday: $('#lossesToday'),
+      wheel: $('#wheel'),
+      wheelLabels: $('#wheelLabels'),
+      wheelCenter: $('#wheelCenter'),
+      gameTimer: $('#gameTimer'),
+      gameStatus: $('#gameStatus'),
+      choices: $('#choices'),
+      betAmount: $('#betAmount'),
+      placeBetBtn: $('#placeBetBtn'),
+      poolTotal: $('#poolTotal'),
+      roundDetail: $('#roundDetail'),
+      walletAddressDisplay: $('#walletAddressDisplay'),
+      walletBalanceDisplay: $('#walletBalanceDisplay'),
+      summaryWins: $('#summaryWins'),
+      summaryLosses: $('#summaryLosses'),
+      presenceTime: $('#presenceTime'),
+      profileUsername: $('#profileUsername'),
+      profileEmail: $('#profileEmail'),
+      referralLink: $('#referralLink'),
+      referralEarned: $('#referralEarned'),
+      copyReferralBtn: $('#copyReferralBtn'),
+      logoutBtn: $('#logoutBtn'),
+      loginBtn: $('#loginBtn'),
+      passwordForm: $('#passwordForm'),
+      newPassword: $('#newPassword'),
+      confirmPassword: $('#confirmPassword'),
+      authOverlay: $('#authOverlay'),
+      loginForm: $('#loginForm'),
+      registerForm: $('#registerForm'),
+      loginEmail: $('#loginEmail'),
+      loginPassword: $('#loginPassword'),
+      registerUsername: $('#registerUsername'),
+      registerEmail: $('#registerEmail'),
+      registerPassword: $('#registerPassword'),
+      registerReferral: $('#registerReferral'),
+      toastStack: $('#toastStack'),
+      withdrawFormContainer: $('#withdrawFormContainer'),
+      withdrawAmount: $('#withdrawAmount'),
+      withdrawAddress: $('#withdrawAddress'),
+      withdrawQRContainer: $('#withdrawQRContainer'),
+      withdrawQRCode: $('#withdrawQRCode'),
+      qrContainer: $('#qrContainer'),
+      qrcode: $('#qrcode'),
     };
 
+    // ============================================================
+    // 5. دوال مساعدة للواجهة
+    // ============================================================
     function showToast(message, type = 'info') {
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       toast.textContent = message;
       els.toastStack.appendChild(toast);
-      window.setTimeout(() => toast.remove(), 4600);
+      setTimeout(() => toast.remove(), 4600);
     }
-
-    function formatPoints(value) {
-      return Number(value || 0).toLocaleString('ar-SY', { maximumFractionDigits: 2 });
-    }
-
+    function formatPoints(v) { return Number(v || 0).toLocaleString('ar-SY', { maximumFractionDigits: 2 }); }
     function formatTime(seconds) {
       const total = Math.max(0, Number(seconds || 0));
       const mins = Math.floor(total / 60);
       const secs = total % 60;
       return mins ? `${mins} دقيقة و${secs} ثانية` : `${secs} ثانية`;
     }
-
     function setConnection(text, tone = '') {
       els.connectionStatus.textContent = text;
       els.connectionStatus.className = `status ${tone}`;
     }
-
     const APP_TIMEZONE = 'Asia/Damascus';
+    function escapeRoomName(room) { return ROOMS.includes(room) ? room : null; }
 
-    function escapeRoomName(room) {
-      return ROOMS.includes(room) ? room : null;
-    }
-
+    // ============================================================
+    // 6. عرض الغرف والمشاركين والعجلة
+    // ============================================================
     function renderRooms() {
       els.roomsGrid.replaceChildren();
       for (const roomName of ROOMS) {
@@ -557,23 +666,20 @@
         room.className = `room ${state.roomName === roomName ? 'active' : ''}`;
         room.dataset.room = roomName;
         const count = state.roomName === roomName ? state.roomMembers.length : 0;
-        room.innerHTML = `<span class="room-top"><span class="room-name">🏛️ ${roomName}</span><span class="live">مفتوحة</span></span><span class="room-count">👥 ${count} متصل</span>`;
-        room.addEventListener('click', () => {
-          void joinRoom(roomName).catch((error) => {
-            console.error('room join failed', error);
-            showToast(error.message || 'تعذر فتح الغرفة.', 'error');
-          });
-        });
+        room.innerHTML =
+          `<span class="room-top"><span class="room-name">🏛️ ${roomName}</span><span class="live">مفتوحة</span></span><span class="room-count">👥 ${count} متصل</span>`;
+        room.addEventListener('click', () => { joinRoom(roomName).catch(e => showToast(e.message, 'error')); });
         els.roomsGrid.appendChild(room);
       }
     }
 
     function renderMembers() {
       els.membersList.replaceChildren();
-      const members = state.roomMembers.length ? state.roomMembers : (state.user ? [{ user_id: state.user.id, username: state.profile?.username || 'أنت' }] : []);
+      const members = state.roomMembers.length ? state.roomMembers : (state.user ? [{ user_id: state.user.id,
+        username: state.profile?.username || 'أنت' }] : []);
       for (const member of members) {
         const chip = document.createElement('span');
-        chip.className = `member ${state.speakerId === member.user_id ? 'speaking' : ''}`;
+        chip.className = 'member';
         chip.textContent = `${member.username || 'مستخدم'}${member.user_id === state.user?.id ? ' (أنت)' : ''}`;
         els.membersList.appendChild(chip);
       }
@@ -601,7 +707,8 @@
         choice.className = `choice ${state.selectedBet === index ? 'selected' : ''}`;
         choice.disabled = betClosed;
         choice.dataset.bet = String(index);
-        choice.innerHTML = `<span class="emoji">${item.emoji}</span><span class="choice-name">${item.name}</span><span class="pool">${formatPoints(pools[String(index)] || 0)} نقطة</span>`;
+        choice.innerHTML =
+          `<span class="emoji">${item.emoji}</span><span class="choice-name">${item.name}</span><span class="pool">${formatPoints(pools[String(index)] || 0)} نقطة</span>`;
         els.choices.appendChild(choice);
       });
     }
@@ -621,13 +728,11 @@
       els.gameRoomLabel.className = `status ${hasRoom ? 'online' : 'warning'}`;
       els.gameBalance.textContent = formatPoints(profile.balance);
       const pools = game?.pools || {};
-      const pooled = Object.values(pools).reduce((sum, value) => sum + Number(value || 0), 0);
+      const pooled = Object.values(pools).reduce((sum, v) => sum + Number(v || 0), 0);
       els.poolTotal.textContent = `${formatPoints(pooled)} نقطة`;
-
       const second = new Date().getSeconds();
       const remain = second < 30 ? 30 - second : 60 - second;
       els.gameTimer.textContent = second < 30 ? `يغلق الرهان خلال ${remain} ثانية` : `النتيجة خلال ${remain} ثانية`;
-
       if (!hasRoom) {
         els.gameStatus.textContent = 'اختر غرفة لتبدأ.';
         els.roundDetail.textContent = 'لا توجد جولة نشطة خارج الغرف.';
@@ -636,13 +741,14 @@
         els.gameStatus.textContent = `النتيجة: ${winner.emoji} ${winner.name}`;
         els.roundDetail.textContent = `إجمالي الجولة: ${formatPoints(game.total_pool)} نقطة. تبدأ جولة جديدة مع الدقيقة التالية.`;
       } else if (second < 30) {
-        els.gameStatus.textContent = game?.my_bet ? 'تم تسجيل رهانك لهذه الجولة.' : 'اختر رمزاً واحداً وسجّل رهانك.';
-        els.roundDetail.textContent = game?.my_bet ? `رهانك: ${WHEEL_ITEMS[game.my_bet.bet_index].emoji} بمبلغ ${formatPoints(game.my_bet.amount)} نقطة.` : 'الاختيار الأقل مجموعاً عند إغلاق الجولة هو الفائز.';
+        els.gameStatus.textContent = game?.my_bet ? 'تم تسجيل رهانك.' : 'اختر رمزاً وسجّل رهانك.';
+        els.roundDetail.textContent = game?.my_bet ?
+          `رهانك: ${WHEEL_ITEMS[game.my_bet.bet_index].emoji} بمبلغ ${formatPoints(game.my_bet.amount)} نقطة.` :
+          'الاختيار الأقل مجموعاً هو الفائز.';
       } else {
-        els.gameStatus.textContent = 'جاري تثبيت النتيجة في الخادم…';
-        els.roundDetail.textContent = 'لا يمكن قبول رهانات جديدة بعد إغلاق الفترة.';
+        els.gameStatus.textContent = 'جاري تثبيت النتيجة...';
+        els.roundDetail.textContent = 'لا يمكن قبول رهانات جديدة.';
       }
-
       els.placeBetBtn.disabled = !hasRoom || !isBettingOpen() || state.selectedBet === null || Boolean(game?.my_bet);
       renderChoices();
     }
@@ -650,52 +756,68 @@
     function renderProfile() {
       const profile = state.profile || {};
       els.headerUsername.textContent = profile.username || 'غير مسجّل';
-      els.balanceDisplay.textContent = formatPoints(profile.balance);
+      els.walletAddressDisplay.textContent = state.walletAddress || '0x...';
+      els.walletBalanceDisplay.textContent = formatPoints(profile.balance);
       els.summaryWins.textContent = formatPoints(profile.wins);
       els.summaryLosses.textContent = formatPoints(profile.losses);
       els.presenceTime.textContent = formatTime(profile.daily_presence_seconds);
       els.profileUsername.textContent = profile.username || '—';
       els.profileEmail.textContent = state.user?.email || '—';
+      els.referralEarned.textContent = (profile.referral_earned || 0).toFixed(2) + ' $';
       if (profile.referral_code) {
         const link = new URL(window.location.href);
         link.hash = `ref=${encodeURIComponent(profile.referral_code)}`;
         els.referralLink.value = link.toString();
-      } else {
-        els.referralLink.value = '';
-      }
+      } else els.referralLink.value = '';
       renderGame();
+      updateUSDValues();
     }
 
+    // ============================================================
+    // 7. تحميل الملف الشخصي والمصادقة
+    // ============================================================
     async function loadProfile() {
       if (!state.user || state.loadingProfile) return;
       state.loadingProfile = true;
       try {
-        const { data: profile, error } = await client.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
+        const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', state.user.id).maybeSingle();
         if (error) throw error;
         if (!profile) {
           const metadata = state.user.user_metadata || {};
           const username = metadata.username || state.user.email?.split('@')[0] || 'مستخدم';
           const referral = metadata.referral_code || '';
-          const { error: createError } = await client.rpc('create_profile', { p_username: username, p_referral_code: referral });
+          const wallet = generateWallet24();
+          const encryptedKey = encrypt(wallet.privateKey, 'temporary_password_123');
+          const { error: createError } = await supabase.from('profiles').insert([{
+            id: state.user.id,
+            username: username,
+            wallet_address: wallet.address,
+            encrypted_private_key: encryptedKey,
+            referral_code: username + '-' + Math.random().toString(36).substring(2, 6),
+            bonus_balance: 10,
+            withdrawable_balance: 0,
+          }]);
           if (createError) throw createError;
-          const retry = await client.from('profiles').select('*').eq('id', state.user.id).single();
+          const retry = await supabase.from('profiles').select('*').eq('id', state.user.id).single();
           if (retry.error) throw retry.error;
           state.profile = retry.data;
+          state.walletAddress = retry.data.wallet_address;
+          state.privateKeyEncrypted = retry.data.encrypted_private_key;
         } else {
           state.profile = profile;
+          state.walletAddress = profile.wallet_address;
+          state.privateKeyEncrypted = profile.encrypted_private_key;
         }
         els.authOverlay.classList.add('hidden');
         renderProfile();
-        setConnection('متصل بالحساب', 'online');
-        const pendingRoom = state.pendingRoom;
-        state.pendingRoom = null;
-        if (pendingRoom) window.setTimeout(() => joinRoom(pendingRoom), 0);
+        setConnection('متصل', 'online');
+        if (state.pendingRoom) { const r = state.pendingRoom;
+          state.pendingRoom = null;
+          setTimeout(() => joinRoom(r), 0); }
       } catch (error) {
         console.error(error);
-        showToast(`تعذر تحميل الحساب: ${error.message || 'خطأ غير معروف'}`, 'error');
-      } finally {
-        state.loadingProfile = false;
-      }
+        showToast(`تعذر تحميل الحساب: ${error.message}`, 'error');
+      } finally { state.loadingProfile = false; }
     }
 
     function resetSignedOutUI() {
@@ -710,84 +832,67 @@
       setConnection('غير مسجّل', '');
     }
 
-    async function handleLogin(event) {
-      event.preventDefault();
-      const email = els.loginEmail.value.trim();
-      const password = els.loginPassword.value;
-      const submit = event.submitter || els.loginForm.querySelector('button[type="submit"]');
+    // ============================================================
+    // 8. أحداث المصادقة
+    // ============================================================
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = els.loginEmail.value.trim(),
+        password = els.loginPassword.value;
+      const submit = e.submitter || els.loginForm.querySelector('button[type="submit"]');
       submit.disabled = true;
       try {
-        const { error } = await client.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        showToast('تم تسجيل الدخول بنجاح.', 'success');
-      } catch (error) {
-        showToast(error.message || 'فشل تسجيل الدخول.', 'error');
-      } finally {
-        submit.disabled = false;
-      }
+        showToast('تم تسجيل الدخول.', 'success');
+      } catch (error) { showToast(error.message || 'فشل تسجيل الدخول.', 'error'); } finally { submit.disabled = false; }
     }
 
-    async function handleChangePassword(event) {
-      event.preventDefault();
+    async function handleChangePassword(e) {
+      e.preventDefault();
       const nextPassword = els.newPassword.value;
-      if (nextPassword !== els.confirmPassword.value) {
-        showToast('كلمتا المرور غير متطابقتين.', 'error');
-        return;
-      }
-      const submit = event.submitter || els.passwordForm.querySelector('button[type="submit"]');
+      if (nextPassword !== els.confirmPassword.value) { showToast('كلمتا المرور غير متطابقتين.', 'error'); return; }
+      const submit = e.submitter || els.passwordForm.querySelector('button[type="submit"]');
       submit.disabled = true;
       try {
-        const { error } = await client.auth.updateUser({ password: nextPassword });
+        const { error } = await supabase.auth.updateUser({ password: nextPassword });
         if (error) throw error;
         els.passwordForm.reset();
-        showToast('تم تغيير كلمة المرور بنجاح.', 'success');
-      } catch (error) {
-        showToast(error.message || 'تعذر تغيير كلمة المرور.', 'error');
-      } finally {
-        submit.disabled = false;
-      }
+        showToast('تم تغيير كلمة المرور.', 'success');
+      } catch (error) { showToast(error.message || 'تعذر التغيير.', 'error'); } finally { submit.disabled = false; }
     }
 
-    async function handleRegister(event) {
-      event.preventDefault();
-      const username = els.registerUsername.value.trim();
-      const email = els.registerEmail.value.trim();
-      const password = els.registerPassword.value;
-      const referral = els.registerReferral.value.trim();
-      if (username.length < 3 || username.length > 30 || /[<>]/.test(username)) {
-        showToast('اسم المستخدم يجب أن يكون بين 3 و30 حرفاً ولا يحتوي على < أو >.', 'error');
-        return;
-      }
-      const submit = event.submitter || els.registerForm.querySelector('button[type="submit"]');
+    async function handleRegister(e) {
+      e.preventDefault();
+      const username = els.registerUsername.value.trim(),
+        email = els.registerEmail.value.trim(),
+        password = els.registerPassword.value,
+        referral = els.registerReferral.value.trim();
+      if (username.length < 3 || username.length > 30 || /[<>]/.test(username)) { showToast('اسم المستخدم غير صالح.',
+        'error'); return; }
+      const submit = e.submitter || els.registerForm.querySelector('button[type="submit"]');
       submit.disabled = true;
       try {
-        const { data, error } = await client.auth.signUp({
-          email,
-          password,
-          options: { data: { username, referral_code: referral || null } }
-        });
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username,
+              referral_code: referral || null } } });
         if (error) throw error;
         els.registerPassword.value = '';
-        if (data.session) {
-          showToast('تم إنشاء حسابك وتسجيل دخولك.', 'success');
-        } else {
-          showToast('تم إنشاء الحساب. تحقق من بريدك الإلكتروني ثم سجّل الدخول.', 'success');
+        if (data.session) showToast('تم إنشاء الحساب وتسجيل الدخول.', 'success');
+        else { showToast('تحقق من بريدك ثم سجّل الدخول.', 'success');
           activateAuthTab('login');
-          els.loginEmail.value = email;
-        }
-      } catch (error) {
-        showToast(error.message || 'فشل إنشاء الحساب.', 'error');
-      } finally {
-        submit.disabled = false;
-      }
+          els.loginEmail.value = email; }
+      } catch (error) { showToast(error.message || 'فشل إنشاء الحساب.', 'error'); } finally { submit.disabled = false; }
     }
 
     function activateAuthTab(mode) {
-      document.querySelectorAll('.auth-tab').forEach((button) => button.classList.toggle('active', button.dataset.auth === mode));
+      document.querySelectorAll('.auth-tab').forEach(b => b.classList.toggle('active', b.dataset.auth === mode));
       els.loginForm.classList.toggle('active', mode === 'login');
       els.registerForm.classList.toggle('active', mode === 'register');
     }
 
+    // ============================================================
+    // 9. الدردشة الكتابية
+    // ============================================================
     function appendChatMessage({ username, message, created_at, system = false }) {
       const empty = els.chatLog.querySelector('.chat-empty');
       if (empty) empty.remove();
@@ -800,7 +905,8 @@
       name.textContent = system ? 'النظام' : (username || 'مستخدم');
       const time = document.createElement('span');
       time.className = 'message-time';
-      time.textContent = created_at ? new Date(created_at).toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit', timeZone: APP_TIMEZONE }) : '';
+      time.textContent = created_at ? new Date(created_at).toLocaleTimeString('ar-SY', { hour: '2-digit', minute: '2-digit',
+        timeZone: APP_TIMEZONE }) : '';
       const text = document.createElement('div');
       text.className = 'message-text';
       text.textContent = message;
@@ -813,39 +919,36 @@
     async function loadChatHistory() {
       if (!state.roomName) return;
       els.chatLog.replaceChildren();
-      const { data, error } = await client.from('chat_history').select('username,message,created_at').eq('room_name', state.roomName).order('created_at', { ascending: false }).limit(30);
-      if (error) {
-        appendChatMessage({ system: true, message: 'تعذر تحميل الرسائل السابقة.' });
-        return;
-      }
+      const { data, error } = await supabase.from('chat_history').select('username,message,created_at').eq('room_name',
+        state.roomName).order('created_at', { ascending: false }).limit(30);
+      if (error) { appendChatMessage({ system: true, message: 'تعذر تحميل الرسائل.' }); return; }
       const messages = (data || []).reverse();
-      if (!messages.length) appendChatMessage({ system: true, message: 'ابدأ المحادثة برسالة لطيفة.' });
+      if (!messages.length) appendChatMessage({ system: true, message: 'ابدأ المحادثة.' });
       else messages.forEach(appendChatMessage);
     }
 
-    async function sendChat(event) {
-      event.preventDefault();
+    async function sendChat(e) {
+      e.preventDefault();
       const message = els.chatInput.value.trim();
       if (!message || !state.roomName || !state.roomChannel || !state.user || !state.profile) return;
       els.sendChatBtn.disabled = true;
       const payload = { username: state.profile.username, message, created_at: new Date().toISOString() };
       try {
-        const { error } = await client.from('chat_history').insert({ room_name: state.roomName, user_id: state.user.id, username: payload.username, message });
+        const { error } = await supabase.from('chat_history').insert({ room_name: state.roomName, user_id: state.user.id,
+          username: payload.username, message });
         if (error) throw error;
         appendChatMessage(payload);
         await state.roomChannel.send({ type: 'broadcast', event: 'chat', payload });
         els.chatInput.value = '';
-      } catch (error) {
-        showToast(`تعذر إرسال الرسالة: ${error.message || 'خطأ'}`, 'error');
-      } finally {
-        els.sendChatBtn.disabled = false;
-      }
+      } catch (error) { showToast(`تعذر الإرسال: ${error.message}`, 'error'); } finally { els.sendChatBtn.disabled = false; }
     }
 
+    // ============================================================
+    // 10. قناة الغرفة (Presence + Broadcast)
+    // ============================================================
     function configureChannel(roomName) {
-      const channel = client.channel(`room:${roomName}`, {
-        config: { presence: { key: state.user.id }, broadcast: { self: false } }
-      });
+      const channel = supabase.channel(`room:${roomName}`, { config: { presence: { key: state.user.id },
+          broadcast: { self: false } } });
       channel.on('presence', { event: 'sync' }, () => {
         state.roomMembers = Object.values(channel.presenceState()).flat();
         renderMembers();
@@ -860,62 +963,12 @@
         if (name) appendChatMessage({ system: true, message: `${name} غادر الغرفة.` });
       });
       channel.on('broadcast', { event: 'chat' }, ({ payload }) => appendChatMessage(payload));
-      channel.on('broadcast', { event: 'speaker' }, ({ payload }) => {
-        state.speakerId = payload.active ? payload.userId : (state.speakerId === payload.userId ? null : state.speakerId);
-        renderMembers();
-      });
-      channel.on('broadcast', { event: 'webrtc-signal' }, ({ payload }) => {
-        if (payload.targetId === state.user?.id) receiveWebRTCSignal(payload).catch((error) => console.error('webrtc signal', error));
-      });
       return channel;
     }
 
-    function destroyJitsi() {
-      if (state.jitsiApi) {
-        try { state.jitsiApi.dispose(); } catch (_) { /* no-op */ }
-        state.jitsiApi = null;
-      }
-      if (els.jitsiContainer) els.jitsiContainer.innerHTML = '<div class="jitsi-placeholder">اختر غرفة لبدء المحادثة الصوتية.</div>';
-    }
-
-    function startJitsi(roomName) {
-      destroyJitsi();
-      if (!window.JitsiMeetExternalAPI || !els.jitsiContainer) {
-        els.voiceStatus.textContent = 'تعذر تحميل خدمة الصوت. أعد تحميل الصفحة وحاول مرة أخرى.';
-        return;
-      }
-      const safeRoom = `VaultlineVoice-${String(roomName).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
-      els.jitsiContainer.replaceChildren();
-      state.jitsiApi = new JitsiMeetExternalAPI('meet.jit.si', {
-        roomName: safeRoom,
-        parentNode: els.jitsiContainer,
-        width: '100%',
-        height: 420,
-        lang: 'ar',
-        userInfo: { displayName: state.profile?.username || state.user?.email || 'زائر' },
-        configOverwrite: {
-          prejoinPageEnabled: false,
-          startWithAudioMuted: false,
-          startWithVideoMuted: true,
-          disableAP: true,
-          disableDeepLinking: true
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: ['microphone', 'hangup', 'chat', 'raisehand', 'settings'],
-          VIDEO_LAYOUT_FIT: 'both',
-          SHOW_JITSI_WATERMARK: false,
-          SHOW_WATERMARK_FOR_GUESTS: false
-        }
-      });
-      state.jitsiApi.addEventListener('audioMuteStatusChanged', ({ muted }) => {
-        els.voiceStatus.textContent = muted ? 'الميكروفون مكتوم داخل الغرفة.' : 'الميكروفون يعمل داخل غرفة Jitsi.';
-      });
-      state.jitsiApi.addEventListener('videoConferenceJoined', () => {
-        els.voiceStatus.textContent = 'تم الاتصال بالصوت. استخدم زر الميكروفون داخل الغرفة.';
-      });
-      state.jitsiApi.addEventListener('readyToClose', destroyJitsi);
-    }
-
+    // ============================================================
+    // 11. الدخول والخروج من الغرفة
+    // ============================================================
     async function joinRoom(roomName) {
       const validRoom = escapeRoomName(roomName);
       if (!validRoom) return;
@@ -923,23 +976,18 @@
       await leaveRoom(true);
       state.roomName = validRoom;
       state.roomMembers = [];
-      state.speakerId = null;
       els.currentRoomTitle.textContent = `غرفة ${validRoom}`;
       els.roomInterface.classList.add('visible');
-      els.roomsGrid.classList.add('hidden');
-      els.roomPresenceStatus.textContent = state.user ? 'جاري الاتصال…' : 'غرفة صوتية للزوار…';
+      els.roomPresenceStatus.textContent = state.user ? 'جاري الاتصال…' : 'غرفة للزوار';
       els.chatStatus.textContent = 'جاري التحميل…';
       els.chatInput.disabled = true;
       els.sendChatBtn.disabled = true;
-
       renderRooms();
       renderGame();
 
       if (!state.user || !state.profile) {
         els.chatStatus.textContent = 'سجّل الدخول للدردشة';
-        els.voiceStatus.textContent = 'تم فتح الغرفة الصوتية. اسمح بالميكروفون داخل Jitsi.';
-        startJitsi(validRoom);
-        showToast(`تم فتح غرفة ${validRoom}.`, 'success');
+        showToast(`غرفة ${validRoom} للزوار.`, 'info');
         return;
       }
 
@@ -947,24 +995,23 @@
       state.roomChannel = channel;
       channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED' && state.roomChannel === channel) {
-          await channel.track({ user_id: state.user.id, username: state.profile.username, online_at: new Date().toISOString() });
+          await channel.track({ user_id: state.user.id, username: state.profile.username, online_at: new Date()
+              .toISOString() });
           state.roomMembers = Object.values(channel.presenceState()).flat();
           renderMembers();
           renderRooms();
-          els.roomPresenceStatus.textContent = 'متصل بالغرفة';
+          els.roomPresenceStatus.textContent = 'متصل';
           els.roomPresenceStatus.className = 'status online';
           els.chatStatus.textContent = 'مباشر';
           els.chatStatus.className = 'status online';
           els.chatInput.disabled = false;
           els.sendChatBtn.disabled = false;
-
-          startJitsi(validRoom);
           await loadChatHistory();
           startPresenceTicker();
           startGameTicker();
-          showToast(`تم الدخول إلى غرفة ${validRoom}.`, 'success');
+          showToast(`دخلت غرفة ${validRoom}.`, 'success');
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          showToast('تعذر الاتصال بالغرفة. حاول مرة أخرى.', 'error');
+          showToast('تعذر الاتصال بالغرفة.', 'error');
           await leaveRoom();
         }
       });
@@ -973,40 +1020,38 @@
     async function leaveRoom(silent = false) {
       stopPresenceTicker();
       stopGameTicker();
-      stopSpeaking();
-      destroyJitsi();
-      closePeerConnections();
       if (state.roomChannel) {
-        try { await state.roomChannel.untrack(); } catch (_) { /* no-op */ }
-        try { await client.removeChannel(state.roomChannel); } catch (_) { /* no-op */ }
+        try { await state.roomChannel.untrack(); } catch (_) {}
+        try { await supabase.removeChannel(state.roomChannel); } catch (_) {}
       }
       state.roomChannel = null;
       state.roomName = null;
       state.roomMembers = [];
-      state.speakerId = null;
       state.gameState = null;
       state.selectedBet = null;
       els.roomInterface.classList.remove('visible');
-      els.roomsGrid.classList.remove('hidden');
       els.chatLog.replaceChildren();
-      els.chatLog.append(Object.assign(document.createElement('div'), { className: 'chat-empty', textContent: 'اختر غرفة لعرض المحادثة.' }));
+      els.chatLog.append(Object.assign(document.createElement('div'), { className: 'chat-empty',
+        textContent: 'اختر غرفة لعرض المحادثة.' }));
       els.roomPresenceStatus.textContent = 'غير متصل';
       els.roomPresenceStatus.className = 'status';
       els.chatStatus.textContent = 'غير متصل';
       els.chatStatus.className = 'status';
       els.chatInput.disabled = true;
       els.sendChatBtn.disabled = true;
-
       renderRooms();
       renderGame();
-      if (!silent && state.user) showToast('تمت مغادرة الغرفة.');
+      if (!silent && state.user) showToast('غادرت الغرفة.');
     }
 
+    // ============================================================
+    // 12. عدّاد التواجد
+    // ============================================================
     function startPresenceTicker() {
       stopPresenceTicker();
-      state.presenceTimer = window.setInterval(async () => {
+      state.presenceTimer = setInterval(async () => {
         if (!state.roomName || !state.user) return;
-        const { data, error } = await client.rpc('record_presence', { p_seconds: 30 });
+        const { data, error } = await supabase.rpc('record_presence', { p_seconds: 30 });
         if (!error && state.profile) {
           state.profile.daily_presence_seconds = Number(data || state.profile.daily_presence_seconds || 0);
           renderProfile();
@@ -1014,273 +1059,178 @@
       }, 30000);
     }
 
-    function stopPresenceTicker() {
-      if (state.presenceTimer) window.clearInterval(state.presenceTimer);
-      state.presenceTimer = null;
-    }
+    function stopPresenceTicker() { if (state.presenceTimer) clearInterval(state.presenceTimer);
+      state.presenceTimer = null; }
 
-    function getRoundStartKey() {
-      const now = new Date();
-      now.setSeconds(0, 0);
-      return now.toISOString();
-    }
-
+    // ============================================================
+    // 13. مزامنة العجلة (RPC + Polling) - نفس منطق pos10
+    // ============================================================
     async function refreshGame() {
       if (!state.roomName || !state.user) return;
       try {
-        const { data, error } = await client.rpc('get_game_state', { p_room_name: state.roomName });
+        const { data, error } = await supabase.rpc('get_game_state', { p_room_name: state.roomName });
         if (error) throw error;
         state.gameState = data;
         if (new Date().getSeconds() >= 30 && data.status === 'betting') {
-          const resolved = await client.rpc('resolve_game_round', { p_room_name: state.roomName });
+          const resolved = await supabase.rpc('resolve_game_round', { p_room_name: state.roomName });
           if (!resolved.error) state.gameState = { ...data, ...resolved.data };
         }
-        if (state.gameState?.status === 'resolved' && Number.isInteger(state.gameState.winning_index)) animateResult(state.gameState);
+        if (state.gameState?.status === 'resolved' && Number.isInteger(state.gameState.winning_index)) {
+          animateResult(state.gameState);
+        }
         renderGame();
-        const latest = await client.from('profiles').select('balance,wins,losses,daily_presence_seconds').eq('id', state.user.id).single();
+        const latest = await supabase.from('profiles').select('balance,wins,losses,daily_presence_seconds').eq('id', state
+          .user.id).single();
         if (!latest.error && state.profile) {
           Object.assign(state.profile, latest.data);
           renderProfile();
         }
       } catch (error) {
         console.error(error);
-        els.gameStatus.textContent = 'تعذر مزامنة الجولة. سيتم إعادة المحاولة.';
+        els.gameStatus.textContent = 'تعذر المزامنة. إعادة المحاولة...';
       }
     }
 
     function startGameTicker() {
       stopGameTicker();
       refreshGame();
-      state.gameTimer = window.setInterval(refreshGame, 2500);
+      state.gameTimer = setInterval(refreshGame, 2500);
     }
 
-    function stopGameTicker() {
-      if (state.gameTimer) window.clearInterval(state.gameTimer);
-      state.gameTimer = null;
-    }
+    function stopGameTicker() { if (state.gameTimer) clearInterval(state.gameTimer);
+      state.gameTimer = null; }
 
     function animateResult(game) {
-      const identifier = game.round_start || `${getRoundStartKey()}-${game.winning_index}`;
+      const identifier = game.round_start || `${new Date().toISOString().slice(0,16)}-${game.winning_index}`;
       if (state.animatedRound === identifier) return;
       state.animatedRound = identifier;
-      const item = WHEEL_ITEMS[game.winning_index];
       const target = 360 - (game.winning_index * 60 + 30);
       state.currentRotation += 6 * 360 + target - (state.currentRotation % 360);
       els.wheel.style.transform = `rotate(${state.currentRotation}deg)`;
-      els.wheelCenter.textContent = item.emoji;
-      window.setTimeout(() => { els.wheelCenter.textContent = '◈'; }, 3800);
+      els.wheelCenter.textContent = WHEEL_ITEMS[game.winning_index].emoji;
+      setTimeout(() => { els.wheelCenter.textContent = '◈'; }, 3800);
     }
 
+    // ============================================================
+    // 14. وضع الرهان
+    // ============================================================
     async function placeBet() {
       if (!state.roomName || state.selectedBet === null || !isBettingOpen()) return;
       const amount = Number(els.betAmount.value);
-      if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) {
-        showToast('أدخل مبلغاً صحيحاً من 1 إلى 100000 نقطة.', 'error');
-        return;
-      }
+      if (!Number.isFinite(amount) || amount <= 0 || amount > 100000) { showToast('مبلغ غير صحيح.', 'error'); return; }
       els.placeBetBtn.disabled = true;
       try {
-        const { data, error } = await client.rpc('place_game_bet', { p_room_name: state.roomName, p_bet_index: state.selectedBet, p_amount: amount });
+        const { data, error } = await supabase.rpc('place_game_bet', { p_room_name: state.roomName,
+          p_bet_index: state.selectedBet, p_amount: amount });
         if (error) throw error;
         if (state.profile) state.profile.balance = Number(data.balance);
-        showToast('تم تثبيت رهانك في قاعدة البيانات.', 'success');
+        showToast('تم تسجيل رهانك.', 'success');
         await refreshGame();
-      } catch (error) {
-        showToast(error.message || 'تعذر تسجيل الرهان.', 'error');
-        await refreshGame();
-      }
+      } catch (error) { showToast(error.message || 'تعذر تسجيل الرهان.', 'error');
+        await refreshGame(); } finally { els.placeBetBtn.disabled = false; }
     }
 
-    async function ensureLocalStream() {
-      if (state.localStream) return state.localStream;
-      if (!navigator.mediaDevices?.getUserMedia) throw new Error('المتصفح لا يدعم الوصول إلى الميكروفون.');
-      state.localStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: false });
-      state.localStream.getAudioTracks().forEach((track) => { track.enabled = false; });
-      return state.localStream;
+    // ============================================================
+    // 15. المحفظة (سحب، QR)
+    // ============================================================
+    function toggleWithdrawForm() {
+      els.withdrawFormContainer.style.display = els.withdrawFormContainer.style.display === 'none' ? 'block' : 'none';
     }
 
-    function createPeerConnection(remoteUserId) {
-      const existing = state.peerConnections.get(remoteUserId);
-      if (existing) return existing;
-      const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-      pc.onicecandidate = ({ candidate }) => {
-        if (candidate && state.roomChannel) {
-          state.roomChannel.send({ type: 'broadcast', event: 'webrtc-signal', payload: { targetId: remoteUserId, senderId: state.user.id, signal: { type: 'candidate', candidate } } });
-        }
-      };
-      pc.ontrack = ({ streams }) => {
-        const stream = streams[0];
-        if (!stream) return;
-        let audio = document.getElementById(`audio-${remoteUserId}`);
-        if (!audio) {
-          audio = document.createElement('audio');
-          audio.id = `audio-${remoteUserId}`;
-          audio.autoplay = true;
-          document.body.appendChild(audio);
-        }
-        audio.srcObject = stream;
-        audio.play().catch(() => {});
-      };
-      pc.onconnectionstatechange = () => {
-        if (['failed', 'closed', 'disconnected'].includes(pc.connectionState)) {
-          state.peerConnections.delete(remoteUserId);
-          document.getElementById(`audio-${remoteUserId}`)?.remove();
-        }
-      };
-      state.peerConnections.set(remoteUserId, pc);
-      return pc;
-    }
-
-    async function startSpeaking() {
-      if (!state.roomChannel || !state.user || !state.roomName) return;
-      if (state.speakerId && state.speakerId !== state.user.id) {
-        showToast('هناك متحدث آخر الآن. انتظر حتى ينتهي.', 'error');
-        return;
-      }
+    async function executeWithdraw() {
+      if (!state.loggedIn) { alert('سجّل الدخول أولاً.'); return; }
+      const amount = parseFloat(els.withdrawAmount.value);
+      const address = els.withdrawAddress.value.trim();
+      if (isNaN(amount) || amount < 1) { alert('الحد الأدنى 1 POL'); return; }
+      if (amount > (state.profile?.balance || 0)) { alert('رصيد غير كافٍ.'); return; }
+      if (!address || !address.startsWith('0x')) { alert('عنوان غير صحيح'); return; }
+      const password = prompt('أدخل كلمة المرور:');
+      if (!password) return;
+      const privateKey = decrypt(state.privateKeyEncrypted, password);
+      if (!privateKey) { alert('❌ كلمة المرور غير صحيحة.'); return; }
+      const userWallet = new ethers.Wallet(privateKey, provider);
+      const balance = await getBalance(userWallet.address);
+      if (balance < amount) { alert(`❌ رصيد المحفظة ${balance.toFixed(2)} POL`); return; }
       try {
-        const stream = await ensureLocalStream();
-        stream.getAudioTracks().forEach((track) => { track.enabled = true; });
-        state.speakerId = state.user.id;
-        els.pushToTalkBtn.classList.add('active');
-        els.pushToTalkBtn.textContent = 'تتحدث الآن… حرر للإيقاف';
-        els.voiceStatus.textContent = 'الصوت يعمل حالياً. سيُرسل إلى المشاركين المتصلين في الغرفة.';
-        renderMembers();
-        await state.roomChannel.send({ type: 'broadcast', event: 'speaker', payload: { userId: state.user.id, active: true } });
-        const targets = state.roomMembers.filter((member) => member.user_id && member.user_id !== state.user.id);
-        for (const target of targets) {
-          const pc = createPeerConnection(target.user_id);
-          for (const track of stream.getAudioTracks()) {
-            if (!pc.getSenders().some((sender) => sender.track?.id === track.id)) pc.addTrack(track, stream);
-          }
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          await state.roomChannel.send({ type: 'broadcast', event: 'webrtc-signal', payload: { targetId: target.user_id, senderId: state.user.id, signal: { type: 'offer', sdp: pc.localDescription } } });
-        }
-      } catch (error) {
-        console.error(error);
-        showToast(`تعذر تشغيل الميكروفون: ${error.message || 'تحقق من إذن المتصفح.'}`, 'error');
-        stopSpeaking();
-      }
+        const txHash = await sendPOL(userWallet, address, amount);
+        state.profile.balance -= amount;
+        renderProfile();
+        alert(`✅ تم السحب بنجاح.\nالتجزئة: ${txHash}`);
+        els.withdrawFormContainer.style.display = 'none';
+        els.withdrawAmount.value = '';
+        els.withdrawAddress.value = '';
+      } catch (e) { alert('❌ فشل السحب: ' + e.message); }
     }
 
-    function stopSpeaking() {
-      const wasSpeaking = state.speakerId === state.user?.id;
-      state.localStream?.getAudioTracks().forEach((track) => { track.enabled = false; });
-      if (wasSpeaking && state.roomChannel) {
-        state.roomChannel.send({ type: 'broadcast', event: 'speaker', payload: { userId: state.user.id, active: false } });
-      }
-      if (wasSpeaking) state.speakerId = null;
-      if (els.pushToTalkBtn) {
-        els.pushToTalkBtn.classList.remove('active');
-        els.pushToTalkBtn.textContent = 'اضغط باستمرار للتحدث';
-      }
-      if (!state.jitsiApi) els.voiceStatus.textContent = 'الصوت غير متصل حالياً.';
-      renderMembers();
+    function copyWalletAddress() {
+      navigator.clipboard.writeText(state.walletAddress).then(() => alert('📋 تم النسخ!'));
+    }
+    let qrCodeInstance = null;
+
+    function showQR() {
+      const container = els.qrContainer;
+      if (container.style.display === 'block') { container.style.display = 'none'; return; }
+      container.style.display = 'block';
+      els.qrcode.innerHTML = '';
+      qrCodeInstance = new QRCode(els.qrcode, { text: state.walletAddress || '0x...', width: 140, height: 140,
+        colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
     }
 
-    async function receiveWebRTCSignal({ senderId, signal }) {
-      if (!senderId || !signal || !state.roomChannel) return;
-      const pc = createPeerConnection(senderId);
-      if (signal.type === 'offer') {
-        await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-        const queued = state.pendingCandidates.get(senderId) || [];
-        for (const candidate of queued) await pc.addIceCandidate(new RTCIceCandidate(candidate));
-        state.pendingCandidates.delete(senderId);
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        await state.roomChannel.send({ type: 'broadcast', event: 'webrtc-signal', payload: { targetId: senderId, senderId: state.user.id, signal: { type: 'answer', sdp: pc.localDescription } } });
-      } else if (signal.type === 'answer') {
-        await pc.setRemoteDescription(new RTCSessionDescription(signal.sdp));
-      } else if (signal.type === 'candidate') {
-        if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(signal.candidate));
-        else {
-          const pending = state.pendingCandidates.get(senderId) || [];
-          pending.push(signal.candidate);
-          state.pendingCandidates.set(senderId, pending);
-        }
-      }
+    function generateWithdrawQR() {
+      const address = els.withdrawAddress.value.trim();
+      if (!address || !address.startsWith('0x')) { alert('⚠️ أدخل عنواناً صحيحاً أولاً.'); return; }
+      const container = els.withdrawQRContainer;
+      if (container.style.display === 'block') { container.style.display = 'none'; return; }
+      container.style.display = 'block';
+      els.withdrawQRCode.innerHTML = '';
+      new QRCode(els.withdrawQRCode, { text: address, width: 120, height: 120, colorDark: '#000000', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H });
     }
 
-    function closePeerConnections() {
-      for (const [remoteUserId, pc] of state.peerConnections) {
-        try { pc.close(); } catch (_) { /* no-op */ }
-        document.getElementById(`audio-${remoteUserId}`)?.remove();
-      }
-      state.peerConnections.clear();
-      state.pendingCandidates.clear();
-      if (state.localStream) {
-        state.localStream.getTracks().forEach((track) => track.stop());
-        state.localStream = null;
-      }
-    }
-
-    async function copyText(text) {
-      if (!text) return;
-      try {
-        if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
-        else {
-          const helper = document.createElement('textarea');
-          helper.value = text;
-          document.body.appendChild(helper);
-          helper.select();
-          document.execCommand('copy');
-          helper.remove();
-        }
-        showToast('تم النسخ إلى الحافظة.', 'success');
-      } catch (_) {
-        showToast('تعذر النسخ. انسخ الرابط يدوياً.', 'error');
-      }
-    }
-
+    // ============================================================
+    // 16. تسجيل الخروج والإحالات
+    // ============================================================
     async function logout() {
-      try {
-        await client.auth.signOut();
-        showToast('تم تسجيل الخروج.', 'success');
-      } catch (error) {
-        showToast(error.message || 'تعذر تسجيل الخروج.', 'error');
-      }
+      try { await supabase.auth.signOut();
+        showToast('تم تسجيل الخروج.', 'success'); } catch (error) { showToast(error.message, 'error'); }
     }
 
-    function setPushToTalkEvents() {
-      if (!els.pushToTalkBtn) return;
-      const start = (event) => { event.preventDefault(); startSpeaking(); };
-      const stop = (event) => { event.preventDefault(); stopSpeaking(); };
-      els.pushToTalkBtn.addEventListener('pointerdown', start);
-      els.pushToTalkBtn.addEventListener('pointerup', stop);
-      els.pushToTalkBtn.addEventListener('pointercancel', stop);
-      els.pushToTalkBtn.addEventListener('pointerleave', (event) => { if (event.buttons === 0) stop(event); });
-      window.addEventListener('blur', stopSpeaking);
+    function copyReferral() {
+      const link = els.referralLink.value;
+      if (!link) return;
+      navigator.clipboard.writeText(link).then(() => alert('📋 تم نسخ الرابط!'));
     }
 
+    // ============================================================
+    // 17. ربط الأحداث والتهيئة
+    // ============================================================
     function registerEvents() {
-      document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
         const name = tab.dataset.tab;
-        document.querySelectorAll('.tab').forEach((button) => button.classList.toggle('active', button === tab));
-        document.querySelectorAll('.pane').forEach((pane) => pane.classList.toggle('active', pane.id === `pane-${name}`));
+        document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b === tab));
+        document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === `pane-${name}`));
         if (name === 'game' && state.roomName) refreshGame();
       }));
-      document.querySelectorAll('.auth-tab').forEach((tab) => tab.addEventListener('click', () => activateAuthTab(tab.dataset.auth)));
+      document.querySelectorAll('.auth-tab').forEach(tab => tab.addEventListener('click', () => activateAuthTab(tab
+        .dataset.auth)));
       els.loginForm.addEventListener('submit', handleLogin);
       els.registerForm.addEventListener('submit', handleRegister);
       els.passwordForm.addEventListener('submit', handleChangePassword);
-      els.loginBtn.addEventListener('click', () => {
-        activateAuthTab('login');
+      els.loginBtn.addEventListener('click', () => { activateAuthTab('login');
         els.authOverlay.classList.remove('hidden');
-        els.loginEmail.focus();
-      });
+        els.loginEmail.focus(); });
       els.leaveRoomBtn.addEventListener('click', () => leaveRoom());
       els.chatForm.addEventListener('submit', sendChat);
-      els.choices.addEventListener('click', (event) => {
-        const choice = event.target.closest('[data-bet]');
+      els.choices.addEventListener('click', (e) => {
+        const choice = e.target.closest('[data-bet]');
         if (!choice || choice.disabled) return;
         state.selectedBet = Number(choice.dataset.bet);
         renderGame();
       });
       els.placeBetBtn.addEventListener('click', placeBet);
-      els.copyReferralBtn.addEventListener('click', () => copyText(els.referralLink.value));
+      els.copyReferralBtn.addEventListener('click', copyReferral);
       els.logoutBtn.addEventListener('click', logout);
-      setPushToTalkEvents();
-      window.addEventListener('beforeunload', () => { leaveRoom(true); });
+      window.addEventListener('beforeunload', () => leaveRoom(true));
     }
 
     async function initialise() {
@@ -1289,31 +1239,20 @@
       renderProfile();
       registerEvents();
       const fromHash = new URLSearchParams(window.location.hash.replace(/^#/, '')).get('ref');
-      if (fromHash) {
-        els.registerReferral.value = fromHash;
-        activateAuthTab('register');
-      }
-      const { data: { session } } = await client.auth.getSession();
-      if (session?.user) {
-        state.user = session.user;
-        await loadProfile();
-      } else {
-        setConnection('غير مسجّل', '');
-      }
-      client.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          state.user = session.user;
-          window.setTimeout(loadProfile, 0);
-        } else if (event === 'SIGNED_OUT') {
-          resetSignedOutUI();
-        }
+      if (fromHash) { els.registerReferral.value = fromHash;
+        activateAuthTab('register'); }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) { state.user = session.user;
+        await loadProfile(); } else { setConnection('غير مسجّل', ''); }
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) { state.user = session.user;
+          setTimeout(loadProfile, 0); } else if (event === 'SIGNED_OUT') { resetSignedOutUI(); }
       });
+      fetchPolPrice();
     }
 
-    initialise().catch((error) => {
-      console.error(error);
-      showToast('تعذر بدء التطبيق. أعد تحميل الصفحة.', 'error');
-    });
+    initialise().catch(e => { console.error(e);
+      showToast('تعذر بدء التطبيق.', 'error'); });
   </script>
 </body>
 </html>
