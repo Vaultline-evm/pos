@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Linking, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as SecureStore from 'expo-secure-store';
+import * as Crypto from 'expo-crypto';
 import * as Clipboard from 'expo-clipboard';
 import { ethers } from 'ethers';
 import QRCode from 'react-native-qrcode-svg';
@@ -43,9 +44,82 @@ function SignScreen({ active, toast }) { const [payload, setPayload] = useState(
 function SignedResult({ value, toast }) { return <Card><Text style={styles.cardHeading}>Signed transaction</Text><Text style={styles.success}>✓ Signed locally · not broadcast</Text><Text selectable style={styles.code}>{value}</Text><View style={styles.qrBox}><QRCode value={value} size={210} /></View><View style={styles.row}><Button title="Copy text" secondary onPress={async () => { await Clipboard.setStringAsync(value); toast('Signed transaction copied.'); }} /><Button title="Open sender" onPress={() => Linking.openURL(SUBMIT_URL)} /></View></Card>; }
 function ReceiveScreen({ active, toast }) { return <><View style={styles.hero}><Text style={styles.eyebrow}>RECEIVE</Text><Text style={styles.title}>Your public address.</Text><Text style={styles.subtitle}>Share this QR or address. Your private key never leaves this device.</Text></View>{active ? <Card><Text style={styles.cardHeading}>{active.name}</Text><Text style={styles.small}>Public EVM address</Text><Text selectable style={styles.address}>{active.address}</Text><View style={styles.qrBox}><QRCode value={active.address} size={220} /></View><Button title="Copy address" secondary onPress={async () => { await Clipboard.setStringAsync(active.address); toast('Address copied.'); }} /></Card> : <Empty text="Create or import a wallet first." />}</>; }
 
-function WalletSetup({ close, add }) { const [mode, setMode] = useState('create'); const [name, setName] = useState(''); const [phrase, setPhrase] = useState(''); const [phraseConfirm, setPhraseConfirm] = useState(''); const [passphrase, setPassphrase] = useState(''); const [passphraseConfirm, setPassphraseConfirm] = useState(''); const [password, setPassword] = useState(''); const [passwordConfirm, setPasswordConfirm] = useState(''); const [generated, setGenerated] = useState(''); const [busy, setBusy] = useState(false);
-  const make = async () => { setBusy(true); try { if (!name.trim()) throw new Error('Enter a wallet name.'); if (password.length < 8) throw new Error('Password must be at least 8 characters.'); if (password !== passwordConfirm) throw new Error('Password confirmation does not match.'); if (passphrase !== passphraseConfirm) throw new Error('Passphrase confirmation does not match.'); let wallet; if (mode === 'create') { wallet = ethers.Wallet.createRandom(); const mnemonic = wallet.mnemonic?.phrase; if (!generated) { setGenerated(mnemonic); return; } if (phrase.trim() !== mnemonic) throw new Error('The recovery phrase does not match the generated phrase.'); wallet = ethers.Wallet.fromPhrase(mnemonic, passphrase); } else { if (!phrase.trim() || phrase.trim() !== phraseConfirm.trim()) throw new Error('Recovery phrase confirmation does not match.'); if (!ethers.Mnemonic.isValidMnemonic(phrase.trim())) throw new Error('Invalid recovery phrase.'); wallet = ethers.Wallet.fromPhrase(phrase.trim(), passphrase); } const encrypted = await wallet.encrypt(password); await add({ id: `cold_${Date.now()}`, name: name.trim(), address: wallet.address, type: 'signing', encrypted }); } catch (e) { Alert.alert('Wallet setup', e.message); } finally { setBusy(false); } };
-  return <View style={styles.modal}><ScrollView style={styles.modalBox} contentContainerStyle={{ paddingBottom: 30 }}><View style={styles.modalHead}><View><Text style={styles.eyebrow}>LOCAL KEY MANAGEMENT</Text><Text style={styles.modalTitle}>{mode === 'create' ? 'Create cold wallet' : 'Import cold wallet'}</Text></View><TouchableOpacity onPress={close}><Text style={styles.close}>×</Text></TouchableOpacity></View><View style={styles.modeTabs}><TouchableOpacity style={[styles.modeTab, mode === 'create' && styles.modeActive]} onPress={() => { setMode('create'); setGenerated(''); }}><Text style={mode === 'create' ? styles.modeActiveText : styles.small}>Generate</Text></TouchableOpacity><TouchableOpacity style={[styles.modeTab, mode === 'import' && styles.modeActive]} onPress={() => { setMode('import'); setGenerated(''); }}><Text style={mode === 'import' ? styles.modeActiveText : styles.small}>Import phrase</Text></TouchableOpacity></View><Field label="WALLET NAME" value={name} onChangeText={setName} placeholder="Cold wallet" />{mode === 'create' && generated ? <><Text style={styles.warning}>Write this recovery phrase down offline. It will not be shown again.</Text><Text selectable style={styles.phrase}>{generated}</Text><Field label="CONFIRM GENERATED RECOVERY PHRASE" value={phrase} onChangeText={setPhrase} placeholder="Type the words exactly" autoCapitalize="none" /></> : mode === 'import' ? <><Field label="RECOVERY PHRASE" value={phrase} onChangeText={setPhrase} placeholder="12 or 24 words" multiline autoCapitalize="none" /><Field label="CONFIRM RECOVERY PHRASE" value={phraseConfirm} onChangeText={setPhraseConfirm} placeholder="Repeat the phrase" multiline autoCapitalize="none" /></> : null}<Field label="BIP-39 PASSPHRASE" value={passphrase} onChangeText={setPassphrase} placeholder="Optional but recommended" secureTextEntry /><Field label="CONFIRM PASSPHRASE" value={passphraseConfirm} onChangeText={setPassphraseConfirm} placeholder="Repeat passphrase" secureTextEntry /><Field label="ENCRYPTION PASSWORD" value={password} onChangeText={setPassword} placeholder="Minimum 8 characters" secureTextEntry /><Field label="CONFIRM PASSWORD" value={passwordConfirm} onChangeText={setPasswordConfirm} placeholder="Repeat password" secureTextEntry />{mode === 'create' && !generated ? <Button title="Generate recovery phrase" onPress={make} disabled={busy} /> : <Button title={busy ? 'Encrypting locally…' : mode === 'create' ? 'Create cold wallet' : 'Import cold wallet'} onPress={make} disabled={busy} />}</ScrollView></View>; }
+function WalletSetup({ close, add }) {
+  const [mode, setMode] = useState('create');
+  const [secretType, setSecretType] = useState('phrase');
+  const [name, setName] = useState('');
+  const [phrase, setPhrase] = useState('');
+  const [phraseConfirm, setPhraseConfirm] = useState('');
+  const [passphrase, setPassphrase] = useState('');
+  const [passphraseConfirm, setPassphraseConfirm] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [generated, setGenerated] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [scan, setScan] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+
+  const applyScannedSecret = (data) => {
+    let value = String(data || '').trim();
+    try {
+      const parsed = JSON.parse(value);
+      value = parsed.mnemonic || parsed.recoveryPhrase || parsed.phrase || parsed.privateKey || parsed.key || parsed.value || value;
+    } catch (_) {}
+    if (/^0x[0-9a-f]{64}$/i.test(value)) {
+      setSecretType('private');
+      setPhrase(value);
+      setPhraseConfirm(value);
+      toastLocal('Private key QR captured.');
+    } else if (ethers.Mnemonic.isValidMnemonic(value)) {
+      setSecretType('phrase');
+      setPhrase(value);
+      setPhraseConfirm(value);
+      toastLocal('Recovery phrase QR captured.');
+    } else {
+      Alert.alert('QR import', 'The QR must contain a valid recovery phrase or a 0x private key.');
+      return;
+    }
+    setScan(false);
+  };
+  const toastLocal = (message) => Alert.alert('Wallet setup', message);
+  const scanSecret = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) return Alert.alert('Camera permission', 'Camera permission is required to scan a wallet secret QR.');
+    }
+    setScan(true);
+  };
+  const make = async () => {
+    setBusy(true);
+    try {
+      if (!name.trim()) throw new Error('Enter a wallet name.');
+      if (password.length < 8) throw new Error('Password must be at least 8 characters.');
+      if (password !== passwordConfirm) throw new Error('Password confirmation does not match.');
+      if (passphrase !== passphraseConfirm) throw new Error('Passphrase confirmation does not match.');
+      let wallet;
+      if (mode === 'create') {
+        const entropy = await Crypto.getRandomBytesAsync(16);
+        const mnemonic = ethers.Mnemonic.fromEntropy(ethers.hexlify(entropy)).phrase;
+        if (!generated) { setGenerated(mnemonic); return; }
+        if (phrase.trim() !== mnemonic) throw new Error('The recovery phrase does not match the generated phrase.');
+        wallet = ethers.Wallet.fromPhrase(mnemonic, passphrase);
+      } else {
+        if (!phrase.trim() || phrase.trim() !== phraseConfirm.trim()) throw new Error('Secret confirmation does not match.');
+        if (secretType === 'private') {
+          if (!/^0x[0-9a-f]{64}$/i.test(phrase.trim())) throw new Error('Private key must be 32 bytes and start with 0x.');
+          wallet = new ethers.Wallet(phrase.trim());
+        } else {
+          if (!ethers.Mnemonic.isValidMnemonic(phrase.trim())) throw new Error('Invalid recovery phrase.');
+          wallet = ethers.Wallet.fromPhrase(phrase.trim(), passphrase);
+        }
+      }
+      const encrypted = await wallet.encrypt(password);
+      await add({ id: `cold_${Date.now()}`, name: name.trim(), address: wallet.address, type: 'signing', encrypted });
+    } catch (e) { Alert.alert('Wallet setup', e.message); } finally { setBusy(false); }
+  };
+  if (scan) return <View style={styles.modal}><View style={styles.modalBox}><Text style={styles.eyebrow}>IMPORT SECRET BY QR</Text><Text style={styles.modalTitle}>Scan phrase or private key</Text><CameraView style={styles.camera} barcodeScannerSettings={{ barcodeTypes: ['qr'] }} onBarcodeScanned={({ data }) => applyScannedSecret(data)} /><Button title="Cancel scan" secondary onPress={() => setScan(false)} /></View></View>;
+  return <View style={styles.modal}><ScrollView style={styles.modalBox} contentContainerStyle={{ paddingBottom: 30 }}><View style={styles.modalHead}><View><Text style={styles.eyebrow}>LOCAL KEY MANAGEMENT</Text><Text style={styles.modalTitle}>{mode === 'create' ? 'Create cold wallet' : 'Import cold wallet'}</Text></View><TouchableOpacity onPress={close}><Text style={styles.close}>×</Text></TouchableOpacity></View><View style={styles.modeTabs}><TouchableOpacity style={[styles.modeTab, mode === 'create' && styles.modeActive]} onPress={() => { setMode('create'); setGenerated(''); }}><Text style={mode === 'create' ? styles.modeActiveText : styles.small}>Generate</Text></TouchableOpacity><TouchableOpacity style={[styles.modeTab, mode === 'import' && styles.modeActive]} onPress={() => { setMode('import'); setGenerated(''); }}><Text style={mode === 'import' ? styles.modeActiveText : styles.small}>Import</Text></TouchableOpacity></View><Field label="WALLET NAME" value={name} onChangeText={setName} placeholder="Cold wallet" />{mode === 'create' && generated ? <><Text style={styles.warning}>Write this recovery phrase down offline. It will not be shown again.</Text><Text selectable style={styles.phrase}>{generated}</Text><Field label="CONFIRM GENERATED RECOVERY PHRASE" value={phrase} onChangeText={setPhrase} placeholder="Type the words exactly" autoCapitalize="none" /></> : mode === 'import' ? <><View style={styles.modeTabs}><TouchableOpacity style={[styles.modeTab, secretType === 'phrase' && styles.modeActive]} onPress={() => setSecretType('phrase')}><Text style={secretType === 'phrase' ? styles.modeActiveText : styles.small}>Recovery phrase</Text></TouchableOpacity><TouchableOpacity style={[styles.modeTab, secretType === 'private' && styles.modeActive]} onPress={() => setSecretType('private')}><Text style={secretType === 'private' ? styles.modeActiveText : styles.small}>Private key</Text></TouchableOpacity></View><Field label={secretType === 'phrase' ? 'RECOVERY PHRASE' : 'PRIVATE KEY'} value={phrase} onChangeText={setPhrase} placeholder={secretType === 'phrase' ? '12 or 24 words' : '0x… 64 hex characters'} multiline={secretType === 'phrase'} autoCapitalize="none" secureTextEntry={secretType === 'private'} /><Field label="CONFIRM SECRET" value={phraseConfirm} onChangeText={setPhraseConfirm} placeholder="Repeat or scan the same secret" multiline={secretType === 'phrase'} autoCapitalize="none" secureTextEntry={secretType === 'private'} /><Button title="Scan phrase/private-key QR" secondary onPress={scanSecret} /></> : null}<Field label="BIP-39 PASSPHRASE" value={passphrase} onChangeText={setPassphrase} placeholder="Optional but recommended" secureTextEntry /><Field label="CONFIRM PASSPHRASE" value={passphraseConfirm} onChangeText={setPassphraseConfirm} placeholder="Repeat passphrase" secureTextEntry /><Field label="ENCRYPTION PASSWORD" value={password} onChangeText={setPassword} placeholder="Minimum 8 characters" secureTextEntry /><Field label="CONFIRM PASSWORD" value={passwordConfirm} onChangeText={setPasswordConfirm} placeholder="Repeat password" secureTextEntry />{mode === 'create' && !generated ? <Button title="Generate recovery phrase" onPress={make} disabled={busy} /> : <Button title={busy ? 'Encrypting locally…' : mode === 'create' ? 'Create cold wallet' : 'Import cold wallet'} onPress={make} disabled={busy} />}</ScrollView></View>;
+}
 function WalletList({ wallets, activeId, select, add, close, remove }) { return <View style={styles.modal}><View style={styles.modalBox}><View style={styles.modalHead}><View><Text style={styles.eyebrow}>LOCAL WALLETS</Text><Text style={styles.modalTitle}>Choose signer</Text></View><TouchableOpacity onPress={close}><Text style={styles.close}>×</Text></TouchableOpacity></View>{wallets.length ? wallets.map((w) => <TouchableOpacity key={w.id} style={[styles.walletItem, activeId === w.id && styles.walletSelected]} onPress={() => select(w.id)}><Text style={styles.cardHeading}>{w.name}</Text><Text style={styles.small}>{short(w.address)} · encrypted locally</Text></TouchableOpacity>) : <Empty text="No local wallet yet." />}<Button title="＋ Add cold wallet" secondary onPress={add} />{activeId ? <Button title="Remove selected wallet" danger onPress={() => Alert.alert('Remove wallet', 'Only the encrypted local record will be removed.', [{ text: 'Cancel' }, { text: 'Remove', style: 'destructive', onPress: remove }])} /> : null}</View></View>; }
 function Tab({ icon, label, active, onPress }) { return <TouchableOpacity style={styles.tab} onPress={onPress}><Text style={[styles.tabIcon, active && styles.active]}>{icon}</Text><Text style={[styles.tabLabel, active && styles.active]}>{label}</Text></TouchableOpacity>; }
 function Card({ children }) { return <View style={styles.card}>{children}</View>; }
