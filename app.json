@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Vaultline",
+    "slug": "vaultline",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f5f2eb"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "com.vaultline.wallet",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#f5f2eb"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.vaultline.wallet"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "34aab6a2-48b3-4924-bafb-b954b91ad28b"
+      }
+    }
+  }
+}
