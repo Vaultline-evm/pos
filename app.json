@@ -6,15 +6,11 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#f5f2eb"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "android": {
+      "permissions": ["CAMERA"],
       "package": "com.vaultline.wallet",
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -34,7 +30,6 @@
     },
     "plugins": [
       "expo-secure-store",
-      ["expo-camera", { "cameraPermission": "Allow Vaultline to scan unsigned transaction QR codes.", "recordAudioPermission": false }],
       "./plugins/withNoInternet"
     ]
   }
