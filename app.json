@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#f5f2eb"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "package": "com.vaultline.wallet",
       "adaptiveIcon": {
@@ -29,6 +31,11 @@
       "eas": {
         "projectId": "89d6cf7f-3298-49c6-9959-ee357bb8e544"
       }
-    }
+    },
+    "plugins": [
+      "expo-secure-store",
+      ["expo-camera", { "cameraPermission": "Allow Vaultline to scan unsigned transaction QR codes.", "recordAudioPermission": false }],
+      "./plugins/withNoInternet"
+    ]
   }
 }
